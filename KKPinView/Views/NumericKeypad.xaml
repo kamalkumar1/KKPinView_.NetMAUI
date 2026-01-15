@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KKPinView.Views.NumericKeypad"
+             x:Name="Root">
+    <Grid
+        RowDefinitions="*,*,*,*,*"
+        ColumnDefinitions="*,*,*"
+        ColumnSpacing="{Binding Source={x:Reference Root}, Path=Spacing}"
+        RowSpacing="{Binding Source={x:Reference Root}, Path=Spacing}">
+        
+        <!-- Row 1: 1, 2, 3 -->
+        <Button Grid.Row="0" Grid.Column="0" Text="1" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="1" />
+        <Button Grid.Row="0" Grid.Column="1" Text="2" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="2" />
+        <Button Grid.Row="0" Grid.Column="2" Text="3" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="3" />
+        
+        <!-- Row 2: 4, 5, 6 -->
+        <Button Grid.Row="1" Grid.Column="0" Text="4" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="4" />
+        <Button Grid.Row="1" Grid.Column="1" Text="5" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="5" />
+        <Button Grid.Row="1" Grid.Column="2" Text="6" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="6" />
+        
+        <!-- Row 3: 7, 8, 9 -->
+        <Button Grid.Row="2" Grid.Column="0" Text="7" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="7" />
+        <Button Grid.Row="2" Grid.Column="1" Text="8" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="8" />
+        <Button Grid.Row="2" Grid.Column="2" Text="9" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="9" />
+        
+        <!-- Row 4: Empty, 0, Backspace -->
+        <Button Grid.Row="3" Grid.Column="0" IsVisible="False" />
+        <Button Grid.Row="3" Grid.Column="1" Text="0" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="0" />
+        <Button Grid.Row="3" Grid.Column="2" Text="⌫" Command="{Binding Source={x:Reference Root}, Path=DeleteCommand}" />
+        
+    </Grid>
+</ContentView>
+

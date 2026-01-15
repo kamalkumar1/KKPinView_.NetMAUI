@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="KKPinView.Views.PinDigitField"
+             x:Name="Root">
+    <Border
+        x:Name="DigitBorder"
+        StrokeThickness="2"
+        Stroke="{Binding Source={x:Reference Root}, Path=BorderColor}"
+        BackgroundColor="{Binding Source={x:Reference Root}, Path=BackgroundColor}"
+        WidthRequest="{Binding Source={x:Reference Root}, Path=FieldWidth}"
+        HeightRequest="{Binding Source={x:Reference Root}, Path=FieldHeight}">
+        <Label
+            x:Name="DigitLabel"
+            Text="{Binding Source={x:Reference Root}, Path=Digit}"
+            FontSize="{Binding Source={x:Reference Root}, Path=FontSize}"
+            TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            IsVisible="{Binding Source={x:Reference Root}, Path=IsFilled}" />
+        <Label
+            x:Name="DotLabel"
+            Text="●"
+            FontSize="20"
+            TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            IsVisible="{Binding Source={x:Reference Root}, Path=IsFilled}" />
+    </Border>
+</ContentView>
+

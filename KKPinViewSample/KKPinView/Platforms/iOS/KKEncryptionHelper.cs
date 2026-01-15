@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Foundation;
 
-namespace MauiPhoneContactLibrary.Platforms.iOS;
+namespace KKPinView.Platforms.iOS;
 
 public static class KKEncryptionHelperiOS
 {
