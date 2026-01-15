@@ -1,3 +1,5 @@
+using KKPinView.Debug;
+
 namespace KKPinView.Constants;
 
 /// <summary>
@@ -5,6 +7,9 @@ namespace KKPinView.Constants;
 /// </summary>
 public static class KKPinviewConstant
 {
+    // Debug Configuration
+    public static bool EnableDebugMode { get; set; } = KKPinViewDebug.IsDebugBuild();
+    
     // PIN Configuration
     public static int TotalDigits { get; set; } = 4;
     

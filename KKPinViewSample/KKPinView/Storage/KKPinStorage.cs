@@ -1,19 +1,12 @@
 using System;
 using System.Diagnostics;
-using System.Text;
-using KKPinView.Platforms.Android;
-#if IOS
-using KKPinView.Platforms.iOS;
-#endif
+using KKPinView.Debug;
+using Microsoft.Maui.Storage;
 
 #if ANDROID
-using AndroidX.Security.Crypto;
-using Java.Security;
-using Javax.Crypto;
-using Javax.Crypto.Spec;
+using KKPinView.Platforms.Android;
 #elif IOS
-using Foundation;
-using Security;
+using KKPinView.Platforms.iOS;
 #endif
 
 namespace KKPinView.Storage;
@@ -24,16 +17,33 @@ namespace KKPinView.Storage;
 public static class KKPinStorage
 {
     private const string PinKey = "KKPinView_StoredPIN";
-    private const string PinService = "KKPinView";
+    private const string KeyName = "KKPinView_SecureKey";
+    
+    private static IKKPinStorage PlatformStorage
+    {
+        get
+        {
+#if ANDROID
+            return new KKPinStorageAndroid();
+#elif IOS
+            return new KKPinStorageiOS();
+#else
+            // Fallback implementation for other platforms
+            return new KKPinStorageFallback();
+#endif
+        }
+    }
     
     /// <summary>
     /// Saves a PIN securely
     /// </summary>
     public static bool SavePIN(string pin)
     {
+        KKPinViewDebug.LogMethodEntry(new object[] { pin });
+        
         if (string.IsNullOrEmpty(pin))
         {
-            Debug.WriteLine("❌ SavePIN: PIN cannot be null or empty");
+            KKPinViewDebug.LogError("PIN cannot be null or empty");
             return false;
         }
         
@@ -42,43 +52,20 @@ public static class KKPinStorage
             var secureKey = GetOrCreateSecureKey();
             if (string.IsNullOrEmpty(secureKey))
             {
-                Debug.WriteLine("❌ SavePIN: Failed to get secure key");
+                KKPinViewDebug.LogError("Failed to get secure key");
                 return false;
             }
             
-#if ANDROID
-            var encrypted = KKEncryptionHelperAndroid.EncryptString(pin, secureKey);
-            if (encrypted == null)
-            {
-                return false;
-            }
-            SecureStorage.SetAsync(PinKey, encrypted).Wait();
-            return true;
-#elif IOS
-            var pinData = Foundation.NSData.FromString(pin, Foundation.NSStringEncoding.UTF8);
-            if (pinData == null)
-            {
-                return false;
-            }
+            KKPinViewDebug.LogVerbose($"Saving PIN with secure key (length: {secureKey.Length})");
+            KKPinViewDebug.LogPin("Saving PIN", pin);
             
-            var encrypted = KKEncryptionHelperiOS.EncryptData(pinData, secureKey);
-            if (encrypted == null)
-            {
-                return false;
-            }
-            
-            var encryptedString = Convert.ToBase64String(encrypted.ToArray());
-            SecureStorage.SetAsync(PinKey, encryptedString).Wait();
-            return true;
-#else
-            // Fallback for other platforms
-            SecureStorage.SetAsync(PinKey, pin).Wait();
-            return true;
-#endif
+            var result = PlatformStorage.SavePIN(pin, secureKey);
+            KKPinViewDebug.LogMethodExit(result);
+            return result;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ SavePIN error: {ex.Message}");
+            KKPinViewDebug.LogError("SavePIN error", ex);
             return false;
         }
     }
@@ -88,45 +75,26 @@ public static class KKPinStorage
     /// </summary>
     public static string? LoadPIN()
     {
+        KKPinViewDebug.LogMethodEntry();
+        
         try
         {
-            var encrypted = SecureStorage.GetAsync(PinKey).Result;
-            if (string.IsNullOrEmpty(encrypted))
-            {
-                return null;
-            }
-            
             var secureKey = GetOrCreateSecureKey();
             if (string.IsNullOrEmpty(secureKey))
             {
-                Debug.WriteLine("❌ LoadPIN: Failed to get secure key");
+                KKPinViewDebug.LogError("Failed to get secure key");
                 return null;
             }
             
-#if ANDROID
-            return KKEncryptionHelperAndroid.DecryptString(encrypted, secureKey);
-#elif IOS
-            var encryptedData = Foundation.NSData.FromArray(Convert.FromBase64String(encrypted));
-            if (encryptedData == null)
-            {
-                return null;
-            }
-            
-            var decrypted = KKEncryptionHelperiOS.DecryptData(encryptedData, secureKey);
-            if (decrypted == null)
-            {
-                return null;
-            }
-            
-            return Foundation.NSString.FromData(decrypted, Foundation.NSStringEncoding.UTF8) ?? string.Empty;
-#else
-            // Fallback for other platforms
-            return encrypted;
-#endif
+            KKPinViewDebug.LogVerbose("Loading PIN from secure storage");
+            var pin = PlatformStorage.LoadPIN(secureKey);
+            KKPinViewDebug.LogPin("Loaded PIN", pin);
+            KKPinViewDebug.LogMethodExit(pin != null ? "[PIN_LOADED]" : "[NO_PIN]");
+            return pin;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ LoadPIN error: {ex.Message}");
+            KKPinViewDebug.LogError("LoadPIN error", ex);
             return null;
         }
     }
@@ -136,8 +104,14 @@ public static class KKPinStorage
     /// </summary>
     public static bool VerifyPIN(string pin)
     {
+        KKPinViewDebug.LogMethodEntry(new object[] { pin });
+        
         var storedPin = LoadPIN();
-        return storedPin != null && storedPin == pin;
+        var isValid = storedPin != null && storedPin == pin;
+        
+        KKPinViewDebug.LogVerbose($"PIN verification result: {isValid}");
+        KKPinViewDebug.LogMethodExit(isValid);
+        return isValid;
     }
     
     /// <summary>
@@ -168,18 +142,21 @@ public static class KKPinStorage
     /// </summary>
     private static string GetOrCreateSecureKey()
     {
-        const string KeyName = "KKPinView_SecureKey";
+        KKPinViewDebug.LogVerbose("Getting or creating secure key");
         
         try
         {
             var existingKey = SecureStorage.GetAsync(KeyName).Result;
             if (!string.IsNullOrEmpty(existingKey))
             {
+                KKPinViewDebug.LogVerbose("Using existing secure key");
                 return existingKey;
             }
             
             // Generate a new device-specific key
-            var deviceId = GetDeviceId();
+            var deviceId = PlatformStorage.GetDeviceId();
+            KKPinViewDebug.LogVerbose($"Device ID: {deviceId}");
+            
             var keyBytes = new byte[32];
             using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
             {
@@ -188,29 +165,56 @@ public static class KKPinStorage
             
             var keyString = Convert.ToBase64String(keyBytes) + deviceId;
             SecureStorage.SetAsync(KeyName, keyString).Wait();
+            KKPinViewDebug.LogVerbose("Generated and saved new secure key");
             return keyString;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ GetOrCreateSecureKey error: {ex.Message}");
+            KKPinViewDebug.LogError("GetOrCreateSecureKey error", ex);
             return string.Empty;
         }
     }
+}
+
+#if !ANDROID && !IOS
+/// <summary>
+/// Fallback implementation for platforms other than Android and iOS
+/// </summary>
+internal class KKPinStorageFallback : IKKPinStorage
+{
+    private const string PinKey = "KKPinView_StoredPIN";
     
-    /// <summary>
-    /// Gets a device-specific identifier
-    /// </summary>
-    private static string GetDeviceId()
+    public bool SavePIN(string pin, string secureKey)
     {
-#if ANDROID
-        return Android.Provider.Settings.Secure.GetString(
-            Android.App.Application.Context.ContentResolver,
-            Android.Provider.Settings.Secure.AndroidId) ?? "Android_Device";
-#elif IOS
-        return UIKit.UIDevice.CurrentDevice.IdentifierForVendor?.AsString() ?? "iOS_Device";
-#else
+        try
+        {
+            SecureStorage.SetAsync(PinKey, pin).Wait();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"❌ SavePIN error: {ex.Message}");
+            return false;
+        }
+    }
+    
+    public string? LoadPIN(string secureKey)
+    {
+        try
+        {
+            return SecureStorage.GetAsync(PinKey).Result;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"❌ LoadPIN error: {ex.Message}");
+            return null;
+        }
+    }
+    
+    public string GetDeviceId()
+    {
         return Environment.MachineName;
-#endif
     }
 }
+#endif
 

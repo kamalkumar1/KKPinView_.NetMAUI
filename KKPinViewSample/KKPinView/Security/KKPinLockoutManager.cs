@@ -1,5 +1,6 @@
 using System;
 using KKPinView.Constants;
+using KKPinView.Debug;
 
 namespace KKPinView.Security;
 
@@ -54,23 +55,37 @@ public class KKPinLockoutManager
     /// </summary>
     public bool ValidatePIN(string pin)
     {
+        KKPinViewDebug.LogMethodEntry(new object[] { pin });
+        
         CheckLockoutStatus();
         
         if (IsLockedOut)
         {
-            return false;
+            if (KKPinViewDebug.BypassLockout)
+            {
+                KKPinViewDebug.LogWarning("Lockout bypassed due to debug mode");
+            }
+            else
+            {
+                KKPinViewDebug.Log($"PIN validation blocked - locked out for {RemainingLockoutMinutes} minutes");
+                return false;
+            }
         }
         
         var isValid = KKPinStorage.VerifyPIN(pin);
         
         if (isValid)
         {
+            KKPinViewDebug.Log("PIN validation successful");
             ResetFailedAttempts();
+            KKPinViewDebug.LogMethodExit(true);
             return true;
         }
         else
         {
+            KKPinViewDebug.LogWarning($"PIN validation failed. Attempts: {FailedAttempts + 1}/{MaxAttempts}");
             IncrementFailedAttempts();
+            KKPinViewDebug.LogMethodExit(false);
             return false;
         }
     }

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using KKPinView.Constants;
+using KKPinView.Debug;
 using KKPinView.Security;
 using KKPinView.Storage;
 
@@ -144,14 +145,21 @@ public partial class KKPinViews : ContentPage
     
     private void OnNumberPressed(string number)
     {
+        KKPinViewDebug.LogVerbose($"Number pressed: {number}");
+        
         if (!IsKeypadEnabled || _currentPin.Length >= KKPinviewConstant.TotalDigits)
+        {
+            KKPinViewDebug.LogVerbose("Keypad disabled or PIN already complete");
             return;
+        }
         
         _currentPin += number;
+        KKPinViewDebug.LogVerbose($"Current PIN length: {_currentPin.Length}");
         UpdatePinFields();
         
         if (_currentPin.Length == KKPinviewConstant.TotalDigits)
         {
+            KKPinViewDebug.Log("PIN entry complete, validating...");
             ValidatePIN();
         }
     }
@@ -180,10 +188,13 @@ public partial class KKPinViews : ContentPage
     
     private void ValidatePIN()
     {
+        KKPinViewDebug.LogPin("Validating PIN", _currentPin);
+        
         var isValid = _lockoutManager.ValidatePIN(_currentPin);
         
         if (isValid)
         {
+            KKPinViewDebug.Log("PIN validation successful");
             ShowSuccessMessage(KKPinviewConstant.SetupSuccessMessage);
             OnSubmit?.Invoke(true);
             
@@ -199,6 +210,7 @@ public partial class KKPinViews : ContentPage
         else
         {
             var error = _lockoutManager.GetErrorMessage();
+            KKPinViewDebug.LogWarning($"PIN validation failed: {error}");
             ShowErrorMessage(error ?? KKPinviewConstant.InvalidPinError);
             OnSubmit?.Invoke(false);
             
