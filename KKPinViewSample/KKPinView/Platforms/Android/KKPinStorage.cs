@@ -55,7 +55,7 @@ internal class KKPinStorageAndroid : IKKPinStorage
             
             if (string.IsNullOrEmpty(secureKey))
             {
-                Debug.WriteLine("❌ LoadPIN: Secure key is null or empty");
+                KKPinViewDebug.LogError("Android: LoadPIN: Secure key is null or empty");
                 return null;
             }
             
@@ -63,7 +63,7 @@ internal class KKPinStorageAndroid : IKKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ LoadPIN error: {ex.Message}");
+            KKPinViewDebug.LogError("Android: LoadPIN error", ex);
             return null;
         }
     }
@@ -80,7 +80,7 @@ internal class KKPinStorageAndroid : IKKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ GetDeviceId error: {ex.Message}");
+            KKPinViewDebug.LogError("Android: GetDeviceId error", ex);
             return "Android_Device";
         }
     }

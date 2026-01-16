@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using KKPinView.Debug;
 
 namespace KKPinView.Platforms.Android;
 
@@ -17,7 +18,7 @@ public static class KKEncryptionHelperAndroid
   {
     if (string.IsNullOrEmpty(plainText) || string.IsNullOrEmpty(secureKey))
     {
-      Debug.WriteLine("❌ EncryptString: Invalid input parameters");
+      KKPinViewDebug.LogError("Android: EncryptString: Invalid input parameters");
       return null;
     }
 
@@ -51,7 +52,7 @@ public static class KKEncryptionHelperAndroid
     }
     catch (Exception ex)
     {
-      Debug.WriteLine($"❌ Encryption error: {ex.Message}");
+      KKPinViewDebug.LogError("Android: Encryption error", ex);
       return null;
     }
   }
@@ -66,7 +67,7 @@ public static class KKEncryptionHelperAndroid
   {
     if (string.IsNullOrEmpty(encryptedText) || string.IsNullOrEmpty(secureKey))
     {
-      Debug.WriteLine("❌ DecryptString: Invalid input parameters");
+      KKPinViewDebug.LogError("Android: DecryptString: Invalid input parameters");
       return null;
     }
 
@@ -100,7 +101,7 @@ public static class KKEncryptionHelperAndroid
     }
     catch (Exception ex)
     {
-      Debug.WriteLine($"❌ Decryption error: {ex.Message}");
+      KKPinViewDebug.LogError("Android: Decryption error", ex);
       return null;
     }
   }

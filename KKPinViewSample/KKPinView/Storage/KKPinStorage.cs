@@ -133,7 +133,7 @@ public static class KKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ DeletePIN error: {ex.Message}");
+            KKPinViewDebug.LogError("DeletePIN error", ex);
         }
     }
     
@@ -193,7 +193,7 @@ internal class KKPinStorageFallback : IKKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ SavePIN error: {ex.Message}");
+            KKPinViewDebug.LogError("Fallback: SavePIN error", ex);
             return false;
         }
     }
@@ -206,7 +206,7 @@ internal class KKPinStorageFallback : IKKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ LoadPIN error: {ex.Message}");
+            KKPinViewDebug.LogError("Fallback: LoadPIN error", ex);
             return null;
         }
     }

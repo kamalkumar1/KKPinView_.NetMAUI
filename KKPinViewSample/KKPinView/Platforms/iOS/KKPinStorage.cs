@@ -64,21 +64,21 @@ internal class KKPinStorageiOS : IKKPinStorage
             
             if (string.IsNullOrEmpty(secureKey))
             {
-                Debug.WriteLine("❌ LoadPIN: Secure key is null or empty");
+                KKPinViewDebug.LogError("iOS: LoadPIN: Secure key is null or empty");
                 return null;
             }
             
             var encryptedData = NSData.FromArray(Convert.FromBase64String(encrypted));
             if (encryptedData == null)
             {
-                Debug.WriteLine("❌ LoadPIN: Failed to create NSData from encrypted string");
+                KKPinViewDebug.LogError("iOS: LoadPIN: Failed to create NSData from encrypted string");
                 return null;
             }
             
             var decrypted = KKEncryptionHelperiOS.DecryptData(encryptedData, secureKey);
             if (decrypted == null)
             {
-                Debug.WriteLine("❌ LoadPIN: Decryption failed");
+                KKPinViewDebug.LogError("iOS: LoadPIN: Decryption failed");
                 return null;
             }
             
@@ -86,7 +86,7 @@ internal class KKPinStorageiOS : IKKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ LoadPIN error: {ex.Message}");
+            KKPinViewDebug.LogError("iOS: LoadPIN error", ex);
             return null;
         }
     }
@@ -99,7 +99,7 @@ internal class KKPinStorageiOS : IKKPinStorage
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"❌ GetDeviceId error: {ex.Message}");
+            KKPinViewDebug.LogError("iOS: GetDeviceId error", ex);
             return "iOS_Device";
         }
     }

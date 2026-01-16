@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Foundation;
+using KKPinView.Debug;
 
 namespace KKPinView.Platforms.iOS;
 
@@ -15,7 +16,7 @@ public static class KKEncryptionHelperiOS
   {
     if (data == null || string.IsNullOrEmpty(secureKey))
     {
-      Debug.WriteLine("❌ EncryptData: Invalid input parameters");
+      KKPinViewDebug.LogError("iOS: EncryptData: Invalid input parameters");
       return null;
     }
 
@@ -49,7 +50,7 @@ public static class KKEncryptionHelperiOS
     }
     catch (Exception ex)
     {
-      Debug.WriteLine($"❌ Encryption error: {ex.Message}");
+      KKPinViewDebug.LogError("iOS: Encryption error", ex);
       return null;
     }
   }
@@ -61,7 +62,7 @@ public static class KKEncryptionHelperiOS
   {
     if (encryptedData == null || string.IsNullOrEmpty(secureKey))
     {
-      Debug.WriteLine("❌ DecryptData: Invalid input parameters");
+      KKPinViewDebug.LogError("iOS: DecryptData: Invalid input parameters");
       return null;
     }
 
@@ -95,7 +96,7 @@ public static class KKEncryptionHelperiOS
     }
     catch (Exception ex)
     {
-      Debug.WriteLine($"❌ Decryption error: {ex.Message}");
+      KKPinViewDebug.LogError("iOS: Decryption error", ex);
       return null;
     }
   }
