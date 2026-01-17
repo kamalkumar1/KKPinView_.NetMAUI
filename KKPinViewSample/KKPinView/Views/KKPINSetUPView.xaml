@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:views="clr-namespace:KKPinView.Views"
-             x:Class="KKPinView.Views.KKPINSetUPView"
-             x:Name="Root"
-             BackgroundColor="White">
-    
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:KKPinView.Views"
+    x:Class="KKPinView.Views.KKPINSetUPView"
+    x:Name="Root"
+    BackgroundColor="White">
+
     <ScrollView>
         <VerticalStackLayout
             Spacing="30"
             Padding="30,60,30,30"
             VerticalOptions="Start">
-            
+
             <!-- Requirement 1: Heading Label "Set X digit PIN" - center aligned, X from constant -->
             <Label
                 x:Name="HeadingLabel"
@@ -21,7 +21,7 @@
                 TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center" />
-            
+
             <!-- Requirement 2: Label with name "Enter the PIN" -->
             <Label
                 x:Name="EnterPinLabel"
@@ -30,21 +30,58 @@
                 TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center" />
-            
-            <!-- Requirement 3: PIN digit text fields (number based on TotalDigits constant, round/rectangle/corner radius from constants) -->
+
+            <!-- Requirement 3: PIN digit text fields (number based on TotalDigits constant,
+            round/rectangle/corner radius from constants) -->
             <HorizontalStackLayout
                 x:Name="EnterPinFieldsContainer"
                 Spacing="{Binding Source={x:Reference Root}, Path=FieldSpacing}"
                 HorizontalOptions="Center" />
-            
+
+            <!-- Requirement 4: Label with name "Confirm the PIN" -->
+            <Label
+                x:Name="ConfirmPinLabel"
+                Text="{Binding Source={x:Reference Root}, Path=ConfirmPinLabelText}"
+                FontSize="{Binding Source={x:Reference Root}, Path=SubtitleFontSize}"
+                TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center" />
+
+            <!-- Requirement 5: Confirm PIN digit text fields (number based on TotalDigits constant,
+            round/rectangle/corner radius from constants) -->
+            <HorizontalStackLayout
+                x:Name="ConfirmPinFieldsContainer"
+                Spacing="{Binding Source={x:Reference Root}, Path=FieldSpacing}"
+                HorizontalOptions="Center" />
+
+            <!-- Requirement 6: Error message label to display unmatched PIN -->
+            <Label
+                x:Name="ErrorMessageLabel"
+                Text="{Binding Source={x:Reference Root}, Path=ErrorMessage}"
+                FontSize="{Binding Source={x:Reference Root}, Path=SubtitleFontSize}"
+                TextColor="{Binding Source={x:Reference Root}, Path=ErrorTextColor}"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                IsVisible="{Binding Source={x:Reference Root}, Path=HasError}" />
+
+            <!-- Requirement 6: Success message label -->
+            <Label
+                x:Name="SuccessMessageLabel"
+                Text="{Binding Source={x:Reference Root}, Path=SuccessMessage}"
+                FontSize="{Binding Source={x:Reference Root}, Path=SubtitleFontSize}"
+                TextColor="{Binding Source={x:Reference Root}, Path=SuccessTextColor}"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                IsVisible="{Binding Source={x:Reference Root}, Path=HasSuccessMessage}" />
+
             <!-- Requirement 7: Numeric Keypad at the bottom (for editing PIN fields) -->
             <views:NumericKeypad
                 x:Name="Keypad"
                 NumberCommand="{Binding Source={x:Reference Root}, Path=NumberCommand}"
                 DeleteCommand="{Binding Source={x:Reference Root}, Path=DeleteCommand}"
                 Margin="0,20,0,0" />
-            
+
         </VerticalStackLayout>
     </ScrollView>
-    
+
 </ContentPage>

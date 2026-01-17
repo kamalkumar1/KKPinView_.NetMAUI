@@ -49,17 +49,13 @@ public partial class NumericKeypad : ContentView
         // Initialize CornerRadius from constant
         CornerRadius = (int)KKPinviewConstant.KeypadButtonCornerRadius;
 
-        // Apply styles after a short delay to ensure UI is fully loaded
-        // Dispatcher.Dispatch(() =>
-        // {
-        //     ApplyKeypadStyles();
-        // });
+        // Set up button press animations after UI is loaded
+        Loaded += OnKeypadLoaded;
     }
 
     protected override void OnHandlerChanged()
     {
         base.OnHandlerChanged();
-
     }
 
     protected override void OnSizeAllocated(double width, double height)
@@ -67,6 +63,47 @@ public partial class NumericKeypad : ContentView
         base.OnSizeAllocated(width, height);
     }
 
+    private void OnKeypadLoaded(object? sender, EventArgs e)
+    {
+        // Attach press/release handlers to all buttons for scale animation
+        AttachButtonAnimations();
+    }
 
+    private void AttachButtonAnimations()
+    {
+        if (KeypadGrid == null) return;
+
+        foreach (var child in KeypadGrid.Children)
+        {
+            if (child is Button button && button.IsVisible)
+            {
+                // Remove any existing handlers first
+                button.Pressed -= OnButtonPressed;
+                button.Released -= OnButtonReleased;
+
+                // Attach new handlers
+                button.Pressed += OnButtonPressed;
+                button.Released += OnButtonReleased;
+            }
+        }
+    }
+
+    private async void OnButtonPressed(object? sender, EventArgs e)
+    {
+        if (sender is Button button)
+        {
+            // Scale down to 0.9 when pressed
+            await button.ScaleToAsync(0.9, 100, Easing.SinOut);
+        }
+    }
+
+    private async void OnButtonReleased(object? sender, EventArgs e)
+    {
+        if (sender is Button button)
+        {
+            // Scale back to 1.0 when released
+            await button.ScaleToAsync(1.0, 100, Easing.SinOut);
+        }
+    }
 }
 
