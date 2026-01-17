@@ -39,6 +39,9 @@ public static class KKPinviewConstant
     public static double FieldSpacing { get; set; } = 15;
     public static double KeypadButtonSize { get; set; } = 70;
     public static double KeypadSpacing { get; set; } = 10;
+    public static double KeypadButtonCornerRadius { get; set; } = 35; // Half of button size for fully round, or adjust for rounded rectangle
+    public static double FieldCornerRadius { get; set; } = 10;
+    public static bool UseRoundFields { get; set; } = false;
     
     // Strings
     public static string TitleTextFormat { get; set; } = "Enter PIN";

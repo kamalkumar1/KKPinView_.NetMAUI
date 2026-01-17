@@ -15,40 +15,46 @@ public partial class MainPage : ContentPage
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-		UpdateUI();
+		try
+		{
+			UpdateUI();
+		}
+		catch (Exception ex)
+		{
+			// Handle any errors during UI update
+			System.Diagnostics.Debug.WriteLine($"Error updating UI: {ex.Message}");
+			StatusLabel.Text = "Error loading PIN status";
+			PinStatusLabel.Text = ex.Message;
+		}
 	}
 
 	private void UpdateUI()
 	{
-		var hasPin = KKPinStorage.HasStoredPIN();
-		
-		StatusLabel.Text = hasPin ? "PIN is configured" : "No PIN configured";
-		PinStatusLabel.Text = hasPin ? "You can authenticate using your PIN" : "Please setup a PIN to get started";
-		
-		SetupPinButton.IsEnabled = !hasPin || !_isAuthenticated;
-		EnterPinButton.IsEnabled = hasPin;
-		DeletePinButton.IsEnabled = hasPin;
-		
-		AuthenticatedContent.IsVisible = _isAuthenticated;
+		try
+		{
+			var hasPin = KKPinStorage.HasStoredPIN();
+
+			StatusLabel.Text = hasPin ? "PIN is configured" : "No PIN configured";
+			PinStatusLabel.Text = hasPin ? "You can authenticate using your PIN" : "Please setup a PIN to get started";
+
+			SetupPinButton.IsEnabled = !hasPin || !_isAuthenticated;
+			EnterPinButton.IsEnabled = hasPin;
+			DeletePinButton.IsEnabled = hasPin;
+
+			AuthenticatedContent.IsVisible = _isAuthenticated;
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Debug.WriteLine($"Error in UpdateUI: {ex.Message}");
+			StatusLabel.Text = "Error";
+			PinStatusLabel.Text = "Unable to check PIN status";
+		}
 	}
 
 	private async void OnSetupPinClicked(object? sender, EventArgs e)
 	{
-		var setupView = new KKPINSetUPView
-		{
-			OnSetupComplete = (pin) =>
-			{
-				Console.WriteLine($"✅ PIN setup complete!");
-				// PIN is automatically saved by KKPINSetUPView
-				_isAuthenticated = true;
-				MainThread.BeginInvokeOnMainThread(() =>
-				{
-					UpdateUI();
-				});
-			}
-		};
 
-		await Navigation.PushAsync(setupView);
+
 	}
 
 	private async void OnEnterPinClicked(object? sender, EventArgs e)

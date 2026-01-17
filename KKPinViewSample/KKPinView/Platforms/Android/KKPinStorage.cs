@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using KKPinView.Debug;
 using KKPinView.Storage;
 using Microsoft.Maui.Storage;
@@ -45,11 +44,14 @@ internal class KKPinStorageAndroid : IKKPinStorage
     
     public string? LoadPIN(string secureKey)
     {
+        KKPinViewDebug.LogVerbose("Android: Loading PIN");
+        
         try
         {
             var encrypted = SecureStorage.GetAsync(PinKey).Result;
             if (string.IsNullOrEmpty(encrypted))
             {
+                KKPinViewDebug.LogVerbose("Android: No encrypted PIN found in storage");
                 return null;
             }
             
@@ -59,7 +61,17 @@ internal class KKPinStorageAndroid : IKKPinStorage
                 return null;
             }
             
-            return KKEncryptionHelperAndroid.DecryptString(encrypted, secureKey);
+            var decrypted = KKEncryptionHelperAndroid.DecryptString(encrypted, secureKey);
+            if (decrypted != null)
+            {
+                KKPinViewDebug.LogVerbose("Android: PIN loaded successfully");
+            }
+            else
+            {
+                KKPinViewDebug.LogError("Android: LoadPIN: Decryption returned null");
+            }
+            
+            return decrypted;
         }
         catch (Exception ex)
         {
@@ -72,9 +84,16 @@ internal class KKPinStorageAndroid : IKKPinStorage
     {
         try
         {
-            var androidId = Android.Provider.Settings.Secure.GetString(
-                Android.App.Application.Context.ContentResolver,
-                Android.Provider.Settings.Secure.AndroidId);
+            var context = global::Android.App.Application.Context;
+            if (context == null)
+            {
+                KKPinViewDebug.LogWarning("Android: Application context is null, using fallback device ID");
+                return "Android_Device";
+            }
+            
+            var androidId = global::Android.Provider.Settings.Secure.GetString(
+                context.ContentResolver,
+                global::Android.Provider.Settings.Secure.AndroidId);
             
             return androidId ?? "Android_Device";
         }

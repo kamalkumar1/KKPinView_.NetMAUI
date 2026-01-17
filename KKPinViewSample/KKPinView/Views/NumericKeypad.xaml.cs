@@ -7,52 +7,66 @@ public partial class NumericKeypad : ContentView
 {
     public static readonly BindableProperty NumberCommandProperty = BindableProperty.Create(
         nameof(NumberCommand), typeof(ICommand), typeof(NumericKeypad));
-    
+
     public static readonly BindableProperty DeleteCommandProperty = BindableProperty.Create(
         nameof(DeleteCommand), typeof(ICommand), typeof(NumericKeypad));
-    
+
     public static readonly BindableProperty SpacingProperty = BindableProperty.Create(
         nameof(Spacing), typeof(double), typeof(NumericKeypad), KKPinviewConstant.KeypadSpacing);
-    
+
+    public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
+        nameof(CornerRadius), typeof(int), typeof(NumericKeypad), (int)KKPinviewConstant.KeypadButtonCornerRadius);
+
     public ICommand? NumberCommand
     {
         get => (ICommand?)GetValue(NumberCommandProperty);
         set => SetValue(NumberCommandProperty, value);
     }
-    
+
     public ICommand? DeleteCommand
     {
         get => (ICommand?)GetValue(DeleteCommandProperty);
         set => SetValue(DeleteCommandProperty, value);
     }
-    
+
     public double Spacing
     {
         get => (double)GetValue(SpacingProperty);
         set => SetValue(SpacingProperty, value);
     }
-    
+
+    public int CornerRadius
+    {
+        get => (int)GetValue(CornerRadiusProperty);
+        set => SetValue(CornerRadiusProperty, value);
+    }
+
     public NumericKeypad()
     {
         InitializeComponent();
-        ApplyKeypadStyles();
+        BindingContext = this;
+
+        // Initialize CornerRadius from constant
+        CornerRadius = (int)KKPinviewConstant.KeypadButtonCornerRadius;
+
+        // Apply styles after a short delay to ensure UI is fully loaded
+        // Dispatcher.Dispatch(() =>
+        // {
+        //     ApplyKeypadStyles();
+        // });
     }
-    
-    private void ApplyKeypadStyles()
+
+    protected override void OnHandlerChanged()
     {
-        // Apply styles to all buttons
-        foreach (var child in ((Grid)Content).Children)
-        {
-            if (child is Button button && button.IsVisible)
-            {
-                button.FontSize = KKPinviewConstant.KeypadButtonFontSize;
-                button.BackgroundColor = KKPinviewConstant.KeypadButtonColor;
-                button.TextColor = KKPinviewConstant.KeypadButtonTextColor;
-                button.WidthRequest = KKPinviewConstant.KeypadButtonSize;
-                button.HeightRequest = KKPinviewConstant.KeypadButtonSize;
-                button.CornerRadius = (int)(KKPinviewConstant.KeypadButtonSize / 2);
-            }
-        }
+        base.OnHandlerChanged();
+
     }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+    }
+
+
 }
 

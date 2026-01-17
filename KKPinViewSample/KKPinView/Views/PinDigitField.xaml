@@ -9,7 +9,8 @@
         Stroke="{Binding Source={x:Reference Root}, Path=BorderColor}"
         BackgroundColor="{Binding Source={x:Reference Root}, Path=BackgroundColor}"
         WidthRequest="{Binding Source={x:Reference Root}, Path=FieldWidth}"
-        HeightRequest="{Binding Source={x:Reference Root}, Path=FieldHeight}">
+        HeightRequest="{Binding Source={x:Reference Root}, Path=FieldHeight}"
+        StrokeShape="{Binding Source={x:Reference Root}, Path=StrokeShape}">
         <Label
             x:Name="DotLabel"
             Text="●"

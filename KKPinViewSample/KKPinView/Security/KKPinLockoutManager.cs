@@ -1,6 +1,7 @@
 using System;
 using KKPinView.Constants;
 using KKPinView.Debug;
+using KKPinView.Storage;
 
 namespace KKPinView.Security;
 
@@ -11,11 +12,11 @@ public class KKPinLockoutManager
 {
     private const string FailedAttemptsKey = "KKPinView_FailedAttempts";
     private const string LockoutUntilKey = "KKPinView_LockoutUntil";
-    
+
     public int FailedAttempts { get; private set; }
     public int MaxAttempts { get; }
     public int LockoutDurationMinutes { get; }
-    
+
     public bool IsLockedOut
     {
         get
@@ -29,7 +30,7 @@ public class KKPinLockoutManager
             return false;
         }
     }
-    
+
     public int RemainingLockoutMinutes
     {
         get
@@ -40,25 +41,25 @@ public class KKPinLockoutManager
             return Math.Max(0, (int)remaining.TotalMinutes);
         }
     }
-    
+
     public bool HasReachedMaxAttempts => FailedAttempts >= MaxAttempts;
-    
+
     public KKPinLockoutManager(int maxAttempts = 0, int lockoutDurationMinutes = 0)
     {
         MaxAttempts = maxAttempts > 0 ? maxAttempts : KKPinviewConstant.MaxPinAttempts;
         LockoutDurationMinutes = lockoutDurationMinutes > 0 ? lockoutDurationMinutes : KKPinviewConstant.PinLockoutDurationMinutes;
         LoadFailedAttempts();
     }
-    
+
     /// <summary>
     /// Validates a PIN and handles attempt tracking
     /// </summary>
     public bool ValidatePIN(string pin)
     {
         KKPinViewDebug.LogMethodEntry(new object[] { pin });
-        
+
         CheckLockoutStatus();
-        
+
         if (IsLockedOut)
         {
             if (KKPinViewDebug.BypassLockout)
@@ -71,9 +72,9 @@ public class KKPinLockoutManager
                 return false;
             }
         }
-        
+
         var isValid = KKPinStorage.VerifyPIN(pin);
-        
+
         if (isValid)
         {
             KKPinViewDebug.Log("PIN validation successful");
@@ -89,7 +90,7 @@ public class KKPinLockoutManager
             return false;
         }
     }
-    
+
     /// <summary>
     /// Resets failed attempts counter
     /// </summary>
@@ -99,7 +100,7 @@ public class KKPinLockoutManager
         Preferences.Remove(FailedAttemptsKey);
         Preferences.Remove(LockoutUntilKey);
     }
-    
+
     /// <summary>
     /// Checks and updates lockout status
     /// </summary>
@@ -115,7 +116,7 @@ public class KKPinLockoutManager
             }
         }
     }
-    
+
     /// <summary>
     /// Gets error message for current state
     /// </summary>
@@ -125,32 +126,32 @@ public class KKPinLockoutManager
         {
             return string.Format(KKPinviewConstant.LockedOutError, RemainingLockoutMinutes);
         }
-        
+
         if (HasReachedMaxAttempts)
         {
             return string.Format(KKPinviewConstant.LockedOutError, RemainingLockoutMinutes);
         }
-        
+
         if (FailedAttempts > 0)
         {
             return KKPinviewConstant.InvalidPinError;
         }
-        
+
         return null;
     }
-    
+
     private void IncrementFailedAttempts()
     {
         FailedAttempts++;
         Preferences.Set(FailedAttemptsKey, FailedAttempts);
-        
+
         if (FailedAttempts >= MaxAttempts)
         {
             var lockoutUntil = DateTime.UtcNow.AddMinutes(LockoutDurationMinutes);
             Preferences.Set(LockoutUntilKey, lockoutUntil);
         }
     }
-    
+
     private void LoadFailedAttempts()
     {
         FailedAttempts = Preferences.Get(FailedAttemptsKey, 0);

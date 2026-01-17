@@ -119,7 +119,15 @@ public static class KKPinStorage
     /// </summary>
     public static bool HasStoredPIN()
     {
-        return SecureStorage.GetAsync(PinKey).Result != null;
+        try
+        {
+            return SecureStorage.GetAsync(PinKey).Result != null;
+        }
+        catch (Exception ex)
+        {
+            KKPinViewDebug.LogError("HasStoredPIN error", ex);
+            return false;
+        }
     }
     
     /// <summary>

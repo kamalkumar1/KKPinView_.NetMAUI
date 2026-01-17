@@ -1,4 +1,5 @@
 using KKPinView.Constants;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace KKPinView.Views;
 
@@ -27,6 +28,12 @@ public partial class PinDigitField : ContentView
     
     public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(
         nameof(BorderColor), typeof(Color), typeof(PinDigitField), Colors.Gray);
+    
+    public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
+        nameof(CornerRadius), typeof(double), typeof(PinDigitField), KKPinviewConstant.FieldCornerRadius, propertyChanged: OnCornerRadiusChanged);
+    
+    public static readonly BindableProperty UseRoundShapeProperty = BindableProperty.Create(
+        nameof(UseRoundShape), typeof(bool), typeof(PinDigitField), KKPinviewConstant.UseRoundFields, propertyChanged: OnShapeChanged);
     
     public string Digit
     {
@@ -76,9 +83,43 @@ public partial class PinDigitField : ContentView
         set => SetValue(BorderColorProperty, value);
     }
     
+    public double CornerRadius
+    {
+        get => (double)GetValue(CornerRadiusProperty);
+        set => SetValue(CornerRadiusProperty, value);
+    }
+    
+    public bool UseRoundShape
+    {
+        get => (bool)GetValue(UseRoundShapeProperty);
+        set => SetValue(UseRoundShapeProperty, value);
+    }
+    
+    /// <summary>
+    /// Gets the stroke shape (round rectangle) used for the border based on corner radius settings
+    /// </summary>
+    public RoundRectangle? StrokeShape { get; private set; }
+    
     public PinDigitField()
     {
         InitializeComponent();
+        UpdateStrokeShape();
+    }
+    
+    private static void OnCornerRadiusChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is PinDigitField field)
+        {
+            field.UpdateStrokeShape();
+        }
+    }
+    
+    private static void OnShapeChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is PinDigitField field)
+        {
+            field.UpdateStrokeShape();
+        }
     }
     
     private static void OnIsFilledChanged(BindableObject bindable, object oldValue, object newValue)
@@ -100,6 +141,32 @@ public partial class PinDigitField : ContentView
         {
             DigitBorder.Stroke = Colors.Gray;
             if (DotLabel != null) DotLabel.IsVisible = false;
+        }
+    }
+    
+    private void UpdateStrokeShape()
+    {
+        if (UseRoundShape)
+        {
+            // Round shape (circle/oval) - use radius equal to half the smaller dimension
+            var radius = Math.Min(FieldWidth, FieldHeight) / 2;
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(radius)
+            };
+        }
+        else
+        {
+            // Rectangle with corner radius from constant
+            StrokeShape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(CornerRadius)
+            };
+        }
+        
+        if (DigitBorder != null)
+        {
+            DigitBorder.StrokeShape = StrokeShape;
         }
     }
 }

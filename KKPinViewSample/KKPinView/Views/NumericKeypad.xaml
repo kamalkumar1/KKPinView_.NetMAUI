@@ -3,31 +3,45 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="KKPinView.Views.NumericKeypad"
              x:Name="Root">
+    <ContentView.Resources>
+        <Style x:Key="KeypadButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="BackgroundColor" Value="LightGray" />
+            <Setter Property="TextColor" Value="Black" />
+            <Setter Property="WidthRequest" Value="70" />
+            <Setter Property="HeightRequest" Value="70" />
+            <Setter Property="CornerRadius" Value="{Binding Source={x:Reference Root}, Path=CornerRadius}" />
+            <Setter Property="IsEnabled" Value="True" />
+            <Setter Property="InputTransparent" Value="False" />
+        </Style>
+    </ContentView.Resources>
+    
     <Grid
+        x:Name="KeypadGrid"
         RowDefinitions="*,*,*,*,*"
         ColumnDefinitions="*,*,*"
         ColumnSpacing="{Binding Source={x:Reference Root}, Path=Spacing}"
         RowSpacing="{Binding Source={x:Reference Root}, Path=Spacing}">
         
         <!-- Row 1: 1, 2, 3 -->
-        <Button Grid.Row="0" Grid.Column="0" Text="1" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="1" />
-        <Button Grid.Row="0" Grid.Column="1" Text="2" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="2" />
-        <Button Grid.Row="0" Grid.Column="2" Text="3" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="3" />
+        <Button x:Name="Btn1" Grid.Row="0" Grid.Column="0" Text="1" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="1" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="Btn2" Grid.Row="0" Grid.Column="1" Text="2" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="2" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="Btn3" Grid.Row="0" Grid.Column="2" Text="3" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="3" Style="{StaticResource KeypadButtonStyle}" />
         
         <!-- Row 2: 4, 5, 6 -->
-        <Button Grid.Row="1" Grid.Column="0" Text="4" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="4" />
-        <Button Grid.Row="1" Grid.Column="1" Text="5" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="5" />
-        <Button Grid.Row="1" Grid.Column="2" Text="6" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="6" />
+        <Button x:Name="Btn4" Grid.Row="1" Grid.Column="0" Text="4" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="4" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="Btn5" Grid.Row="1" Grid.Column="1" Text="5" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="5" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="Btn6" Grid.Row="1" Grid.Column="2" Text="6" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="6" Style="{StaticResource KeypadButtonStyle}" />
         
         <!-- Row 3: 7, 8, 9 -->
-        <Button Grid.Row="2" Grid.Column="0" Text="7" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="7" />
-        <Button Grid.Row="2" Grid.Column="1" Text="8" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="8" />
-        <Button Grid.Row="2" Grid.Column="2" Text="9" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="9" />
+        <Button x:Name="Btn7" Grid.Row="2" Grid.Column="0" Text="7" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="7" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="Btn8" Grid.Row="2" Grid.Column="1" Text="8" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="8" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="Btn9" Grid.Row="2" Grid.Column="2" Text="9" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="9" Style="{StaticResource KeypadButtonStyle}" />
         
         <!-- Row 4: Empty, 0, Backspace -->
         <Button Grid.Row="3" Grid.Column="0" IsVisible="False" />
-        <Button Grid.Row="3" Grid.Column="1" Text="0" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="0" />
-        <Button Grid.Row="3" Grid.Column="2" Text="⌫" Command="{Binding Source={x:Reference Root}, Path=DeleteCommand}" />
+        <Button x:Name="Btn0" Grid.Row="3" Grid.Column="1" Text="0" Command="{Binding Source={x:Reference Root}, Path=NumberCommand}" CommandParameter="0" Style="{StaticResource KeypadButtonStyle}" />
+        <Button x:Name="BtnDelete" Grid.Row="3" Grid.Column="2" Text="⌫" Command="{Binding Source={x:Reference Root}, Path=DeleteCommand}" Style="{StaticResource KeypadButtonStyle}" />
         
     </Grid>
 </ContentView>

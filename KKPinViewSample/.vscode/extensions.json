@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.csdevkit",
+    "ms-dotnettools.vscode-dotnet-runtime",
+    "redhat.vscode-xml",
+    "josefpihrt-vscode.roslynator",
+    "kreativ-software.csharpextensions"
+  ]
+}
+

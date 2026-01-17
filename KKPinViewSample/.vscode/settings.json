@@ -1,0 +1,47 @@
+{
+  // Enable XAML preview and IntelliSense
+  "files.associations": {
+    "*.xaml": "xml"
+  },
+  
+  // C# and .NET settings
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.enableEditorConfigSupport": true,
+  
+  // XAML formatting
+  "xml.format.enabled": true,
+  "xml.format.splitAttributes": false,
+  
+  // Editor settings for XAML
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  
+  // C# editor settings
+  "[csharp]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  
+  // File exclusions for better performance
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  
+  // Search exclusions
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/node_modules": true
+  },
+  "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+  "dotnet.formatting.organizeImportsOnFormat": true
+}
+
