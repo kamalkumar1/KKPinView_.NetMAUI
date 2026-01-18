@@ -9,30 +9,30 @@ public static class KKPinviewConstant
 {
     // Debug Configuration
     public static bool EnableDebugMode { get; set; } = KKPinViewDebug.IsDebugBuild();
-    
+
     // PIN Configuration
     public static int TotalDigits { get; set; } = 4;
-    
+
     // Lockout Configuration
     public static int MaxPinAttempts { get; set; } = 5;
     public static int PinLockoutDurationMinutes { get; set; } = 5;
-    
+
     // Colors
     public static Color BackgroundColor { get; set; } = Colors.White;
     public static Color TextColor { get; set; } = Colors.Black;
     public static Color ErrorTextColor { get; set; } = Colors.Red;
     public static Color SuccessTextColor { get; set; } = Colors.Green;
-    public static Color DigitFieldBackgroundColor { get; set; } = Colors.LightGray;
-    public static Color DigitFieldFilledColor { get; set; } = Colors.Blue;
+    public static Color DigitFieldBackgroundColor { get; set; } = Colors.Transparent;
+    public static Color DigitFieldFilledColor { get; set; } = Colors.Green;
     public static Color KeypadButtonColor { get; set; } = Colors.White;
     public static Color KeypadButtonTextColor { get; set; } = Colors.Black;
-    
+
     // Fonts
     public static double TitleFontSize { get; set; } = 24;
     public static double SubtitleFontSize { get; set; } = 16;
     public static double DigitFontSize { get; set; } = 20;
     public static double KeypadButtonFontSize { get; set; } = 24;
-    
+
     // Dimensions
     public static double FieldHeight { get; set; } = 60;
     public static double FieldWidth { get; set; } = 60;
@@ -42,7 +42,10 @@ public static class KKPinviewConstant
     public static double KeypadButtonCornerRadius { get; set; } = 35; // Half of button size for fully round, or adjust for rounded rectangle
     public static double FieldCornerRadius { get; set; } = 10;
     public static bool UseRoundFields { get; set; } = false;
-    
+
+    // Input Method Configuration
+    public static PinInputMethod InputMethod { get; set; } = PinInputMethod.NumericKeypad;
+
     // Strings
     public static string TitleTextFormat { get; set; } = "Enter PIN";
     public static string SubtitleText { get; set; } = "Enter your {0}-digit PIN";

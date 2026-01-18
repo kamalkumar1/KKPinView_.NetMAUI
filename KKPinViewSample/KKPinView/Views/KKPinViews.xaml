@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:KKPinView.Views"
              x:Class="KKPinView.Views.KKPinViews"
              x:Name="Root"
-             BackgroundColor="{Binding Source={x:Reference Root}, Path=BackgroundColor}">
+             BackgroundColor="{Binding BackgroundColor}">
     <ScrollView>
         <VerticalStackLayout
             Spacing="30"
@@ -14,18 +14,18 @@
             <!-- Title -->
             <Label
                 x:Name="TitleLabel"
-                Text="{Binding Source={x:Reference Root}, Path=TitleText}"
-                FontSize="{Binding Source={x:Reference Root}, Path=TitleFontSize}"
-                TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+                Text="{Binding TitleText}"
+                FontSize="{Binding TitleFontSize}"
+                TextColor="{Binding TextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center" />
             
             <!-- Subtitle -->
             <Label
                 x:Name="SubtitleLabel"
-                Text="{Binding Source={x:Reference Root}, Path=SubtitleText}"
-                FontSize="{Binding Source={x:Reference Root}, Path=SubtitleFontSize}"
-                TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+                Text="{Binding SubtitleText}"
+                FontSize="{Binding SubtitleFontSize}"
+                TextColor="{Binding TextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 Opacity="0.7" />
@@ -33,48 +33,47 @@
             <!-- PIN Fields -->
             <HorizontalStackLayout
                 x:Name="PinFieldsContainer"
-                Spacing="{Binding Source={x:Reference Root}, Path=FieldSpacing}"
+                Spacing="{Binding FieldSpacing}"
                 HorizontalOptions="Center" />
             
             <!-- Error Message -->
             <Label
                 x:Name="ErrorMessageLabel"
-                Text="{Binding Source={x:Reference Root}, Path=ErrorMessage}"
-                FontSize="{Binding Source={x:Reference Root}, Path=SubtitleFontSize}"
-                TextColor="{Binding Source={x:Reference Root}, Path=ErrorTextColor}"
+                Text="{Binding ErrorMessage}"
+                FontSize="{Binding SubtitleFontSize}"
+                TextColor="{Binding ErrorTextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                IsVisible="{Binding Source={x:Reference Root}, Path=HasError}" />
+                IsVisible="{Binding HasError}" />
             
             <!-- Success Message -->
             <Label
                 x:Name="SuccessMessageLabel"
-                Text="{Binding Source={x:Reference Root}, Path=SuccessMessage}"
-                FontSize="{Binding Source={x:Reference Root}, Path=SubtitleFontSize}"
-                TextColor="{Binding Source={x:Reference Root}, Path=SuccessTextColor}"
+                Text="{Binding SuccessMessage}"
+                FontSize="{Binding SubtitleFontSize}"
+                TextColor="{Binding SuccessTextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                IsVisible="{Binding Source={x:Reference Root}, Path=HasSuccessMessage}" />
+                IsVisible="{Binding HasSuccessMessage}" />
             
             <!-- Numeric Keypad -->
             <views:NumericKeypad
                 x:Name="Keypad"
-                NumberCommand="{Binding Source={x:Reference Root}, Path=NumberCommand}"
-                DeleteCommand="{Binding Source={x:Reference Root}, Path=DeleteCommand}"
-                IsEnabled="{Binding Source={x:Reference Root}, Path=IsKeypadEnabled}"
-                Opacity="{Binding Source={x:Reference Root}, Path=KeypadOpacity}" />
+                NumberCommand="{Binding NumberCommand}"
+                DeleteCommand="{Binding DeleteCommand}"
+                IsEnabled="{Binding IsKeypadEnabled}"
+                Opacity="{Binding KeypadOpacity}" />
             
             <!-- Forgot PIN Button -->
             <Button
                 x:Name="ForgotPinButton"
-                Text="{Binding Source={x:Reference Root}, Path=ForgotPinText}"
-                TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+                Text="{Binding ForgotPinText}"
+                TextColor="{Binding TextColor}"
                 BackgroundColor="Transparent"
                 Clicked="OnForgotPinClicked"
-                IsVisible="{Binding Source={x:Reference Root}, Path=ShowForgotPin}"
+                IsVisible="{Binding ShowForgotPin}"
                 Margin="0,20,0,0" />
             
         </VerticalStackLayout>
     </ScrollView>
-</ContentPage>
-
+</ContentView>

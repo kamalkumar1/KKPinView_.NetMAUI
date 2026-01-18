@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="KKPinView.Views.PinDigitField"
-             x:Name="Root">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="KKPinView.Views.PinDigitField"
+    x:Name="Root">
     <Border
         x:Name="DigitBorder"
         StrokeThickness="2"
@@ -11,14 +11,22 @@
         WidthRequest="{Binding Source={x:Reference Root}, Path=FieldWidth}"
         HeightRequest="{Binding Source={x:Reference Root}, Path=FieldHeight}"
         StrokeShape="{Binding Source={x:Reference Root}, Path=StrokeShape}">
-        <Label
-            x:Name="DotLabel"
-            Text="●"
-            FontSize="20"
+
+        <!-- Entry field - used for both numeric keypad (read-only) and system keyboard (editable) -->
+        <Entry
+            x:Name="DigitEntry"
+            Text="{Binding Source={x:Reference Root}, Path=Digit}"
+            Keyboard="Numeric"
+            MaxLength="1"
+            IsPassword="True"
+            FontSize="{Binding Source={x:Reference Root}, Path=FontSize}"
             TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            IsVisible="{Binding Source={x:Reference Root}, Path=IsFilled}" />
+            BackgroundColor="Transparent"
+            HorizontalOptions="Fill"
+            VerticalOptions="Fill"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            TextChanged="OnDigitEntryTextChanged"
+            Completed="OnDigitEntryCompleted" />
     </Border>
 </ContentView>
-

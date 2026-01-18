@@ -80,10 +80,13 @@ public partial class NumericKeypad : ContentView
                 // Remove any existing handlers first
                 button.Pressed -= OnButtonPressed;
                 button.Released -= OnButtonReleased;
+                button.Clicked -= OnButtonClicked;
 
                 // Attach new handlers
+                // Use both Pressed/Released for long presses and Clicked for quick taps
                 button.Pressed += OnButtonPressed;
                 button.Released += OnButtonReleased;
+                button.Clicked += OnButtonClicked;
             }
         }
     }
@@ -92,6 +95,8 @@ public partial class NumericKeypad : ContentView
     {
         if (sender is Button button)
         {
+            // Cancel any ongoing animation
+            button.AbortAnimation("ScaleAnimation");
             // Scale down to 0.9 when pressed
             await button.ScaleToAsync(0.9, 100, Easing.SinOut);
         }
@@ -103,6 +108,20 @@ public partial class NumericKeypad : ContentView
         {
             // Scale back to 1.0 when released
             await button.ScaleToAsync(1.0, 100, Easing.SinOut);
+        }
+    }
+
+    private async void OnButtonClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button button)
+        {
+            // For quick taps, trigger the animation sequence
+            // This ensures animation works even if Pressed/Released don't fire
+            button.AbortAnimation("ScaleAnimation");
+            
+            // Quick scale down and up animation
+            await button.ScaleToAsync(0.9, 50, Easing.SinOut);
+            await button.ScaleToAsync(1.0, 50, Easing.SinOut);
         }
     }
 }

@@ -35,6 +35,12 @@ public partial class PinDigitField : ContentView
     public static readonly BindableProperty UseRoundShapeProperty = BindableProperty.Create(
         nameof(UseRoundShape), typeof(bool), typeof(PinDigitField), KKPinviewConstant.UseRoundFields, propertyChanged: OnShapeChanged);
     
+    public static readonly BindableProperty IsEditableProperty = BindableProperty.Create(
+        nameof(IsEditable), typeof(bool), typeof(PinDigitField), false, propertyChanged: OnIsEditableChanged);
+    
+    public event EventHandler<string>? DigitChanged;
+    public event EventHandler? DigitCompleted;
+    
     public string Digit
     {
         get => (string)GetValue(DigitProperty);
@@ -95,6 +101,12 @@ public partial class PinDigitField : ContentView
         set => SetValue(UseRoundShapeProperty, value);
     }
     
+    public bool IsEditable
+    {
+        get => (bool)GetValue(IsEditableProperty);
+        set => SetValue(IsEditableProperty, value);
+    }
+    
     /// <summary>
     /// Gets the stroke shape (round rectangle) used for the border based on corner radius settings
     /// </summary>
@@ -104,6 +116,19 @@ public partial class PinDigitField : ContentView
     {
         InitializeComponent();
         UpdateStrokeShape();
+        
+        // Initialize editable state after component is loaded
+        Loaded += OnFieldLoaded;
+    }
+    
+    private void OnFieldLoaded(object? sender, EventArgs e)
+    {
+        // Ensure Entry is always visible
+        if (DigitEntry != null)
+        {
+            DigitEntry.IsVisible = true;
+        }
+        UpdateEditableState();
     }
     
     private static void OnCornerRadiusChanged(BindableObject bindable, object oldValue, object newValue)
@@ -130,17 +155,42 @@ public partial class PinDigitField : ContentView
         }
     }
     
+    private static void OnIsEditableChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is PinDigitField field)
+        {
+            field.UpdateEditableState();
+        }
+    }
+    
     private void UpdateAppearance()
     {
         if (IsFilled)
         {
             DigitBorder.Stroke = KKPinviewConstant.DigitFieldFilledColor;
-            if (DotLabel != null) DotLabel.IsVisible = true;
         }
         else
         {
             DigitBorder.Stroke = Colors.Gray;
-            if (DotLabel != null) DotLabel.IsVisible = false;
+        }
+        
+        // Update visibility based on editable state
+        UpdateEditableState();
+    }
+    
+    private void UpdateEditableState()
+    {
+        if (DigitEntry != null)
+        {
+            // Entry is always visible, but read-only when not editable (numeric keypad mode)
+            DigitEntry.IsReadOnly = !IsEditable;
+            DigitEntry.IsEnabled = true; // Always enabled to show text, but read-only controls editing
+            
+            // When read-only, prevent focus (numeric keypad mode)
+            if (!IsEditable)
+            {
+                DigitEntry.Unfocus();
+            }
         }
     }
     
@@ -168,6 +218,51 @@ public partial class PinDigitField : ContentView
         {
             DigitBorder.StrokeShape = StrokeShape;
         }
+    }
+    
+    private void OnDigitEntryTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        // Only process text changes when editable (system keyboard mode)
+        if (!IsEditable) return;
+        
+        if (sender is Entry entry)
+        {
+            // Filter to only allow single digit
+            string newText = e.NewTextValue ?? string.Empty;
+            if (newText.Length > 1)
+            {
+                newText = newText.Length > 0 ? newText.Substring(newText.Length - 1) : string.Empty;
+            }
+            
+            // Only allow digits
+            if (!string.IsNullOrEmpty(newText) && !char.IsDigit(newText[0]))
+            {
+                newText = string.Empty;
+            }
+            
+            if (newText != e.NewTextValue)
+            {
+                entry.Text = newText;
+                return;
+            }
+            
+            Digit = newText;
+            IsFilled = !string.IsNullOrEmpty(newText);
+            DigitChanged?.Invoke(this, newText);
+        }
+    }
+    
+    private void OnDigitEntryCompleted(object? sender, EventArgs e)
+    {
+        // Only process completion when editable (system keyboard mode)
+        if (!IsEditable) return;
+        
+        DigitCompleted?.Invoke(this, EventArgs.Empty);
+    }
+    
+    public void FocusEntry()
+    {
+        DigitEntry?.Focus();
     }
 }
 
