@@ -58,5 +58,8 @@ public static class KKPinviewConstant
     public static string SetupSuccessMessage { get; set; } = "PIN setup successful";
     public static string EnterPinMessage { get; set; } = "Enter your PIN";
     public static string ConfirmPinMessage { get; set; } = "Confirm your PIN";
+
+    public static int SuccessMessageLabelHeight = 24;
+    public static int ErrorMessageLabelHeight = 24;
 }
 

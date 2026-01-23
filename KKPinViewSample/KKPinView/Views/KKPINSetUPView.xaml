@@ -12,7 +12,8 @@
     </ContentView.Resources>
 
     <ScrollView>
-        <VerticalStackLayout
+    <VerticalStackLayout>
+     <VerticalStackLayout
             Spacing="30"
             Padding="30,60,30,30"
             VerticalOptions="Start">
@@ -60,37 +61,42 @@
                 Spacing="{Binding FieldSpacing}"
                 HorizontalOptions="Center"
                 IsVisible="{Binding ShowConfirmPin}" />
-
-            <!-- Requirement 6: Error message label to display unmatched PIN -->
+                <VerticalStackLayout Spacing="0">
+                   <!-- Requirement 6: Error message label to display unmatched PIN -->
             <Label
                 x:Name="ErrorMessageLabel"
+                 BackgroundColor="Blue"
+                HeightRequest="0"
                 Text="{Binding ErrorMessage}"
                 FontSize="{Binding SubtitleFontSize}"
                 TextColor="{Binding ErrorTextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                IsVisible="{Binding HasError}" />
+                />
 
             <!-- Requirement 6: Success message label -->
             <Label
                 x:Name="SuccessMessageLabel"
+                BackgroundColor="Red"
                 Text="{Binding SuccessMessage}"
                 FontSize="{Binding SubtitleFontSize}"
                 TextColor="{Binding SuccessTextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                IsVisible="{Binding HasSuccessMessage}" />
+                HeightRequest="0" />
+                </VerticalStackLayout>
 
-            <!-- Requirement 7: Numeric Keypad at the bottom (shown when InputMethod is
+        </VerticalStackLayout>
+          <!-- Requirement 7: Numeric Keypad at the bottom (shown when InputMethod is
             NumericKeypad) -->
             <views:NumericKeypad
                 x:Name="Keypad"
                 NumberCommand="{Binding NumberCommand}"
                 DeleteCommand="{Binding DeleteCommand}"
-                Margin="0,20,0,0"
+                Margin="0,0,0,0"
                 IsVisible="{Binding InputMethod, Converter={StaticResource InputMethodToBoolConverter}, ConverterParameter='NumericKeypad'}" />
-
-        </VerticalStackLayout>
+    </VerticalStackLayout>
+       
     </ScrollView>
 
 </ContentView>

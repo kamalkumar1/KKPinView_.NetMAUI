@@ -50,6 +50,7 @@ public class MainPageViewModel : INotifyPropertyChanged
         // Handle successful PIN setup
         // For example: navigate to next page, show success message, etc.
         // This can be extended with navigation logic or other business logic
+        PinSetupSuccess?.Invoke();
     }
 
     /// <summary>
@@ -61,13 +62,14 @@ public class MainPageViewModel : INotifyPropertyChanged
         // Handle failed PIN setup
         // The actual alert display should be handled in the view/code-behind
         // This method can be extended with business logic
-        SetupFailed?.Invoke(errorMessage);
+        PinSetupFailed?.Invoke(errorMessage);
     }
 
     /// <summary>
     /// Event raised when PIN setup fails. Can be handled by the view to show alerts.
     /// </summary>
-    public event Action<string>? SetupFailed;
+    public event Action<string>? PinSetupFailed;
+    public event Action? PinSetupSuccess;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

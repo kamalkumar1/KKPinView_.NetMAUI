@@ -54,7 +54,7 @@
                 TextColor="{Binding SuccessTextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
-                IsVisible="{Binding HasSuccessMessage}" />
+                HeightRequest="0" />
             
             <!-- Numeric Keypad -->
             <views:NumericKeypad

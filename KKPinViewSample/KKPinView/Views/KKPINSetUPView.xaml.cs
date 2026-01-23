@@ -25,7 +25,7 @@ public partial class KKPINSetUPView : ContentView
         // Create and set ViewModel
         _viewModel = new KKPINSetUPViewModel();
         BindingContext = _viewModel;
-
+        SuccessMessageLabel.HeightRequest = 0;
         // Wire up ViewModel events
         _viewModel.NumberPressed += OnViewModelNumberPressed;
         _viewModel.DeletePressed += OnViewModelDeletePressed;
@@ -191,7 +191,7 @@ public partial class KKPINSetUPView : ContentView
                 _confirmPin = string.Empty;
                 UpdateConfirmPinFields(); // Clear confirm fields visually
                 ClearMessages();
-                
+
                 // Refocus the last field of enter PIN for continued input
                 if (_enterPinFields.Count > 0 && _currentPin.Length > 0)
                 {
@@ -213,7 +213,7 @@ public partial class KKPINSetUPView : ContentView
                 UpdatePinFields();
                 // Clear messages when user deletes
                 ClearMessages();
-                
+
                 // Refocus the current field after deletion
                 if (_enterPinFields.Count > 0)
                 {
@@ -358,6 +358,7 @@ public partial class KKPINSetUPView : ContentView
 
     private async void ShowErrorMessage(string message)
     {
+        SuccessMessageLabel.HeightRequest = 0;
         _viewModel.ErrorMessage = message;
         _viewModel.HasError = true;
         _viewModel.HasSuccessMessage = false;
@@ -367,34 +368,39 @@ public partial class KKPINSetUPView : ContentView
         {
             ErrorMessageLabel.Opacity = 0;
             ErrorMessageLabel.Scale = 0.3; // Start from smaller scale
+            ErrorMessageLabel.HeightRequest = 0;
+            var heightAnimation = new Animation(v => ErrorMessageLabel.HeightRequest = v, 0, KKPinviewConstant.ErrorMessageLabelHeight, Easing.CubicOut);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(ErrorMessageLabel, "height", 16, 300, Easing.CubicOut, (v, c) => heightTaskCompletionSource.SetResult(true));
             // Run fade and scale animations simultaneously
             await Task.WhenAll(
+                heightTaskCompletionSource.Task,
                 ErrorMessageLabel.FadeToAsync(1, 300, Easing.CubicOut),
                 ErrorMessageLabel.ScaleToAsync(1, 400, Easing.SpringOut)
             );
         }
     }
-    
+
     private async void ShowSuccessMessage(string message)
     {
+        ErrorMessageLabel.HeightRequest = 0;
         _viewModel.SuccessMessage = message;
         _viewModel.HasError = false;
 
-        // Step 1: Animate keypad down first (chained animation)
-        if (Keypad != null)
-        {
-            await Keypad.TranslateToAsync(0, 40, 300, Easing.CubicOut);
-        }
-
-        // Step 2: Then show success message animation after keypad animation completes
+        // Animate label height and appearance
         if (SuccessMessageLabel != null)
         {
             SuccessMessageLabel.Opacity = 0;
-            SuccessMessageLabel.Scale = 0.3; // Start from smaller scale
-            _viewModel.HasSuccessMessage = true;
-            
-            // Run fade and scale animations simultaneously
+            SuccessMessageLabel.Scale = 0.3;
+            SuccessMessageLabel.HeightRequest = 0;
+
+            // Animate height from 0 to 50 and content (fade + scale) simultaneously
+            var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, 0, KKPinviewConstant.SuccessMessageLabelHeight, Easing.CubicOut);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(SuccessMessageLabel, "height", 16, 300, Easing.CubicOut, (v, c) => heightTaskCompletionSource.SetResult(true));
+
             await Task.WhenAll(
+                heightTaskCompletionSource.Task,
                 SuccessMessageLabel.FadeToAsync(1, 300, Easing.CubicOut),
                 SuccessMessageLabel.ScaleToAsync(1, 400, Easing.SpringOut)
             );
@@ -409,15 +415,26 @@ public partial class KKPINSetUPView : ContentView
             await ErrorMessageLabel.FadeToAsync(0, 200);
         }
 
-        if (SuccessMessageLabel != null && _viewModel.HasSuccessMessage)
+        if (SuccessMessageLabel != null && SuccessMessageLabel.HeightRequest > 0)
         {
-            await SuccessMessageLabel.FadeToAsync(0, 200);
+            // Animate height back to 0 and fade out simultaneously
+            var currentHeight = SuccessMessageLabel.HeightRequest;
+            var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, currentHeight, 0, Easing.CubicIn);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(SuccessMessageLabel, "height", 16, 200, Easing.CubicIn, (v, c) => heightTaskCompletionSource.SetResult(true));
+
+            await Task.WhenAll(
+                heightTaskCompletionSource.Task,
+                SuccessMessageLabel.FadeToAsync(0, 200)
+            );
         }
 
         _viewModel.HasError = false;
         _viewModel.HasSuccessMessage = false;
         _viewModel.ErrorMessage = string.Empty;
         _viewModel.SuccessMessage = string.Empty;
+        ErrorMessageLabel.HeightRequest = 0;
+        SuccessMessageLabel.HeightRequest = 0;
     }
 
     // Event handlers for keyboard input in PIN fields (when InputMethod is SystemKeyboard)

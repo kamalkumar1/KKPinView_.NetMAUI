@@ -184,19 +184,20 @@ public partial class KKPinViews : ContentView
         _viewModel.HasSuccessMessage = true;
         _viewModel.HasError = false;
         
-        // Step 1: Animate keypad down first (chained animation)
-        if (Keypad != null)
-        {
-            await Keypad.TranslateToAsync(0, 40, 300, Easing.CubicOut);
-        }
-
-        // Step 2: Then show success message animation after keypad animation completes
+        // Animate label height and appearance
         if (SuccessMessageLabel != null)
         {
             SuccessMessageLabel.Opacity = 0;
-            SuccessMessageLabel.Scale = 0.3; // Start from smaller scale
-            // Run fade and scale animations simultaneously
+            SuccessMessageLabel.Scale = 0.3;
+            SuccessMessageLabel.HeightRequest = 0;
+            
+            // Animate height from 0 to 50 and content (fade + scale) simultaneously
+            var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, 0, 50, Easing.CubicOut);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(SuccessMessageLabel, "height", 16, 300, Easing.CubicOut, (v, c) => heightTaskCompletionSource.SetResult(true));
+            
             await Task.WhenAll(
+                heightTaskCompletionSource.Task,
                 SuccessMessageLabel.FadeToAsync(1, 300, Easing.CubicOut),
                 SuccessMessageLabel.ScaleToAsync(1, 400, Easing.SpringOut)
             );
@@ -210,12 +211,21 @@ public partial class KKPinViews : ContentView
         {
             await ErrorMessageLabel.FadeToAsync(0, 200);
         }
-        
-        if (SuccessMessageLabel != null && _viewModel.HasSuccessMessage)
+
+        if (SuccessMessageLabel != null && SuccessMessageLabel.HeightRequest > 0)
         {
-            await SuccessMessageLabel.FadeToAsync(0, 200);
+            // Animate height back to 0 and fade out simultaneously
+            var currentHeight = SuccessMessageLabel.HeightRequest;
+            var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, currentHeight, 0, Easing.CubicIn);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(SuccessMessageLabel, "height", 16, 200, Easing.CubicIn, (v, c) => heightTaskCompletionSource.SetResult(true));
+            
+            await Task.WhenAll(
+                heightTaskCompletionSource.Task,
+                SuccessMessageLabel.FadeToAsync(0, 200)
+            );
         }
-        
+
         _viewModel.HasError = false;
         _viewModel.HasSuccessMessage = false;
         _viewModel.ErrorMessage = string.Empty;
