@@ -20,6 +20,8 @@ public class KKPinViewsViewModel : BasePinViewModel
     /// </summary>
     public KKPinViewsViewModel()
     {
+        HasError = false;
+        HasSuccessMessage = false;
         // Initialize properties from constants
         _titleText = KKPinviewConstant.TitleTextFormat;
         _subtitleText = string.Format(KKPinviewConstant.SubtitleText, KKPinviewConstant.TotalDigits);

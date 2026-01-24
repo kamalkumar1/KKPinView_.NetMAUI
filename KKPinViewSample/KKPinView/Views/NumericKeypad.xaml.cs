@@ -17,6 +17,12 @@ public partial class NumericKeypad : ContentView
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(CornerRadius), typeof(int), typeof(NumericKeypad), (int)KKPinviewConstant.KeypadButtonCornerRadius);
 
+    public static readonly BindableProperty IsKeypadEnabledProperty = BindableProperty.Create(
+        nameof(IsKeypadEnabled), typeof(bool), typeof(NumericKeypad), true, propertyChanged: OnIsKeypadEnabledChanged);
+
+    public static readonly BindableProperty KeypadOpacityProperty = BindableProperty.Create(
+        nameof(KeypadOpacity), typeof(double), typeof(NumericKeypad), 1.0, propertyChanged: OnKeypadOpacityChanged);
+
     public ICommand? NumberCommand
     {
         get => (ICommand?)GetValue(NumberCommandProperty);
@@ -39,6 +45,47 @@ public partial class NumericKeypad : ContentView
     {
         get => (int)GetValue(CornerRadiusProperty);
         set => SetValue(CornerRadiusProperty, value);
+    }
+
+    public bool IsKeypadEnabled
+    {
+        get => (bool)GetValue(IsKeypadEnabledProperty);
+        set => SetValue(IsKeypadEnabledProperty, value);
+    }
+
+    public double KeypadOpacity
+    {
+        get => (double)GetValue(KeypadOpacityProperty);
+        set => SetValue(KeypadOpacityProperty, value);
+    }
+
+    private static void OnIsKeypadEnabledChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is NumericKeypad keypad && newValue is bool isEnabled)
+        {
+            keypad.UpdateKeypadEnabledState(isEnabled);
+        }
+    }
+
+    private static void OnKeypadOpacityChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is NumericKeypad keypad && newValue is double opacity)
+        {
+            keypad.Opacity = opacity;
+        }
+    }
+
+    private void UpdateKeypadEnabledState(bool isEnabled)
+    {
+        if (KeypadGrid == null) return;
+
+        foreach (var child in KeypadGrid.Children)
+        {
+            if (child is Button button)
+            {
+                button.IsEnabled = isEnabled;
+            }
+        }
     }
 
     public NumericKeypad()
@@ -67,6 +114,10 @@ public partial class NumericKeypad : ContentView
     {
         // Attach press/release handlers to all buttons for scale animation
         AttachButtonAnimations();
+        
+        // Initialize enabled state and opacity
+        UpdateKeypadEnabledState(IsKeypadEnabled);
+        Opacity = KeypadOpacity;
     }
 
     private void AttachButtonAnimations()

@@ -124,6 +124,15 @@ public abstract class BasePinViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether a success message should be displayed (alias for HasSuccessMessage)
+    /// </summary>
+    public bool HasSuccess
+    {
+        get => _hasSuccessMessage;
+        set => SetProperty(ref _hasSuccessMessage, value);
+    }
+
+    /// <summary>
     /// Occurs when a property value changes
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;

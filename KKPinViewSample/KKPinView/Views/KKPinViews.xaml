@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:views="clr-namespace:KKPinView.Views"
-             x:Class="KKPinView.Views.KKPinViews"
-             x:Name="Root"
-             BackgroundColor="{Binding BackgroundColor}">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:KKPinView.Views"
+    x:Class="KKPinView.Views.KKPinViews"
+    x:Name="Root"
+    BackgroundColor="{Binding BackgroundColor}">
     <ScrollView>
         <VerticalStackLayout
             Spacing="30"
-            Padding="30,60,30,30"
+            Padding="30,60,0,30"
             VerticalOptions="Center">
-            
+
             <!-- Title -->
             <Label
                 x:Name="TitleLabel"
@@ -19,7 +19,7 @@
                 TextColor="{Binding TextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center" />
-            
+
             <!-- Subtitle -->
             <Label
                 x:Name="SubtitleLabel"
@@ -29,41 +29,12 @@
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 Opacity="0.7" />
-            
             <!-- PIN Fields -->
             <HorizontalStackLayout
                 x:Name="PinFieldsContainer"
                 Spacing="{Binding FieldSpacing}"
                 HorizontalOptions="Center" />
-            
-            <!-- Error Message -->
-            <Label
-                x:Name="ErrorMessageLabel"
-                Text="{Binding ErrorMessage}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding ErrorTextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                IsVisible="{Binding HasError}" />
-            
-            <!-- Success Message -->
-            <Label
-                x:Name="SuccessMessageLabel"
-                Text="{Binding SuccessMessage}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding SuccessTextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                HeightRequest="0" />
-            
-            <!-- Numeric Keypad -->
-            <views:NumericKeypad
-                x:Name="Keypad"
-                NumberCommand="{Binding NumberCommand}"
-                DeleteCommand="{Binding DeleteCommand}"
-                IsEnabled="{Binding IsKeypadEnabled}"
-                Opacity="{Binding KeypadOpacity}" />
-            
+
             <!-- Forgot PIN Button -->
             <Button
                 x:Name="ForgotPinButton"
@@ -71,9 +42,40 @@
                 TextColor="{Binding TextColor}"
                 BackgroundColor="Transparent"
                 Clicked="OnForgotPinClicked"
-                IsVisible="{Binding ShowForgotPin}"
-                Margin="0,20,0,0" />
-            
+                IsVisible="{Binding ShowForgotPin}" />
+
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Error Message -->
+                <Label
+                    x:Name="ErrorMessageLabel"
+                    Text="{Binding ErrorMessage}"
+                    FontSize="{Binding SubtitleFontSize}"
+                    TextColor="{Binding ErrorTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    IsVisible="{Binding HasError}" />
+            </VerticalStackLayout>
+
+            <!-- Success Message -->
+            <Label
+                x:Name="SuccessMessageLabel"
+                IsVisible="{Binding HasSuccess}"
+                Text="{Binding SuccessMessage}"
+                FontSize="{Binding SubtitleFontSize}"
+                TextColor="{Binding SuccessTextColor}"
+                HorizontalOptions="Center"
+                HorizontalTextAlignment="Center"
+                HeightRequest="0" />
+
+            <!-- Numeric Keypad -->
+            <views:NumericKeypad
+                x:Name="Keypad"
+                NumberCommand="{Binding NumberCommand}"
+                DeleteCommand="{Binding DeleteCommand}"
+                IsKeypadEnabled="{Binding IsKeypadEnabled}"
+                KeypadOpacity="{Binding KeypadOpacity}" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentView>
