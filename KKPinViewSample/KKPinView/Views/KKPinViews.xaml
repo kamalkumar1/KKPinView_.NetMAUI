@@ -6,14 +6,16 @@
     x:Name="Root"
     BackgroundColor="{Binding BackgroundColor}">
     <ScrollView>
-        <VerticalStackLayout
-            Spacing="30"
+        <Grid
             Padding="30,60,0,30"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+            RowSpacing="30"
             VerticalOptions="Center">
 
             <!-- Title -->
             <Label
                 x:Name="TitleLabel"
+                Grid.Row="0"
                 Text="{Binding TitleText}"
                 FontSize="{Binding TitleFontSize}"
                 TextColor="{Binding TextColor}"
@@ -23,42 +25,50 @@
             <!-- Subtitle -->
             <Label
                 x:Name="SubtitleLabel"
+                Grid.Row="1"
                 Text="{Binding SubtitleText}"
                 FontSize="{Binding SubtitleFontSize}"
                 TextColor="{Binding TextColor}"
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 Opacity="0.7" />
+
             <!-- PIN Fields -->
             <HorizontalStackLayout
                 x:Name="PinFieldsContainer"
+                Grid.Row="2"
                 Spacing="{Binding FieldSpacing}"
                 HorizontalOptions="Center" />
 
             <!-- Forgot PIN Button -->
             <Button
                 x:Name="ForgotPinButton"
+                Grid.Row="3"
                 Text="{Binding ForgotPinText}"
                 TextColor="{Binding TextColor}"
                 BackgroundColor="Transparent"
                 Clicked="OnForgotPinClicked"
-                IsVisible="{Binding ShowForgotPin}" />
+                IsVisible="{Binding ShowForgotPin}"
+                Margin="0,-15,0,0" />
 
-            <VerticalStackLayout Spacing="0">
-
-                <!-- Error Message -->
-                <Label
-                    x:Name="ErrorMessageLabel"
-                    Text="{Binding ErrorMessage}"
-                    FontSize="{Binding SubtitleFontSize}"
-                    TextColor="{Binding ErrorTextColor}"
-                    HorizontalOptions="Center"
-                    HorizontalTextAlignment="Center"
-                    IsVisible="{Binding HasError}" />
-
-                     <!-- Success Message -->
+            <!-- Error Message -->
             <Label
+             Margin="0,-15,0,0"
+                x:Name="ErrorMessageLabel"
+                Grid.Row="4"
+                Text="{Binding ErrorMessage}"
+                FontSize="{Binding SubtitleFontSize}"
+                TextColor="{Binding ErrorTextColor}"
+                HorizontalOptions="Center"
+                HeightRequest="0"
+                HorizontalTextAlignment="Center"
+                IsVisible="{Binding HasError}" />
+
+            <!-- Success Message -->
+            <Label
+             Margin="0,-15,0,0"
                 x:Name="SuccessMessageLabel"
+                Grid.Row="4"
                 IsVisible="{Binding HasSuccess}"
                 Text="{Binding SuccessMessage}"
                 FontSize="{Binding SubtitleFontSize}"
@@ -66,16 +76,16 @@
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 HeightRequest="0" />
-            </VerticalStackLayout>
 
             <!-- Numeric Keypad -->
             <views:NumericKeypad
                 x:Name="Keypad"
+                Grid.Row="5"
                 NumberCommand="{Binding NumberCommand}"
                 DeleteCommand="{Binding DeleteCommand}"
                 IsKeypadEnabled="{Binding IsKeypadEnabled}"
                 KeypadOpacity="{Binding KeypadOpacity}" />
 
-        </VerticalStackLayout>
+        </Grid>
     </ScrollView>
 </ContentView>
