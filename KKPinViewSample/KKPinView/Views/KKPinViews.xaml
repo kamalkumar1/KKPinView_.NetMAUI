@@ -55,9 +55,8 @@
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
                     IsVisible="{Binding HasError}" />
-            </VerticalStackLayout>
 
-            <!-- Success Message -->
+                     <!-- Success Message -->
             <Label
                 x:Name="SuccessMessageLabel"
                 IsVisible="{Binding HasSuccess}"
@@ -67,6 +66,7 @@
                 HorizontalOptions="Center"
                 HorizontalTextAlignment="Center"
                 HeightRequest="0" />
+            </VerticalStackLayout>
 
             <!-- Numeric Keypad -->
             <views:NumericKeypad

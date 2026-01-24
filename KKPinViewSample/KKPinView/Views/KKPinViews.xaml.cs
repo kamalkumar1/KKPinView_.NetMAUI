@@ -288,7 +288,7 @@ public partial class KKPinViews : ContentView
     {
         _viewModel.ErrorMessage = message;
         _viewModel.HasError = true;
-        _viewModel.HasSuccessMessage = false;
+        _viewModel.HasSuccess = false;
 
         // Animate error message appearance - fade and scale simultaneously
         if (ErrorMessageLabel != null)
@@ -306,7 +306,7 @@ public partial class KKPinViews : ContentView
     private async void ShowSuccessMessage(string message)
     {
         _viewModel.SuccessMessage = message;
-        _viewModel.HasSuccessMessage = true;
+        _viewModel.HasSuccess = true;
         _viewModel.HasError = false;
 
         // Animate label height and appearance
@@ -317,7 +317,7 @@ public partial class KKPinViews : ContentView
             SuccessMessageLabel.HeightRequest = 0;
 
             // Animate height from 0 to 50 and content (fade + scale) simultaneously
-            var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, 0, KKPinviewConstant.SuccessMessageHeight, Easing.CubicOut);
+            var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, 0, KKPinviewConstant.SuccessMessageLabelHeight, Easing.CubicOut);
             var heightTaskCompletionSource = new TaskCompletionSource<bool>();
             heightAnimation.Commit(SuccessMessageLabel, "height", 16, 300, Easing.CubicOut, (v, c) => heightTaskCompletionSource.SetResult(true));
 
