@@ -65,7 +65,6 @@
                    <!-- Requirement 6: Error message label to display unmatched PIN -->
             <Label
                 x:Name="ErrorMessageLabel"
-                 BackgroundColor="Blue"
                 HeightRequest="0"
                 Text="{Binding ErrorMessage}"
                 FontSize="{Binding SubtitleFontSize}"
@@ -77,7 +76,6 @@
             <!-- Requirement 6: Success message label -->
             <Label
                 x:Name="SuccessMessageLabel"
-                BackgroundColor="Red"
                 Text="{Binding SuccessMessage}"
                 FontSize="{Binding SubtitleFontSize}"
                 TextColor="{Binding SuccessTextColor}"

@@ -1,6 +1,10 @@
 using KKPinView.Constants;
 using Microsoft.Maui.Controls.Shapes;
 
+#if ANDROID
+using AndroidX.AppCompat.Widget;
+#endif
+
 namespace KKPinView.Views;
 
 public partial class PinDigitField : ContentView
@@ -23,7 +27,7 @@ public partial class PinDigitField : ContentView
     public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
         nameof(TextColor), typeof(Color), typeof(PinDigitField), KKPinviewConstant.TextColor);
     
-    public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
+    public static new readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
         nameof(BackgroundColor), typeof(Color), typeof(PinDigitField), KKPinviewConstant.DigitFieldBackgroundColor);
     
     public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(
@@ -77,7 +81,7 @@ public partial class PinDigitField : ContentView
         set => SetValue(TextColorProperty, value);
     }
     
-    public Color BackgroundColor
+    public new Color BackgroundColor
     {
         get => (Color)GetValue(BackgroundColorProperty);
         set => SetValue(BackgroundColorProperty, value);
@@ -119,6 +123,14 @@ public partial class PinDigitField : ContentView
         
         // Initialize editable state after component is loaded
         Loaded += OnFieldLoaded;
+        
+        // Remove Android underline when handler is attached
+        HandlerChanged += OnHandlerChanged;
+    }
+    
+    private void OnHandlerChanged(object? sender, EventArgs e)
+    {
+        RemoveAndroidUnderline();
     }
     
     private void OnFieldLoaded(object? sender, EventArgs e)
@@ -129,6 +141,18 @@ public partial class PinDigitField : ContentView
             DigitEntry.IsVisible = true;
         }
         UpdateEditableState();
+        RemoveAndroidUnderline();
+    }
+    
+    private void RemoveAndroidUnderline()
+    {
+#if ANDROID
+        if (DigitEntry?.Handler?.PlatformView is AppCompatEditText editText)
+        {
+            editText.Background = null;
+            editText.SetBackgroundColor(Android.Graphics.Color.Transparent);
+        }
+#endif
     }
     
     private static void OnCornerRadiusChanged(BindableObject bindable, object oldValue, object newValue)

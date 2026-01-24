@@ -307,32 +307,51 @@ public partial class KKPinViews : ContentView
             // Set invalid state to show red borders
             _viewModel.IsPinInvalid = true;
             UpdatePinFields();
-
-            // ShowErrorMessage(error ?? KKPinviewConstant.InvalidPinError);
-            UpdateUI();
-            _viewModel.OnSubmit?.Invoke(false);
-
-            // Clear after showing error
-            Task.Delay(1500).ContinueWith(_ =>
+            if (!_lockoutManager.IsLockedOut)
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    ClearPin();
-                });
-            });
+                ShowErrorMessage(error ?? KKPinviewConstant.LockedOutError);
+            }
+            else
+            {
+                UpdateUI();
+            }
+
         }
 
+        _viewModel.OnSubmit?.Invoke(false);
 
+        // Clear after showing error
+        Task.Delay(1500).ContinueWith(_ =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ClearPin();
+            });
+        });
     }
 
     private async void ShowErrorMessage(string message)
     {
+        // Calculate height based on message length
+        double calculatedHeight = CalculateMessageHeight(message, _viewModel.SubtitleFontSize);
+
+#if ANDROID
+        // Android-specific: Update ViewModel on main thread and await to ensure binding updates
+        await MainThread.InvokeOnMainThreadAsync(() =>
+        {
+            _viewModel.ErrorMessage = message;
+            _viewModel.HasError = true;
+            _viewModel.HasSuccess = false;
+        });
+        
+        // Small delay to ensure binding updates are fully processed on Android
+        await Task.Delay(50);
+#else
+        // iOS and other platforms: Update ViewModel directly
         _viewModel.ErrorMessage = message;
         _viewModel.HasError = true;
         _viewModel.HasSuccess = false;
-
-        // Calculate height based on message length
-        double calculatedHeight = CalculateMessageHeight(message, _viewModel.SubtitleFontSize);
+#endif
 
         // Animate error message appearance - fade and scale simultaneously
         if (ErrorMessageLabel != null)
@@ -340,6 +359,7 @@ public partial class KKPinViews : ContentView
             ErrorMessageLabel.Opacity = 0;
             ErrorMessageLabel.Scale = 0.3;
             ErrorMessageLabel.HeightRequest = 0;
+
             // Animate height from 0 to calculated height and content (fade + scale) simultaneously
             var heightAnimation = new Animation(v => ErrorMessageLabel.HeightRequest = v, 0, calculatedHeight, Easing.CubicOut);
             var heightTaskCompletionSource = new TaskCompletionSource<bool>();
@@ -414,6 +434,8 @@ public partial class KKPinViews : ContentView
         if (ErrorMessageLabel != null && _viewModel.HasError)
         {
             await ErrorMessageLabel.FadeToAsync(0, 200);
+            // Reset height (binding will handle visibility)
+            ErrorMessageLabel.HeightRequest = 0;
         }
 
         if (SuccessMessageLabel != null && SuccessMessageLabel.HeightRequest > 0)
