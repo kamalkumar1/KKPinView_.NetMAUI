@@ -11,7 +11,7 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 - 🔐 **PIN Authentication**: Easy-to-use PIN entry views
 - 🛡️ **Lockout Protection**: Configurable attempt limits and lockout duration
 - 🎨 **Customizable UI**: Fully customizable colors, fonts, and dimensions
-- 📱 **Cross-Platform**: Supports Android, iOS, and Windows
+- 📱 **Cross-Platform**: Supports Android and iOS
 - ✨ **Modern UI**: Beautiful, native-looking PIN entry interface
 - ⌨️ **Dual Input Methods**: Support for both numeric keypad and system keyboard
 - 🎯 **Visual Feedback**: Red border indicators for invalid PIN entries
