@@ -10,6 +10,10 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 - 🎨 **Customizable UI**: Fully customizable colors, fonts, and dimensions
 - 📱 **Cross-Platform**: Supports Android, iOS, and Windows
 - ✨ **Modern UI**: Beautiful, native-looking PIN entry interface
+- ⌨️ **Dual Input Methods**: Support for both numeric keypad and system keyboard
+- 🎯 **Visual Feedback**: Red border indicators for invalid PIN entries
+- 📏 **Dynamic Layout**: Auto-adjusting error message heights based on content
+- 🔄 **Dynamic View Switching**: Automatically shows setup or entry view based on PIN status
 
 ## Installation
 
@@ -25,7 +29,119 @@ Or via Package Manager:
 Install-Package KKPinView
 ```
 
+## Screenshots
+
+<!-- Add your screenshots here -->
+<!-- 
+![PIN Setup View](screenshots/pin-setup.png)
+![PIN Entry View](screenshots/pin-entry.png)
+![Invalid PIN](screenshots/invalid-pin.png)
+![Lockout Screen](screenshots/lockout.png)
+![Numeric Keypad](screenshots/numeric-keypad.png)
+![System Keyboard](screenshots/system-keyboard.png)
+-->
+
+> **Note**: Screenshots will be added here. Please add your screenshots to the `screenshots/` folder and update the paths above.
+
+### Visual Features
+
+- **Invalid PIN Indicator**: All PIN fields display red borders when an invalid PIN is entered
+- **Dynamic Error Messages**: Error message height automatically adjusts based on message length
+- **Smooth Animations**: Fade and scale animations for error/success messages
+- **Auto-focus Management**: Automatic focus movement between fields when using system keyboard
+
 ## Quick Start
+
+### Simple Integration Example
+
+The simplest way to integrate KKPinView is to check if a PIN exists and show the appropriate view:
+
+```csharp
+using KKPinView.Storage;
+using KKPinView.Views;
+
+public partial class MainPage : ContentPage
+{
+    private KKPINSetUPView? _setupView;
+    private KKPinViews? _pinView;
+
+    public MainPage()
+    {
+        InitializeComponent();
+        LoadPinView();
+    }
+
+    private void LoadPinView()
+    {
+        // Check if PIN exists in storage
+        bool hasPin = KKPinStorage.HasStoredPIN();
+
+        if (hasPin)
+        {
+            // PIN exists - show PIN entry view
+            ShowPinEntryView();
+        }
+        else
+        {
+            // No PIN stored - show PIN setup view
+            ShowPinSetupView();
+        }
+    }
+
+    private void ShowPinSetupView()
+    {
+        // Clean up existing view
+        PinContentView.Content = null;
+        _pinView = null;
+
+        // Create and show PIN setup view
+        _setupView = new KKPINSetUPView();
+        PinContentView.Content = _setupView;
+
+        // Handle successful PIN setup - switch to PIN entry view
+        _setupView.OnSetupSuccess = () =>
+        {
+            ShowPinEntryView();
+        };
+
+        // Handle PIN setup failure
+        _setupView.OnSetupFailed = (errorMessage) =>
+        {
+            // Error is already displayed in the view
+            System.Diagnostics.Debug.WriteLine($"PIN setup failed: {errorMessage}");
+        };
+    }
+
+    private void ShowPinEntryView()
+    {
+        // Clean up existing view
+        PinContentView.Content = null;
+        _setupView = null;
+
+        // Create and show PIN entry view
+        _pinView = new KKPinViews();
+        PinContentView.Content = _pinView;
+
+        // Handle "Forgot PIN" - delete PIN and show setup view
+        _pinView.OnForgotPin = () =>
+        {
+            KKPinStorage.DeletePIN();
+            ShowPinSetupView();
+        };
+
+        // Handle PIN validation result
+        _pinView.OnSubmit = (isValid) =>
+        {
+            if (isValid)
+            {
+                // PIN is valid - user is authenticated
+                // Navigate to your authenticated page or show main content here
+                System.Diagnostics.Debug.WriteLine("PIN validated successfully!");
+            }
+        };
+    }
+}
+```
 
 ### 1. PIN Setup
 
@@ -37,14 +153,20 @@ using KKPinView.Storage;
 
 var setupView = new KKPINSetUPView
 {
-    OnSetupComplete = (pin) =>
+    OnSetupSuccess = () =>
     {
-        Console.WriteLine($"PIN setup complete: {pin}");
+        Console.WriteLine("PIN setup complete");
         // Navigate to authenticated screen
+    },
+    OnSetupFailed = (errorMessage) =>
+    {
+        Console.WriteLine($"PIN setup failed: {errorMessage}");
+        // Error is already displayed in the view
     }
 };
 
-await Navigation.PushAsync(setupView);
+// Add to your ContentPage
+PinContentView.Content = setupView;
 ```
 
 ### 2. PIN Entry (Authentication)
@@ -60,7 +182,8 @@ var pinView = new KKPinViews
     OnForgotPin = () =>
     {
         Console.WriteLine("Forgot PIN tapped");
-        // Handle forgot PIN flow
+        // Handle forgot PIN flow (e.g., delete PIN and show setup)
+        KKPinStorage.DeletePIN();
     },
     OnSubmit = (isValid) =>
     {
@@ -72,96 +195,39 @@ var pinView = new KKPinViews
         else
         {
             Console.WriteLine("PIN is invalid");
-            // Error is automatically displayed
+            // Error is automatically displayed with red borders
         }
     },
     ShowForgotPin = true
 };
 
-await Navigation.PushAsync(pinView);
+// Add to your ContentPage
+PinContentView.Content = pinView;
 ```
 
-## Complete Example
+## Input Methods
 
-### Authentication Flow
+KKPinView supports two input methods that can be configured via `KKPinviewConstant.InputMethod`:
+
+### NumericKeypad (Default)
+- Custom on-screen numeric keypad
+- PIN fields are read-only
+- Best for touch-first experiences
+
+### SystemKeyboard
+- Uses the system numeric keyboard
+- PIN fields are editable
+- Auto-focus moves between fields
+- Best for keyboard-first experiences
 
 ```csharp
-using KKPinView.Views;
-using KKPinView.Storage;
+using KKPinView.Constants;
 
-public partial class MainPage : ContentPage
-{
-    private bool _isAuthenticated = false;
-    private bool _hasPIN = false;
+// Use custom numeric keypad (default)
+KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;
 
-    public MainPage()
-    {
-        InitializeComponent();
-        CheckPINStatus();
-    }
-
-    private void CheckPINStatus()
-    {
-        _hasPIN = KKPinStorage.HasStoredPIN();
-        
-        if (!_hasPIN)
-        {
-            ShowPINSetup();
-        }
-        else if (!_isAuthenticated)
-        {
-            ShowPINEntry();
-        }
-        else
-        {
-            ShowMainContent();
-        }
-    }
-
-    private void ShowPINSetup()
-    {
-        var setupView = new KKPINSetUPView
-        {
-            OnSetupComplete = (pin) =>
-            {
-                _hasPIN = true;
-                _isAuthenticated = true;
-                CheckPINStatus();
-            }
-        };
-        
-        Navigation.PushAsync(setupView);
-    }
-
-    private void ShowPINEntry()
-    {
-        var pinView = new KKPinViews
-        {
-            OnForgotPin = () =>
-            {
-                // Delete PIN and show setup screen
-                KKPinStorage.DeletePIN();
-                _hasPIN = false;
-                CheckPINStatus();
-            },
-            OnSubmit = (isValid) =>
-            {
-                if (isValid)
-                {
-                    _isAuthenticated = true;
-                    CheckPINStatus();
-                }
-            }
-        };
-        
-        Navigation.PushAsync(pinView);
-    }
-
-    private void ShowMainContent()
-    {
-        // Your authenticated content here
-    }
-}
+// Use system keyboard
+KKPinviewConstant.InputMethod = PinInputMethod.SystemKeyboard;
 ```
 
 ## API Documentation
@@ -186,9 +252,11 @@ Main PIN entry view for authenticating users.
 #### Behavior
 
 - Automatically validates PIN when all digits are entered
-- Displays error messages for invalid PINs
+- Displays error messages for invalid PINs with dynamic height based on message length
+- Shows red borders on all PIN fields when PIN is invalid
 - Handles lockout automatically (disables input when locked out)
 - Clears PIN fields after validation
+- Supports both numeric keypad and system keyboard input methods
 
 ---
 
@@ -346,6 +414,7 @@ KKPinviewConstant.ErrorTextColor = Colors.Red;
 KKPinviewConstant.SuccessTextColor = Colors.Green;
 KKPinviewConstant.DigitFieldBackgroundColor = Colors.LightGray;
 KKPinviewConstant.DigitFieldFilledColor = Colors.Blue;
+KKPinviewConstant.InvalidPinBorderColor = Colors.Red;  // Border color when PIN is invalid
 
 // Fonts
 KKPinviewConstant.TitleFontSize = 24;
@@ -366,6 +435,12 @@ KKPinviewConstant.SubtitleText = "Enter your {0}-digit PIN";
 KKPinviewConstant.ForgotPinText = "Forgot PIN?";
 KKPinviewConstant.SetupTitleText = "Setup PIN";
 KKPinviewConstant.ConfirmPinTitleText = "Confirm PIN";
+KKPinviewConstant.InvalidPinError = "Invalid PIN";
+KKPinviewConstant.PinMismatchError = "PINs do not match";
+KKPinviewConstant.LockedOutError = "Too many failed attempts. Please try again in {0} minutes";
+
+// Input Method
+KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;  // or PinInputMethod.SystemKeyboard
 ```
 
 ## Security Features

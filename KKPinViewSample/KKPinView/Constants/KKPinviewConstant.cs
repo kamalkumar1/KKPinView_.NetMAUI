@@ -24,6 +24,7 @@ public static class KKPinviewConstant
     public static Color SuccessTextColor { get; set; } = Colors.Green;
     public static Color DigitFieldBackgroundColor { get; set; } = Colors.Transparent;
     public static Color DigitFieldFilledColor { get; set; } = Colors.Green;
+    public static Color InvalidPinBorderColor { get; set; } = Colors.Red;
     public static Color KeypadButtonColor { get; set; } = Colors.White;
     public static Color KeypadButtonTextColor { get; set; } = Colors.Black;
 

@@ -27,7 +27,7 @@ public partial class PinDigitField : ContentView
         nameof(BackgroundColor), typeof(Color), typeof(PinDigitField), KKPinviewConstant.DigitFieldBackgroundColor);
     
     public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(
-        nameof(BorderColor), typeof(Color), typeof(PinDigitField), Colors.Gray);
+        nameof(BorderColor), typeof(Color), typeof(PinDigitField), Colors.Gray, propertyChanged: OnBorderColorChanged);
     
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(CornerRadius), typeof(double), typeof(PinDigitField), KKPinviewConstant.FieldCornerRadius, propertyChanged: OnCornerRadiusChanged);
@@ -163,15 +163,42 @@ public partial class PinDigitField : ContentView
         }
     }
     
+    private static void OnBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        if (bindable is PinDigitField field && newValue is Color color)
+        {
+            field.UpdateBorderColor(color);
+        }
+    }
+    
+    private void UpdateBorderColor(Color color)
+    {
+        if (DigitBorder != null)
+        {
+            DigitBorder.Stroke = color;
+        }
+    }
+    
     private void UpdateAppearance()
     {
-        if (IsFilled)
+        // Use BorderColor property if it's been explicitly set (e.g., red for invalid)
+        // Otherwise, use default behavior based on IsFilled
+        if (BorderColor != Colors.Gray && BorderColor != KKPinviewConstant.DigitFieldFilledColor)
         {
-            DigitBorder.Stroke = KKPinviewConstant.DigitFieldFilledColor;
+            // Custom border color is set (e.g., red for invalid), use it
+            DigitBorder.Stroke = BorderColor;
         }
         else
         {
-            DigitBorder.Stroke = Colors.Gray;
+            // Use default behavior based on filled state
+            if (IsFilled)
+            {
+                DigitBorder.Stroke = KKPinviewConstant.DigitFieldFilledColor;
+            }
+            else
+            {
+                DigitBorder.Stroke = Colors.Gray;
+            }
         }
         
         // Update visibility based on editable state

@@ -139,6 +139,8 @@ public partial class KKPinViews : ContentView
             return;
         }
 
+        // Reset invalid state when user starts typing
+        _viewModel.IsPinInvalid = false;
         _currentPin += number;
         KKPinViewDebug.LogVerbose($"Current PIN length: {_currentPin.Length}");
         UpdatePinFields();
@@ -154,6 +156,8 @@ public partial class KKPinViews : ContentView
     {
         if (_currentPin.Length > 0)
         {
+            // Reset invalid state when user deletes
+            _viewModel.IsPinInvalid = false;
             _currentPin = _currentPin.Substring(0, _currentPin.Length - 1);
             UpdatePinFields();
             ClearMessages();
@@ -174,6 +178,34 @@ public partial class KKPinViews : ContentView
                 _pinFields[i].Digit = string.Empty;
             }
         }
+
+        // Update border colors after setting filled state
+        UpdateBorderColors();
+    }
+
+    private void UpdateBorderColors()
+    {
+        for (int i = 0; i < _pinFields.Count; i++)
+        {
+            // Set border color to invalid color if PIN is invalid
+            if (_viewModel.IsPinInvalid)
+            {
+                _pinFields[i].BorderColor = KKPinviewConstant.InvalidPinBorderColor;
+            }
+            else
+            {
+                // Reset to default - let UpdateAppearance handle it based on IsFilled
+                // Set to a sentinel value that will trigger default behavior
+                if (_pinFields[i].IsFilled)
+                {
+                    _pinFields[i].BorderColor = KKPinviewConstant.DigitFieldFilledColor;
+                }
+                else
+                {
+                    _pinFields[i].BorderColor = Colors.Gray;
+                }
+            }
+        }
     }
 
     // Event handlers for keyboard input in PIN fields (when InputMethod is SystemKeyboard)
@@ -183,6 +215,9 @@ public partial class KKPinViews : ContentView
 
         int fieldIndex = _pinFields.IndexOf(field);
         if (fieldIndex < 0) return;
+
+        // Reset invalid state when user starts typing
+        _viewModel.IsPinInvalid = false;
 
         // Rebuild PIN from all fields
         _currentPin = string.Empty;
@@ -268,7 +303,13 @@ public partial class KKPinViews : ContentView
         {
             var error = _lockoutManager.GetErrorMessage();
             KKPinViewDebug.LogWarning($"PIN validation failed: {error}");
-            ShowErrorMessage(error ?? KKPinviewConstant.InvalidPinError);
+
+            // Set invalid state to show red borders
+            _viewModel.IsPinInvalid = true;
+            UpdatePinFields();
+
+            // ShowErrorMessage(error ?? KKPinviewConstant.InvalidPinError);
+            UpdateUI();
             _viewModel.OnSubmit?.Invoke(false);
 
             // Clear after showing error
@@ -281,7 +322,7 @@ public partial class KKPinViews : ContentView
             });
         }
 
-        UpdateUI();
+
     }
 
     private async void ShowErrorMessage(string message)
@@ -290,17 +331,55 @@ public partial class KKPinViews : ContentView
         _viewModel.HasError = true;
         _viewModel.HasSuccess = false;
 
+        // Calculate height based on message length
+        double calculatedHeight = CalculateMessageHeight(message, _viewModel.SubtitleFontSize);
+
         // Animate error message appearance - fade and scale simultaneously
         if (ErrorMessageLabel != null)
         {
             ErrorMessageLabel.Opacity = 0;
-            ErrorMessageLabel.Scale = 0.3; // Start from smaller scale
-            // Run fade and scale animations simultaneously
+            ErrorMessageLabel.Scale = 0.3;
+            ErrorMessageLabel.HeightRequest = 0;
+            // Animate height from 0 to calculated height and content (fade + scale) simultaneously
+            var heightAnimation = new Animation(v => ErrorMessageLabel.HeightRequest = v, 0, calculatedHeight, Easing.CubicOut);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(ErrorMessageLabel, "height", 16, 300, Easing.CubicOut, (v, c) => heightTaskCompletionSource.SetResult(true));
             await Task.WhenAll(
+                heightTaskCompletionSource.Task,
                 ErrorMessageLabel.FadeToAsync(1, 300, Easing.CubicOut),
                 ErrorMessageLabel.ScaleToAsync(1, 400, Easing.SpringOut)
             );
         }
+    }
+
+    /// <summary>
+    /// Calculates the height needed for a message based on its length and font size
+    /// </summary>
+    private double CalculateMessageHeight(string message, double fontSize)
+    {
+        if (string.IsNullOrEmpty(message))
+        {
+            return KKPinviewConstant.ErrorMessageLabelHeight;
+        }
+
+        // Estimate characters per line based on typical screen width (assuming ~300px available width)
+        // This is a rough estimate - adjust based on your actual layout
+        double estimatedWidth = 300; // Approximate available width for error message
+        double averageCharWidth = fontSize * 0.6; // Rough estimate: character width is about 60% of font size
+        int charsPerLine = (int)(estimatedWidth / averageCharWidth);
+
+        // Calculate number of lines needed
+        int numberOfLines = (int)Math.Ceiling((double)message.Length / charsPerLine);
+
+        // Minimum 1 line, add some padding
+        numberOfLines = Math.Max(1, numberOfLines);
+
+        // Calculate height: line height is typically 1.2-1.5x font size, add some padding
+        double lineHeight = fontSize * 1.3;
+        double calculatedHeight = (numberOfLines * lineHeight) + 8; // Add 8px padding
+
+        // Ensure minimum height
+        return Math.Max(calculatedHeight, KKPinviewConstant.ErrorMessageLabelHeight);
     }
 
     private async void ShowSuccessMessage(string message)
@@ -360,8 +439,13 @@ public partial class KKPinViews : ContentView
     private void ClearPin()
     {
         _currentPin = string.Empty;
+        _viewModel.IsPinInvalid = false;
         UpdatePinFields();
-        ClearMessages();
+        if (!_lockoutManager.IsLockedOut)
+        {
+            ClearMessages();
+        }
+
     }
 
     private void UpdateUI()

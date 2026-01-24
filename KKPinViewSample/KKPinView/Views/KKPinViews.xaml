@@ -53,20 +53,20 @@
 
             <!-- Error Message -->
             <Label
-             Margin="0,-15,0,0"
                 x:Name="ErrorMessageLabel"
                 Grid.Row="4"
+                Margin="0,-15,0,0"
+                Padding="30,0"
                 Text="{Binding ErrorMessage}"
                 FontSize="{Binding SubtitleFontSize}"
                 TextColor="{Binding ErrorTextColor}"
                 HorizontalOptions="Center"
-                HeightRequest="0"
                 HorizontalTextAlignment="Center"
                 IsVisible="{Binding HasError}" />
 
             <!-- Success Message -->
             <Label
-             Margin="0,-15,0,0"
+                Margin="0,-15,0,0"
                 x:Name="SuccessMessageLabel"
                 Grid.Row="4"
                 IsVisible="{Binding HasSuccess}"

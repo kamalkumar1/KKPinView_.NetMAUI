@@ -14,6 +14,7 @@ public class KKPinViewsViewModel : BasePinViewModel
     private bool _showForgotPin;
     private bool _isKeypadEnabled;
     private double _keypadOpacity;
+    private bool _isPinInvalid;
 
     /// <summary>
     /// Initializes a new instance of the KKPinViewsViewModel class
@@ -87,6 +88,15 @@ public class KKPinViewsViewModel : BasePinViewModel
     {
         get => _keypadOpacity;
         set => SetProperty(ref _keypadOpacity, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the entered PIN is invalid
+    /// </summary>
+    public bool IsPinInvalid
+    {
+        get => _isPinInvalid;
+        set => SetProperty(ref _isPinInvalid, value);
     }
 
     /// <summary>
