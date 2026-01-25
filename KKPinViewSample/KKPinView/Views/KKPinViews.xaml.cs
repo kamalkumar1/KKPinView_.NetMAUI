@@ -4,6 +4,7 @@ using KKPinView.Debug;
 using KKPinView.Security;
 using KKPinView.Storage;
 using KKPinView.ViewModels;
+using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinView.Views;
 
@@ -80,9 +81,12 @@ public partial class KKPinViews : ContentView
         // Focus first field if using keyboard (with a small delay to ensure UI is ready)
         if (isEditable && _pinFields.Count > 0)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
             {
-                _pinFields[0].FocusEntry();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    _pinFields[0].FocusEntry();
+                });
             });
         }
     }
@@ -242,6 +246,8 @@ public partial class KKPinViews : ContentView
             }
             else if (_currentPin.Length == KKPinviewConstant.TotalDigits)
             {
+                // Dismiss keyboard when PIN is complete
+                field.UnfocusEntry();
                 ValidatePIN();
             }
         }
@@ -274,6 +280,8 @@ public partial class KKPinViews : ContentView
         }
         else if (_currentPin.Length == KKPinviewConstant.TotalDigits)
         {
+            // Dismiss keyboard when PIN is complete
+            field.UnfocusEntry();
             ValidatePIN();
         }
     }
@@ -334,24 +342,10 @@ public partial class KKPinViews : ContentView
     {
         // Calculate height based on message length
         double calculatedHeight = CalculateMessageHeight(message, _viewModel.SubtitleFontSize);
-
-#if ANDROID
-        // Android-specific: Update ViewModel on main thread and await to ensure binding updates
-        await MainThread.InvokeOnMainThreadAsync(() =>
-        {
-            _viewModel.ErrorMessage = message;
-            _viewModel.HasError = true;
-            _viewModel.HasSuccess = false;
-        });
-        
-        // Small delay to ensure binding updates are fully processed on Android
-        await Task.Delay(50);
-#else
-        // iOS and other platforms: Update ViewModel directly
         _viewModel.ErrorMessage = message;
         _viewModel.HasError = true;
         _viewModel.HasSuccess = false;
-#endif
+
 
         // Animate error message appearance - fade and scale simultaneously
         if (ErrorMessageLabel != null)

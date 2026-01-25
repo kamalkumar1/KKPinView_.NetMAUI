@@ -5,6 +5,13 @@
     Title="KKPinView Sample">
 
     <ContentPage.Content>
-        <ContentView x:Name="PinContentView" />
+        <VerticalStackLayout Spacing="20" Padding="20">
+            <Button
+                x:Name="MoveToPinViewButton"
+                Text="Move to PinView"
+                Clicked="OnMoveToPinViewClicked"
+                HorizontalOptions="Center"
+                VerticalOptions="Center" />
+        </VerticalStackLayout>
     </ContentPage.Content>
 </ContentPage>

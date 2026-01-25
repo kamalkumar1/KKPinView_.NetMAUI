@@ -4,6 +4,7 @@ using KKPinView.Constants;
 using KKPinView.Security;
 using KKPinView.Storage;
 using KKPinView.ViewModels;
+using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinView.Views;
 
@@ -25,7 +26,7 @@ public partial class KKPINSetUPView : ContentView
         // Create and set ViewModel
         _viewModel = new KKPINSetUPViewModel();
         BindingContext = _viewModel;
-        SuccessMessageLabel.HeightRequest = 0;
+        
         // Wire up ViewModel events
         _viewModel.NumberPressed += OnViewModelNumberPressed;
         _viewModel.DeletePressed += OnViewModelDeletePressed;
@@ -34,10 +35,7 @@ public partial class KKPINSetUPView : ContentView
         InitializePinFields();
         InitializeConfirmPinFields();
 
-        // Set up input method visibility
-        SetupInputMethod();
-
-        // Set commands on keypad after initialization
+        // Set up input method visibility and initialize UI elements after page is loaded
         Loaded += OnPageLoaded;
     }
 
@@ -61,6 +59,12 @@ public partial class KKPINSetUPView : ContentView
 
     private void OnPageLoaded(object? sender, EventArgs e)
     {
+        // Initialize UI elements after page is fully loaded
+        if (SuccessMessageLabel != null)
+        {
+            SuccessMessageLabel.HeightRequest = 0;
+        }
+        
         if (Keypad != null)
         {
             Keypad.NumberCommand = _viewModel.NumberCommand;
@@ -116,9 +120,12 @@ public partial class KKPINSetUPView : ContentView
         // Focus first field if using keyboard (with a small delay to ensure UI is ready)
         if (isEditable && _enterPinFields.Count > 0)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
             {
-                _enterPinFields[0].FocusEntry();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    _enterPinFields[0].FocusEntry();
+                });
             });
         }
     }
@@ -161,6 +168,9 @@ public partial class KKPINSetUPView : ContentView
 
             _currentPin += number;
             UpdatePinFields();
+
+            // Clear any previous messages when user starts typing again
+            ClearMessages();
 
             // If first PIN is complete, switch to confirm mode
             if (_currentPin.Length == _viewModel.MaxPinLength)
@@ -347,9 +357,14 @@ public partial class KKPINSetUPView : ContentView
             // PINs don't match - show error message
             ShowErrorMessage(KKPinviewConstant.PinMismatchError);
 
-            // Clear confirm PIN fields to allow re-entry
+            // Clear both Enter PIN and Confirm PIN fields to allow re-entry
+            _currentPin = string.Empty;
             _confirmPin = string.Empty;
+            UpdatePinFields();
             UpdateConfirmPinFields();
+
+            // Reset to enter PIN mode (but keep confirm section visible)
+            _isConfirmingPin = false;
 
             // Invoke failure callback
             _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
@@ -412,7 +427,15 @@ public partial class KKPINSetUPView : ContentView
         // Animate fade out before clearing
         if (ErrorMessageLabel != null && _viewModel.HasError)
         {
-            await ErrorMessageLabel.FadeToAsync(0, 200);
+            var currentHeight = ErrorMessageLabel.HeightRequest;
+            var heightAnimation = new Animation(v => ErrorMessageLabel.HeightRequest = v, currentHeight, 0, Easing.CubicIn);
+            var heightTaskCompletionSource = new TaskCompletionSource<bool>();
+            heightAnimation.Commit(ErrorMessageLabel, "height", 16, 200, Easing.CubicIn, (v, c) => heightTaskCompletionSource.SetResult(true));
+            await Task.WhenAll(
+               heightTaskCompletionSource.Task,
+               ErrorMessageLabel.FadeToAsync(0, 200)
+           );
+
         }
 
         if (SuccessMessageLabel != null && SuccessMessageLabel.HeightRequest > 0)
@@ -433,8 +456,7 @@ public partial class KKPINSetUPView : ContentView
         _viewModel.HasSuccessMessage = false;
         _viewModel.ErrorMessage = string.Empty;
         _viewModel.SuccessMessage = string.Empty;
-        ErrorMessageLabel.HeightRequest = 0;
-        SuccessMessageLabel.HeightRequest = 0;
+
     }
 
     // Event handlers for keyboard input in PIN fields (when InputMethod is SystemKeyboard)

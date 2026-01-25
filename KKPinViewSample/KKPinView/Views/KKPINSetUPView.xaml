@@ -12,89 +12,80 @@
     </ContentView.Resources>
 
     <ScrollView>
-    <VerticalStackLayout>
-     <VerticalStackLayout
-            Spacing="30"
-            Padding="30,60,30,30"
-            VerticalOptions="Start">
+        <Grid
+            RowDefinitions="Auto,Auto"
+            RowSpacing="0">
+            <VerticalStackLayout
+                Grid.Row="0"
+                Spacing="30"
+                Padding="30,60,30,30"
+                VerticalOptions="Start">
 
-            <!-- Requirement 1: Heading Label "Set X digit PIN" - center aligned, X from constant -->
-            <Label
-                x:Name="HeadingLabel"
-                Text="{Binding HeadingText}"
-                FontSize="{Binding TitleFontSize}"
-                FontAttributes="Bold"
-                TextColor="{Binding TextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center" />
+                <!-- Requirement 2: Label with name "Enter the PIN" -->
+                <Label
+                    x:Name="EnterPinLabel"
+                    Text="{Binding EnterPinLabelText}"
+                    FontSize="{Binding SubtitleFontSize}"
+                    TextColor="{Binding TextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center" />
 
-            <!-- Requirement 2: Label with name "Enter the PIN" -->
-            <Label
-                x:Name="EnterPinLabel"
-                Text="{Binding EnterPinLabelText}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding TextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center" />
-
-            <!-- Requirement 3: PIN digit text fields (number based on TotalDigits constant,
+                <!-- Requirement 3: PIN digit text fields (number based on TotalDigits constant,
             round/rectangle/corner radius from constants) -->
-            <HorizontalStackLayout
-                x:Name="EnterPinFieldsContainer"
-                Spacing="{Binding FieldSpacing}"
-                HorizontalOptions="Center" />
+                <HorizontalStackLayout
+                    x:Name="EnterPinFieldsContainer"
+                    Spacing="{Binding FieldSpacing}"
+                    HorizontalOptions="Center" />
 
-            <!-- Requirement 4: Label with name "Confirm the PIN" -->
-            <Label
-                x:Name="ConfirmPinLabel"
-                Text="{Binding ConfirmPinLabelText}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding TextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                IsVisible="{Binding ShowConfirmPin}" />
+                <!-- Requirement 4: Label with name "Confirm the PIN" -->
+                <Label
+                    x:Name="ConfirmPinLabel"
+                    Text="{Binding ConfirmPinLabelText}"
+                    FontSize="{Binding SubtitleFontSize}"
+                    TextColor="{Binding TextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    IsVisible="{Binding ShowConfirmPin}" />
 
-            <!-- Requirement 5: Confirm PIN digit text fields (number based on TotalDigits constant,
+                <!-- Requirement 5: Confirm PIN digit text fields (number based on TotalDigits
+                constant,
             round/rectangle/corner radius from constants) -->
-            <HorizontalStackLayout
-                x:Name="ConfirmPinFieldsContainer"
-                Spacing="{Binding FieldSpacing}"
-                HorizontalOptions="Center"
-                IsVisible="{Binding ShowConfirmPin}" />
-                <VerticalStackLayout Spacing="0">
-                   <!-- Requirement 6: Error message label to display unmatched PIN -->
-            <Label
-                x:Name="ErrorMessageLabel"
-                HeightRequest="0"
-                Text="{Binding ErrorMessage}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding ErrorTextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                />
+                <HorizontalStackLayout
+                    x:Name="ConfirmPinFieldsContainer"
+                    Spacing="{Binding FieldSpacing}"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding ShowConfirmPin}" />
 
-            <!-- Requirement 6: Success message label -->
-            <Label
-                x:Name="SuccessMessageLabel"
-                Text="{Binding SuccessMessage}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding SuccessTextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                HeightRequest="0" />
-                </VerticalStackLayout>
+                <!-- Requirement 6: Error message label to display unmatched PIN -->
+                <Label
+                    x:Name="ErrorMessageLabel"
+                    HeightRequest="0"
+                    Text="{Binding ErrorMessage}"
+                    FontSize="{Binding SubtitleFontSize}"
+                    TextColor="{Binding ErrorTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center" />
 
-        </VerticalStackLayout>
-          <!-- Requirement 7: Numeric Keypad at the bottom (shown when InputMethod is
+                <!-- Requirement 6: Success message label -->
+                <Label
+                    x:Name="SuccessMessageLabel"
+                    Text="{Binding SuccessMessage}"
+                    FontSize="{Binding SubtitleFontSize}"
+                    TextColor="{Binding SuccessTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    HeightRequest="0" />
+            </VerticalStackLayout>
+
+            <!-- Requirement 7: Numeric Keypad at the bottom (shown when InputMethod is
             NumericKeypad) -->
             <views:NumericKeypad
+                Grid.Row="1"
                 x:Name="Keypad"
                 NumberCommand="{Binding NumberCommand}"
                 DeleteCommand="{Binding DeleteCommand}"
-                Margin="0,0,0,0"
                 IsVisible="{Binding InputMethod, Converter={StaticResource InputMethodToBoolConverter}, ConverterParameter='NumericKeypad'}" />
-    </VerticalStackLayout>
-       
+        </Grid>
     </ScrollView>
 
 </ContentView>

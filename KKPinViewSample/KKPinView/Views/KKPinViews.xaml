@@ -5,45 +5,23 @@
     x:Class="KKPinView.Views.KKPinViews"
     x:Name="Root"
     BackgroundColor="{Binding BackgroundColor}">
-    <ScrollView>
         <Grid
             Padding="30,60,0,30"
-            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+            RowDefinitions="Auto,Auto,Auto,Auto"
             RowSpacing="30"
             VerticalOptions="Center">
-
-            <!-- Title -->
-            <Label
-                x:Name="TitleLabel"
-                Grid.Row="0"
-                Text="{Binding TitleText}"
-                FontSize="{Binding TitleFontSize}"
-                TextColor="{Binding TextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center" />
-
-            <!-- Subtitle -->
-            <Label
-                x:Name="SubtitleLabel"
-                Grid.Row="1"
-                Text="{Binding SubtitleText}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding TextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                Opacity="0.7" />
 
             <!-- PIN Fields -->
             <HorizontalStackLayout
                 x:Name="PinFieldsContainer"
-                Grid.Row="2"
+                Grid.Row="0"
                 Spacing="{Binding FieldSpacing}"
                 HorizontalOptions="Center" />
 
             <!-- Forgot PIN Button -->
             <Button
                 x:Name="ForgotPinButton"
-                Grid.Row="3"
+                Grid.Row="1"
                 Text="{Binding ForgotPinText}"
                 TextColor="{Binding TextColor}"
                 BackgroundColor="Transparent"
@@ -54,7 +32,7 @@
             <!-- Error Message -->
             <Label
                 x:Name="ErrorMessageLabel"
-                Grid.Row="4"
+                Grid.Row="2"
                 Margin="0,-15,0,0"
                 Padding="30,0"
                 Text="{Binding ErrorMessage}"
@@ -68,7 +46,7 @@
             <Label
                 Margin="0,-15,0,0"
                 x:Name="SuccessMessageLabel"
-                Grid.Row="4"
+                Grid.Row="2"
                 IsVisible="{Binding HasSuccess}"
                 Text="{Binding SuccessMessage}"
                 FontSize="{Binding SubtitleFontSize}"
@@ -80,12 +58,11 @@
             <!-- Numeric Keypad -->
             <views:NumericKeypad
                 x:Name="Keypad"
-                Grid.Row="5"
+                Grid.Row="3"
                 NumberCommand="{Binding NumberCommand}"
                 DeleteCommand="{Binding DeleteCommand}"
                 IsKeypadEnabled="{Binding IsKeypadEnabled}"
                 KeypadOpacity="{Binding KeypadOpacity}" />
 
         </Grid>
-    </ScrollView>
 </ContentView>

@@ -1,8 +1,15 @@
 using KKPinView.Constants;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Shapes;
 
 #if ANDROID
 using AndroidX.AppCompat.Widget;
+using Android.Views.InputMethods;
+using Android.Content;
+#endif
+
+#if IOS
+using UIKit;
 #endif
 
 namespace KKPinView.Views;
@@ -308,12 +315,46 @@ public partial class PinDigitField : ContentView
         // Only process completion when editable (system keyboard mode)
         if (!IsEditable) return;
         
+#if IOS
+        // On iOS, dismiss the keyboard when return key is pressed
+        DigitEntry?.Unfocus();
+#else
+        // On other platforms, move to next field
         DigitCompleted?.Invoke(this, EventArgs.Empty);
+#endif
     }
     
     public void FocusEntry()
     {
         DigitEntry?.Focus();
+        
+#if ANDROID
+        // Explicitly show keyboard on Android (especially for simulators)
+        // Use a small delay to ensure focus is complete before showing keyboard
+        Task.Delay(100).ContinueWith(_ =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (DigitEntry?.Handler?.PlatformView is AppCompatEditText editText)
+                {
+                    // Request focus on the native view
+                    editText.RequestFocus();
+                    
+                    // Show keyboard explicitly
+                    var inputMethodManager = editText.Context?.GetSystemService(Context.InputMethodService) as InputMethodManager;
+                    if (inputMethodManager != null)
+                    {
+                        inputMethodManager.ShowSoftInput(editText, ShowFlags.Implicit);
+                    }
+                }
+            });
+        });
+#endif
+    }
+    
+    public void UnfocusEntry()
+    {
+        DigitEntry?.Unfocus();
     }
 }
 

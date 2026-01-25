@@ -45,7 +45,7 @@ public static class KKPinviewConstant
     public static bool UseRoundFields { get; set; } = false;
 
     // Input Method Configuration
-    public static PinInputMethod InputMethod { get; set; } = PinInputMethod.NumericKeypad;
+    public static PinInputMethod InputMethod { get; set; } = PinInputMethod.SystemKeyboard;
 
     // Strings
     public static string TitleTextFormat { get; set; } = "Enter PIN";
