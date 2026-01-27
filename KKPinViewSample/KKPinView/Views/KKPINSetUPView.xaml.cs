@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using KKPinView.Constants;
 using KKPinView.Security;
@@ -26,14 +27,13 @@ public partial class KKPINSetUPView : ContentView
         // Create and set ViewModel
         _viewModel = new KKPINSetUPViewModel();
         BindingContext = _viewModel;
-        
-        // Wire up ViewModel events
-        _viewModel.NumberPressed += OnViewModelNumberPressed;
-        _viewModel.DeletePressed += OnViewModelDeletePressed;
 
-        // Initialize PIN fields based on TotalDigits constant
-        InitializePinFields();
-        InitializeConfirmPinFields();
+        // Set keypad visibility to false by default
+        if (Keypad != null)
+        {
+            Keypad.IsVisible = false;
+        }
+
 
         // Set up input method visibility and initialize UI elements after page is loaded
         Loaded += OnPageLoaded;
@@ -64,15 +64,30 @@ public partial class KKPINSetUPView : ContentView
         {
             SuccessMessageLabel.HeightRequest = 0;
         }
-        
-        if (Keypad != null)
-        {
-            Keypad.NumberCommand = _viewModel.NumberCommand;
-            Keypad.DeleteCommand = _viewModel.DeleteCommand;
-        }
 
-        // Ensure input method is set up after page is fully loaded
-        SetupInputMethod();
+        // Wire up ViewModel events
+        _viewModel.NumberPressed += OnViewModelNumberPressed;
+        _viewModel.DeletePressed += OnViewModelDeletePressed;
+
+        // Initialize PIN fields based on TotalDigits constant
+        InitializePinFields();
+        InitializeConfirmPinFields();
+
+        //if (KKPinviewConstant.InputMethod == PinInputMethod.s && Keypad != null)
+        //{
+        Keypad.NumberCommand = _viewModel.NumberCommand;
+        Keypad.DeleteCommand = _viewModel.DeleteCommand;
+        // }
+
+        // Ensure input method is set up AFTER fields are initialized
+        // Add a small delay to ensure fields are fully loaded in the visual tree
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(50), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                SetupInputMethod();
+            });
+        });
     }
 
     private void SetupInputMethod()
@@ -93,13 +108,16 @@ public partial class KKPINSetUPView : ContentView
         {
             field.DigitChanged -= OnEnterPinFieldDigitChanged;
             field.DigitCompleted -= OnEnterPinFieldCompleted;
+            field.DigitDeleted -= OnEnterPinFieldDeleted;
 
+            // Set IsEditable - this will trigger UpdateEditableState via property changed handler
             field.IsEditable = isEditable;
 
             if (isEditable)
             {
                 field.DigitChanged += OnEnterPinFieldDigitChanged;
                 field.DigitCompleted += OnEnterPinFieldCompleted;
+                field.DigitDeleted += OnEnterPinFieldDeleted;
             }
         }
 
@@ -107,13 +125,16 @@ public partial class KKPINSetUPView : ContentView
         {
             field.DigitChanged -= OnConfirmPinFieldDigitChanged;
             field.DigitCompleted -= OnConfirmPinFieldCompleted;
+            field.DigitDeleted -= OnConfirmPinFieldDeleted;
 
+            // Set IsEditable - this will trigger UpdateEditableState via property changed handler
             field.IsEditable = isEditable;
 
             if (isEditable)
             {
                 field.DigitChanged += OnConfirmPinFieldDigitChanged;
                 field.DigitCompleted += OnConfirmPinFieldCompleted;
+                field.DigitDeleted += OnConfirmPinFieldDeleted;
             }
         }
 
@@ -236,42 +257,59 @@ public partial class KKPINSetUPView : ContentView
 
     private void UpdatePinFields()
     {
-        // Update all fields - Entry is bound to Digit, so it will display automatically
-        for (int i = 0; i < _enterPinFields.Count; i++)
+        try
         {
-            bool shouldBeFilled = i < _currentPin.Length;
-            _enterPinFields[i].IsFilled = shouldBeFilled;
+            // Update all fields - Entry is bound to Digit, so it will display automatically
+            for (int i = 0; i < _enterPinFields.Count; i++)
+            {
+                bool shouldBeFilled = i < _currentPin.Length;
+                _enterPinFields[i].IsFilled = shouldBeFilled;
 
-            // Update digit - Entry will display it (read-only for keypad, editable for keyboard)
-            if (shouldBeFilled)
-            {
-                _enterPinFields[i].Digit = _currentPin[i].ToString();
+                // Update digit - Entry will display it (read-only for keypad, editable for keyboard)
+                if (shouldBeFilled)
+                {
+                    _enterPinFields[i].Digit = _currentPin[i].ToString();
+                }
+                else
+                {
+                    _enterPinFields[i].Digit = string.Empty;
+                }
             }
-            else
-            {
-                _enterPinFields[i].Digit = string.Empty;
-            }
+
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"UpdatePinFields Exception: {ex.Message}");
+        }
+
     }
 
     private void UpdateConfirmPinFields()
     {
-        // Update all fields - Entry is bound to Digit, so it will display automatically
-        for (int i = 0; i < _confirmPinFields.Count; i++)
+        try
         {
-            bool shouldBeFilled = i < _confirmPin.Length;
-            _confirmPinFields[i].IsFilled = shouldBeFilled;
+            // Update all fields - Entry is bound to Digit, so it will display automatically
+            for (int i = 0; i < _confirmPinFields.Count; i++)
+            {
+                bool shouldBeFilled = i < _confirmPin.Length;
+                _confirmPinFields[i].IsFilled = shouldBeFilled;
 
-            // Update digit - Entry will display it (read-only for keypad, editable for keyboard)
-            if (shouldBeFilled)
-            {
-                _confirmPinFields[i].Digit = _confirmPin[i].ToString();
-            }
-            else
-            {
-                _confirmPinFields[i].Digit = string.Empty;
+                // Update digit - Entry will display it (read-only for keypad, editable for keyboard)
+                if (shouldBeFilled)
+                {
+                    _confirmPinFields[i].Digit = _confirmPin[i].ToString();
+                }
+                else
+                {
+                    _confirmPinFields[i].Digit = string.Empty;
+                }
             }
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"UpdateConfirmPinFields Exception: {ex.Message}");
+        }
+
     }
 
     private void InitializePinFields()
@@ -340,34 +378,68 @@ public partial class KKPINSetUPView : ContentView
                 lockoutManager.ResetFailedAttempts();
                 ShowSuccessMessage(KKPinviewConstant.SetupSuccessMessage);
 
-                // Invoke success callback
-                _viewModel.OnSetupSuccess?.Invoke();
+                // Add delay before triggering success callback
+                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+                {
+                    _viewModel.OnSetupSuccess?.Invoke();
+                });
             }
             else
             {
                 string errorMessage = "Failed to save PIN. Please try again.";
                 ShowErrorMessage(errorMessage);
 
-                // Invoke failure callback
-                _viewModel.OnSetupFailed?.Invoke(errorMessage);
+                // Add delay before triggering failure callback
+                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+                {
+                    _viewModel.OnSetupFailed?.Invoke(errorMessage);
+                });
             }
         }
         else
         {
-            // PINs don't match - show error message
-            ShowErrorMessage(KKPinviewConstant.PinMismatchError);
+            try
+            {
+                // Brief delay before showing error to improve UX
+                // PINs don't match - show error message
+                ShowErrorMessage(KKPinviewConstant.PinMismatchError);
 
-            // Clear both Enter PIN and Confirm PIN fields to allow re-entry
-            _currentPin = string.Empty;
-            _confirmPin = string.Empty;
-            UpdatePinFields();
-            UpdateConfirmPinFields();
+                // Clear both Enter PIN and Confirm PIN fields asynchronously to avoid blocking UI
+                // Add delay to ensure text input processing is complete before clearing fields
+                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(150), () =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        try
+                        {
+                            // _currentPin = string.Empty;
+                            // _confirmPin = string.Empty;
+                            // UpdatePinFields();
+                            // UpdateConfirmPinFields();
 
-            // Reset to enter PIN mode (but keep confirm section visible)
-            _isConfirmingPin = false;
+                            // Reset to enter PIN mode (but keep confirm section visible)
+                            _isConfirmingPin = false;
 
-            // Invoke failure callback
-            _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error clearing PIN fields: {ex.Message}");
+                        }
+                    });
+                });
+
+                // Add delay before triggering failure callback
+                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+                {
+                    _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ValidatePinMatch Exception: {ex.Message}");
+                // Ignore any exceptions from delay
+            }
+
         }
     }
 
@@ -500,16 +572,9 @@ public partial class KKPINSetUPView : ContentView
         }
         else
         {
-            // Digit deleted (empty) - move focus backward
-            if (fieldIndex > 0)
-            {
-                _enterPinFields[fieldIndex - 1].FocusEntry();
-            }
-            else
-            {
-                // Already at first field, keep focus here
-                _enterPinFields[0].FocusEntry();
-            }
+            // Digit deleted (empty) - but focus movement is handled by DigitDeleted event
+            // So we don't move focus here to avoid conflicts
+            // Just keep focus on current field
         }
     }
 
@@ -534,6 +599,58 @@ public partial class KKPINSetUPView : ContentView
                 _confirmPinFields[0].FocusEntry();
             }
         }
+    }
+
+    private void OnEnterPinFieldDeleted(object? sender, EventArgs e)
+    {
+        if (sender is not PinDigitField field) return;
+
+        int fieldIndex = _enterPinFields.IndexOf(field);
+        if (fieldIndex < 0) return;
+
+        int fieldToFocus = fieldIndex;
+
+        // Determine which field to clear and where to move focus
+        if (!string.IsNullOrEmpty(field.Digit))
+        {
+            // Current field has a digit - clear it and move to previous field
+            field.Digit = string.Empty;
+            fieldToFocus = fieldIndex > 0 ? fieldIndex - 1 : 0;
+        }
+        else if (fieldIndex > 0)
+        {
+            // Current field is empty - clear the previous field
+            _enterPinFields[fieldIndex - 1].Digit = string.Empty;
+            fieldToFocus = fieldIndex > 1 ? fieldIndex - 2 : 0;
+        }
+        else
+        {
+            // Already at first field and it's empty - nothing to delete
+            return;
+        }
+
+        // Rebuild PIN from all fields (after clearing)
+        _currentPin = string.Empty;
+        foreach (var pinField in _enterPinFields)
+        {
+            if (!string.IsNullOrEmpty(pinField.Digit))
+            {
+                _currentPin += pinField.Digit;
+            }
+        }
+
+        // Don't call UpdatePinFields() here - it will interfere with focus
+        // The Digit property change already updates the field display
+        ClearMessages();
+
+        // Move focus to the appropriate field
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _enterPinFields[fieldToFocus].FocusEntry();
+            });
+        });
     }
 
     private void OnConfirmPinFieldDigitChanged(object? sender, string digit)
@@ -571,26 +688,9 @@ public partial class KKPINSetUPView : ContentView
         }
         else
         {
-            // Digit deleted (empty) - move focus backward
-            if (fieldIndex > 0)
-            {
-                _confirmPinFields[fieldIndex - 1].FocusEntry();
-            }
-            else if (fieldIndex == 0 && _confirmPin.Length == 0)
-            {
-                // If first confirm field is empty, go back to last enter PIN field
-                _isConfirmingPin = false;
-                if (_enterPinFields.Count > 0)
-                {
-                    int lastFieldIndex = Math.Max(0, _currentPin.Length - 1);
-                    _enterPinFields[lastFieldIndex].FocusEntry();
-                }
-            }
-            else
-            {
-                // Already at first field, keep focus here
-                _confirmPinFields[0].FocusEntry();
-            }
+            // Digit deleted (empty) - but focus movement is handled by DigitDeleted event
+            // So we don't move focus here to avoid conflicts
+            // Just keep focus on current field
         }
     }
 
@@ -609,6 +709,116 @@ public partial class KKPINSetUPView : ContentView
         else if (_confirmPin.Length == _viewModel.MaxPinLength)
         {
             ValidatePinMatch();
+        }
+    }
+
+    private void OnConfirmPinFieldDeleted(object? sender, EventArgs e)
+    {
+        if (sender is not PinDigitField field) return;
+
+        int fieldIndex = _confirmPinFields.IndexOf(field);
+        if (fieldIndex < 0) return;
+
+        int fieldToFocus = fieldIndex;
+
+        // Determine which field to clear and where to move focus
+        if (!string.IsNullOrEmpty(field.Digit))
+        {
+            // Current field has a digit - clear it and move to previous field
+            field.Digit = string.Empty;
+            fieldToFocus = fieldIndex > 0 ? fieldIndex - 1 : 0;
+        }
+        else if (fieldIndex > 0)
+        {
+            // Current field is empty - clear the previous field
+            _confirmPinFields[fieldIndex - 1].Digit = string.Empty;
+            fieldToFocus = fieldIndex > 1 ? fieldIndex - 2 : 0;
+        }
+        else
+        {
+            // We're on the first confirm field and it's empty
+            // Check if all confirm fields are empty
+            bool allFieldsEmpty = true;
+            foreach (var pinField in _confirmPinFields)
+            {
+                if (!string.IsNullOrEmpty(pinField.Digit))
+                {
+                    allFieldsEmpty = false;
+                    break;
+                }
+            }
+
+            if (allFieldsEmpty)
+            {
+                // All confirm fields are empty, go back to last enter PIN field
+                _isConfirmingPin = false;
+                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (_enterPinFields.Count > 0)
+                        {
+                            int lastFieldIndex = Math.Max(0, _currentPin.Length - 1);
+                            _enterPinFields[lastFieldIndex].FocusEntry();
+                        }
+                    });
+                });
+            }
+            // If not all empty, do nothing - stay on first field
+            return;
+        }
+
+        // Rebuild confirm PIN from all fields (after clearing)
+        _confirmPin = string.Empty;
+        foreach (var pinField in _confirmPinFields)
+        {
+            if (!string.IsNullOrEmpty(pinField.Digit))
+            {
+                _confirmPin += pinField.Digit;
+            }
+        }
+
+        // Don't call UpdateConfirmPinFields() here - it will interfere with focus
+        // The Digit property change already updates the field display
+        ClearMessages();
+
+        // Check if all confirm fields are now empty after deletion
+        bool allConfirmFieldsEmpty = true;
+        foreach (var pinField in _confirmPinFields)
+        {
+            if (!string.IsNullOrEmpty(pinField.Digit))
+            {
+                allConfirmFieldsEmpty = false;
+                break;
+            }
+        }
+
+        if (allConfirmFieldsEmpty && fieldToFocus == 0)
+        {
+            // All confirm fields are empty, go back to last enter PIN field
+            _isConfirmingPin = false;
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (_enterPinFields.Count > 0)
+                    {
+                        int lastFieldIndex = Math.Max(0, _currentPin.Length - 1);
+                        _enterPinFields[lastFieldIndex].FocusEntry();
+                    }
+                });
+            });
+        }
+        else
+        {
+            // Move focus to the appropriate field
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    _confirmPinFields[fieldToFocus].FocusEntry();
+                });
+            });
         }
     }
 }
