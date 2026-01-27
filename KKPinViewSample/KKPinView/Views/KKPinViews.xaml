@@ -5,6 +5,9 @@
     x:Class="KKPinView.Views.KKPinViews"
     x:Name="Root"
     BackgroundColor="{Binding BackgroundColor}">
+    <ContentView.GestureRecognizers>
+        <TapGestureRecognizer Tapped="OnRootTapped" />
+    </ContentView.GestureRecognizers>
         <Grid
             Padding="30,60,0,30"
             RowDefinitions="Auto,Auto,Auto,Auto"

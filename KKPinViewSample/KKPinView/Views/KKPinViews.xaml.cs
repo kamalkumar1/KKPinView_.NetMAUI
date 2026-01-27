@@ -212,6 +212,12 @@ public partial class KKPinViews : ContentView
         }
     }
 
+    private void OnRootTapped(object? sender, TappedEventArgs e)
+    {
+        if (KKPinviewConstant.InputMethod != PinInputMethod.SystemKeyboard) return;
+        foreach (var f in _pinFields) f.UnfocusEntry();
+    }
+
     // Event handlers for keyboard input in PIN fields (when InputMethod is SystemKeyboard)
     private void OnPinFieldDigitChanged(object? sender, string digit)
     {

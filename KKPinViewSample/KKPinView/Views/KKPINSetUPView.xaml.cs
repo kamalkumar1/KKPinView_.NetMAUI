@@ -531,6 +531,13 @@ public partial class KKPINSetUPView : ContentView
 
     }
 
+    private void OnRootTapped(object? sender, TappedEventArgs e)
+    {
+        if (_viewModel.InputMethod != PinInputMethod.SystemKeyboard) return;
+        foreach (var f in _enterPinFields) f.UnfocusEntry();
+        foreach (var f in _confirmPinFields) f.UnfocusEntry();
+    }
+
     // Event handlers for keyboard input in PIN fields (when InputMethod is SystemKeyboard)
     private void OnEnterPinFieldDigitChanged(object? sender, string digit)
     {
@@ -608,42 +615,39 @@ public partial class KKPINSetUPView : ContentView
         int fieldIndex = _enterPinFields.IndexOf(field);
         if (fieldIndex < 0) return;
 
-        int fieldToFocus = fieldIndex;
+        // PinDigitField already cleared current field before invoking. Use _currentPin to detect
+        // if it had a digit (we haven't rebuilt yet).
+        bool currentFieldHadDigit = _currentPin.Length > fieldIndex;
+        int fieldToFocus;
 
-        // Determine which field to clear and where to move focus
-        if (!string.IsNullOrEmpty(field.Digit))
+        if (currentFieldHadDigit)
         {
-            // Current field has a digit - clear it and move to previous field
-            field.Digit = string.Empty;
+            // Current had a digit - already cleared; move focus to previous field
             fieldToFocus = fieldIndex > 0 ? fieldIndex - 1 : 0;
         }
         else if (fieldIndex > 0)
         {
-            // Current field is empty - clear the previous field
-            _enterPinFields[fieldIndex - 1].Digit = string.Empty;
-            fieldToFocus = fieldIndex > 1 ? fieldIndex - 2 : 0;
+            // Current was empty - clear previous and move focus to it
+            _enterPinFields[fieldIndex - 1].ClearDigitSilently();
+            fieldToFocus = fieldIndex - 1;
         }
         else
         {
-            // Already at first field and it's empty - nothing to delete
+            // First field and empty - nothing to delete
             return;
         }
 
-        // Rebuild PIN from all fields (after clearing)
+        // Rebuild PIN from all fields
         _currentPin = string.Empty;
         foreach (var pinField in _enterPinFields)
         {
             if (!string.IsNullOrEmpty(pinField.Digit))
-            {
                 _currentPin += pinField.Digit;
-            }
         }
 
-        // Don't call UpdatePinFields() here - it will interfere with focus
-        // The Digit property change already updates the field display
         ClearMessages();
 
-        // Move focus to the appropriate field
+        // Move focus
         Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
@@ -719,83 +723,31 @@ public partial class KKPINSetUPView : ContentView
         int fieldIndex = _confirmPinFields.IndexOf(field);
         if (fieldIndex < 0) return;
 
-        int fieldToFocus = fieldIndex;
+        // PinDigitField already cleared current. Use _confirmPin to detect if it had a digit.
+        bool currentFieldHadDigit = _confirmPin.Length > fieldIndex;
+        int fieldToFocus;
 
-        // Determine which field to clear and where to move focus
-        if (!string.IsNullOrEmpty(field.Digit))
+        if (currentFieldHadDigit)
         {
-            // Current field has a digit - clear it and move to previous field
-            field.Digit = string.Empty;
+            // Current had a digit - already cleared; move focus to previous field
             fieldToFocus = fieldIndex > 0 ? fieldIndex - 1 : 0;
         }
         else if (fieldIndex > 0)
         {
-            // Current field is empty - clear the previous field
-            _confirmPinFields[fieldIndex - 1].Digit = string.Empty;
-            fieldToFocus = fieldIndex > 1 ? fieldIndex - 2 : 0;
+            // Current was empty - clear previous and move focus to it
+            _confirmPinFields[fieldIndex - 1].ClearDigitSilently();
+            fieldToFocus = fieldIndex - 1;
         }
         else
         {
-            // We're on the first confirm field and it's empty
-            // Check if all confirm fields are empty
-            bool allFieldsEmpty = true;
-            foreach (var pinField in _confirmPinFields)
+            // First confirm field and empty - check if we should go back to enter PIN
+            bool allEmpty = true;
+            foreach (var pf in _confirmPinFields)
             {
-                if (!string.IsNullOrEmpty(pinField.Digit))
-                {
-                    allFieldsEmpty = false;
-                    break;
-                }
+                if (!string.IsNullOrEmpty(pf.Digit)) { allEmpty = false; break; }
             }
+            if (!allEmpty) return;
 
-            if (allFieldsEmpty)
-            {
-                // All confirm fields are empty, go back to last enter PIN field
-                _isConfirmingPin = false;
-                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        if (_enterPinFields.Count > 0)
-                        {
-                            int lastFieldIndex = Math.Max(0, _currentPin.Length - 1);
-                            _enterPinFields[lastFieldIndex].FocusEntry();
-                        }
-                    });
-                });
-            }
-            // If not all empty, do nothing - stay on first field
-            return;
-        }
-
-        // Rebuild confirm PIN from all fields (after clearing)
-        _confirmPin = string.Empty;
-        foreach (var pinField in _confirmPinFields)
-        {
-            if (!string.IsNullOrEmpty(pinField.Digit))
-            {
-                _confirmPin += pinField.Digit;
-            }
-        }
-
-        // Don't call UpdateConfirmPinFields() here - it will interfere with focus
-        // The Digit property change already updates the field display
-        ClearMessages();
-
-        // Check if all confirm fields are now empty after deletion
-        bool allConfirmFieldsEmpty = true;
-        foreach (var pinField in _confirmPinFields)
-        {
-            if (!string.IsNullOrEmpty(pinField.Digit))
-            {
-                allConfirmFieldsEmpty = false;
-                break;
-            }
-        }
-
-        if (allConfirmFieldsEmpty && fieldToFocus == 0)
-        {
-            // All confirm fields are empty, go back to last enter PIN field
             _isConfirmingPin = false;
             Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
             {
@@ -803,22 +755,52 @@ public partial class KKPINSetUPView : ContentView
                 {
                     if (_enterPinFields.Count > 0)
                     {
-                        int lastFieldIndex = Math.Max(0, _currentPin.Length - 1);
-                        _enterPinFields[lastFieldIndex].FocusEntry();
+                        int last = Math.Max(0, _currentPin.Length - 1);
+                        _enterPinFields[last].FocusEntry();
                     }
                 });
             });
+            return;
         }
-        else
+
+        // Rebuild _confirmPin
+        _confirmPin = string.Empty;
+        foreach (var pf in _confirmPinFields)
         {
-            // Move focus to the appropriate field
+            if (!string.IsNullOrEmpty(pf.Digit)) _confirmPin += pf.Digit;
+        }
+        ClearMessages();
+
+        // All confirm empty and we're on first -> go back to enter PIN
+        bool allConfirmEmpty = true;
+        foreach (var pf in _confirmPinFields)
+        {
+            if (!string.IsNullOrEmpty(pf.Digit)) { allConfirmEmpty = false; break; }
+        }
+        if (allConfirmEmpty && fieldToFocus == 0)
+        {
+            _isConfirmingPin = false;
             Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    _confirmPinFields[fieldToFocus].FocusEntry();
+                    if (_enterPinFields.Count > 0)
+                    {
+                        int last = Math.Max(0, _currentPin.Length - 1);
+                        _enterPinFields[last].FocusEntry();
+                    }
                 });
             });
+            return;
         }
+
+        // Move focus to previous field
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _confirmPinFields[fieldToFocus].FocusEntry();
+            });
+        });
     }
 }

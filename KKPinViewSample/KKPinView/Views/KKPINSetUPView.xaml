@@ -7,6 +7,9 @@
     x:Name="Root"
     BackgroundColor="White">
 
+    <ContentView.GestureRecognizers>
+        <TapGestureRecognizer Tapped="OnRootTapped" />
+    </ContentView.GestureRecognizers>
     <ContentView.Resources>
         <converters:InputMethodToBoolConverter x:Key="InputMethodToBoolConverter" />
     </ContentView.Resources>

@@ -125,6 +125,19 @@ public partial class PinDigitField : ContentView
     /// </summary>
     public RoundRectangle? StrokeShape { get; private set; }
 
+    private bool _isProgrammaticClear;
+
+    /// <summary>
+    /// Clears the digit without triggering DigitDeleted. Use when clearing from parent (e.g. delete handler).
+    /// </summary>
+    public void ClearDigitSilently()
+    {
+        _isProgrammaticClear = true;
+        Digit = string.Empty;
+        IsFilled = false;
+        _isProgrammaticClear = false;
+    }
+
     public PinDigitField()
     {
         InitializeComponent();
@@ -348,18 +361,15 @@ public partial class PinDigitField : ContentView
 
             if (isDelete)
             {
+                // Skip if we're clearing programmatically (from parent) to avoid nested DigitDeleted
+                if (_isProgrammaticClear)
+                {
+                    return;
+                }
                 // User pressed delete/backspace - trigger delete callback
-                // This works on both iOS and Android through TextChanged event
                 Digit = string.Empty;
                 IsFilled = false;
-                Task.Delay(20).ContinueWith(_ =>
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        DigitDeleted?.Invoke(this, EventArgs.Empty);
-                    });
-                });
-                // DigitDeleted?.Invoke(this, EventArgs.Empty);
+                DigitDeleted?.Invoke(this, EventArgs.Empty);
                 return;
             }
 
