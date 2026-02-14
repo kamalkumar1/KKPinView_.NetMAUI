@@ -401,7 +401,7 @@ Most UI elements can be customized via `KKPinviewConstant`:
 using KKPinView.Constants;
 
 // PIN Configuration
-KKPinviewConstant.TotalDigits = 6;  // Change PIN length (default: 4)
+KKPinviewConstant.TotalPinTextFields = 6;  // Change PIN length (default: 4)
 
 // Lockout Configuration
 KKPinviewConstant.MaxPinAttempts = 5;  // Default: 5

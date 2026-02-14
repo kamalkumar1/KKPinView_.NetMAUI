@@ -11,7 +11,7 @@ public static class KKPinviewConstant
     public static bool EnableDebugMode { get; set; } = KKPinViewDebug.IsDebugBuild();
 
     // PIN Configuration
-    public static int TotalDigits { get; set; } = 4;
+    public static int TotalPinTextFields { get; set; } = 4;
 
     // Lockout Configuration
     public static int MaxPinAttempts { get; set; } = 5;

@@ -33,7 +33,7 @@
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center" />
 
-                <!-- Requirement 3: PIN digit text fields (number based on TotalDigits constant,
+                <!-- Requirement 3: PIN digit text fields (number based on TotalPinTextFields constant,
             round/rectangle/corner radius from constants) -->
                 <HorizontalStackLayout
                     x:Name="EnterPinFieldsContainer"
@@ -50,7 +50,7 @@
                     HorizontalTextAlignment="Center"
                     IsVisible="{Binding ShowConfirmPin}" />
 
-                <!-- Requirement 5: Confirm PIN digit text fields (number based on TotalDigits
+                <!-- Requirement 5: Confirm PIN digit text fields (number based on TotalPinTextFields
                 constant,
             round/rectangle/corner radius from constants) -->
                 <HorizontalStackLayout

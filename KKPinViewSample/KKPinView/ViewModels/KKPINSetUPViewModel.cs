@@ -21,11 +21,11 @@ public class KKPINSetUPViewModel : BasePinViewModel
     public KKPINSetUPViewModel()
     {
         // Initialize properties from constants
-        _headingText = $"Set {KKPinviewConstant.TotalDigits} digit PIN";
+        _headingText = $"Set {KKPinviewConstant.TotalPinTextFields} digit PIN";
         _enterPinLabelText = KKPinviewConstant.EnterPinMessage;
         _confirmPinLabelText = KKPinviewConstant.ConfirmPinMessage;
         _inputMethod = KKPinviewConstant.InputMethod;
-        _maxPinLength = KKPinviewConstant.TotalDigits;
+        _maxPinLength = KKPinviewConstant.TotalPinTextFields;
         _showConfirmPin = true; // Show confirm PIN fields by default
 
         // Initialize commands

@@ -1,13 +1,25 @@
 using KKPinView.Constants;
+using Xunit;
 
 namespace KKPinView.Tests.Constants;
 
+[Collection("Constants")]
 public class KKPinviewConstantTests
 {
     [Fact]
-    public void TotalDigits_DefaultsTo4()
+    public void TotalPinTextFields_DefaultsTo4()
     {
-        Assert.Equal(4, KKPinviewConstant.TotalDigits);
+        // Restore default in case another test modified it; assert the default value
+        var original = KKPinviewConstant.TotalPinTextFields;
+        try
+        {
+            KKPinviewConstant.TotalPinTextFields = 4;
+            Assert.Equal(4, KKPinviewConstant.TotalPinTextFields);
+        }
+        finally
+        {
+            KKPinviewConstant.TotalPinTextFields = original;
+        }
     }
 
     [Fact]

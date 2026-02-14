@@ -115,7 +115,7 @@ public partial class KKPinViews : ContentView
         _pinFields.Clear();
         _currentPin = string.Empty;
 
-        for (int i = 0; i < KKPinviewConstant.TotalDigits; i++)
+        for (int i = 0; i < KKPinviewConstant.TotalPinTextFields; i++)
         {
             var field = new PinDigitField();
             _pinFields.Add(field);
@@ -137,7 +137,7 @@ public partial class KKPinViews : ContentView
     {
         KKPinViewDebug.LogVerbose($"Number pressed: {number}");
 
-        if (!_viewModel.IsKeypadEnabled || _currentPin.Length >= KKPinviewConstant.TotalDigits)
+        if (!_viewModel.IsKeypadEnabled || _currentPin.Length >= KKPinviewConstant.TotalPinTextFields)
         {
             KKPinViewDebug.LogVerbose("Keypad disabled or PIN already complete");
             return;
@@ -149,7 +149,7 @@ public partial class KKPinViews : ContentView
         KKPinViewDebug.LogVerbose($"Current PIN length: {_currentPin.Length}");
         UpdatePinFields();
 
-        if (_currentPin.Length == KKPinviewConstant.TotalDigits)
+        if (_currentPin.Length == KKPinviewConstant.TotalPinTextFields)
         {
             KKPinViewDebug.Log("PIN entry complete, validating...");
             ValidatePIN();
@@ -250,7 +250,7 @@ public partial class KKPinViews : ContentView
             {
                 _pinFields[fieldIndex + 1].FocusEntry();
             }
-            else if (_currentPin.Length == KKPinviewConstant.TotalDigits)
+            else if (_currentPin.Length == KKPinviewConstant.TotalPinTextFields)
             {
                 // Dismiss keyboard when PIN is complete
                 field.UnfocusEntry();
@@ -284,7 +284,7 @@ public partial class KKPinViews : ContentView
         {
             _pinFields[fieldIndex + 1].FocusEntry();
         }
-        else if (_currentPin.Length == KKPinviewConstant.TotalDigits)
+        else if (_currentPin.Length == KKPinviewConstant.TotalPinTextFields)
         {
             // Dismiss keyboard when PIN is complete
             field.UnfocusEntry();

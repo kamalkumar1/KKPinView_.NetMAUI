@@ -25,7 +25,7 @@ public class KKPinViewsViewModel : BasePinViewModel
         HasSuccessMessage = false;
         // Initialize properties from constants
         _titleText = KKPinviewConstant.TitleTextFormat;
-        _subtitleText = string.Format(KKPinviewConstant.SubtitleText, KKPinviewConstant.TotalDigits);
+        _subtitleText = string.Format(KKPinviewConstant.SubtitleText, KKPinviewConstant.TotalPinTextFields);
         _forgotPinText = KKPinviewConstant.ForgotPinText;
         _showForgotPin = true;
         _isKeypadEnabled = true;

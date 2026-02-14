@@ -1,20 +1,31 @@
 using KKPinView.Constants;
 using KKPinView.ViewModels;
+using Xunit;
 
 namespace KKPinView.Tests.ViewModels;
 
+[Collection("Constants")]
 public class KKPINSetUPViewModelTests
 {
     [Fact]
     public void Constructor_InitializesWithCorrectDefaults()
     {
-        var vm = new KKPINSetUPViewModel();
+        var original = KKPinviewConstant.TotalPinTextFields;
+        try
+        {
+            KKPinviewConstant.TotalPinTextFields = 4;
+            var vm = new KKPINSetUPViewModel();
 
-        Assert.Equal(KKPinviewConstant.EnterPinMessage, vm.EnterPinLabelText);
-        Assert.Equal(KKPinviewConstant.ConfirmPinMessage, vm.ConfirmPinLabelText);
-        Assert.Equal(KKPinviewConstant.TotalDigits, vm.MaxPinLength);
-        Assert.True(vm.ShowConfirmPin);
-        Assert.Equal(KKPinviewConstant.InputMethod, vm.InputMethod);
+            Assert.Equal(KKPinviewConstant.EnterPinMessage, vm.EnterPinLabelText);
+            Assert.Equal(KKPinviewConstant.ConfirmPinMessage, vm.ConfirmPinLabelText);
+            Assert.Equal(4, vm.MaxPinLength);
+            Assert.True(vm.ShowConfirmPin);
+            Assert.Equal(KKPinviewConstant.InputMethod, vm.InputMethod);
+        }
+        finally
+        {
+            KKPinviewConstant.TotalPinTextFields = original;
+        }
     }
 
     [Fact]

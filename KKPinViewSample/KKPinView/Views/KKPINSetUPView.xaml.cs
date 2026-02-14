@@ -69,7 +69,7 @@ public partial class KKPINSetUPView : ContentView
         _viewModel.NumberPressed += OnViewModelNumberPressed;
         _viewModel.DeletePressed += OnViewModelDeletePressed;
 
-        // Initialize PIN fields based on TotalDigits constant
+        // Initialize PIN fields based on TotalPinTextFields constant
         InitializePinFields();
         InitializeConfirmPinFields();
 
@@ -165,36 +165,34 @@ public partial class KKPINSetUPView : ContentView
     {
         if (_isConfirmingPin)
         {
-            // Entering confirm PIN
-            if (_confirmPin.Length >= _viewModel.MaxPinLength)
+            // Entering confirm PIN - use actual field count for validation
+            int expectedLength = _confirmPinFields.Count;
+            if (_confirmPin.Length >= expectedLength)
                 return;
 
             _confirmPin += number;
             UpdateConfirmPinFields();
 
-            // Clear any previous messages when user starts typing again
             ClearMessages();
 
-            // If confirm PIN is complete, validate it
-            if (_confirmPin.Length == _viewModel.MaxPinLength)
+            if (_confirmPin.Length == expectedLength)
             {
                 ValidatePinMatch();
             }
         }
         else
         {
-            // Entering first PIN
-            if (_currentPin.Length >= _viewModel.MaxPinLength)
+            // Entering first PIN - use actual field count for validation
+            int expectedLength = _enterPinFields.Count;
+            if (_currentPin.Length >= expectedLength)
                 return;
 
             _currentPin += number;
             UpdatePinFields();
 
-            // Clear any previous messages when user starts typing again
             ClearMessages();
 
-            // If first PIN is complete, switch to confirm mode
-            if (_currentPin.Length == _viewModel.MaxPinLength)
+            if (_currentPin.Length == expectedLength)
             {
                 _isConfirmingPin = true;
                 _viewModel.ShowConfirmPin = true;
@@ -318,8 +316,8 @@ public partial class KKPINSetUPView : ContentView
         EnterPinFieldsContainer.Children.Clear();
         _enterPinFields.Clear();
 
-        // Create PIN digit fields based on TotalDigits constant
-        for (int i = 0; i < KKPinviewConstant.TotalDigits; i++)
+        // Create PIN digit fields based on TotalPinTextFields constant
+        for (int i = 0; i < KKPinviewConstant.TotalPinTextFields; i++)
         {
             var field = new PinDigitField
             {
@@ -343,8 +341,8 @@ public partial class KKPINSetUPView : ContentView
         ConfirmPinFieldsContainer.Children.Clear();
         _confirmPinFields.Clear();
 
-        // Create confirm PIN digit fields based on TotalDigits constant
-        for (int i = 0; i < KKPinviewConstant.TotalDigits; i++)
+        // Create confirm PIN digit fields based on TotalPinTextFields constant
+        for (int i = 0; i < KKPinviewConstant.TotalPinTextFields; i++)
         {
             var field = new PinDigitField
             {
@@ -562,12 +560,11 @@ public partial class KKPINSetUPView : ContentView
         // Handle focus movement based on input
         if (!string.IsNullOrEmpty(digit))
         {
-            // Digit entered - move to next field or switch to confirm mode
             if (fieldIndex < _enterPinFields.Count - 1)
             {
                 _enterPinFields[fieldIndex + 1].FocusEntry();
             }
-            else if (_currentPin.Length == _viewModel.MaxPinLength)
+            else if (_currentPin.Length == _enterPinFields.Count)
             {
                 _isConfirmingPin = true;
                 _viewModel.ShowConfirmPin = true;
@@ -597,7 +594,7 @@ public partial class KKPINSetUPView : ContentView
         {
             _enterPinFields[fieldIndex + 1].FocusEntry();
         }
-        else if (_currentPin.Length == _viewModel.MaxPinLength)
+        else if (_currentPin.Length == _enterPinFields.Count)
         {
             _isConfirmingPin = true;
             _viewModel.ShowConfirmPin = true;
@@ -685,7 +682,7 @@ public partial class KKPINSetUPView : ContentView
             {
                 _confirmPinFields[fieldIndex + 1].FocusEntry();
             }
-            else if (_confirmPin.Length == _viewModel.MaxPinLength)
+            else if (_confirmPin.Length == _confirmPinFields.Count)
             {
                 ValidatePinMatch();
             }
@@ -710,7 +707,7 @@ public partial class KKPINSetUPView : ContentView
         {
             _confirmPinFields[fieldIndex + 1].FocusEntry();
         }
-        else if (_confirmPin.Length == _viewModel.MaxPinLength)
+        else if (_confirmPin.Length == _confirmPinFields.Count)
         {
             ValidatePinMatch();
         }
