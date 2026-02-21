@@ -7,7 +7,7 @@ public partial class App : Application
 	public App()
 	{
 		InitializeComponent();
-		KKPinView.Constants.KKPinviewConstant.TotalPinTextFields = 6;
+		KKPinView.Constants.KKPinviewConstant.TotalPinTextFields = 4;
 		// Register routes early to ensure they're available
 		Routing.RegisterRoute("PinSetupView", typeof(PinSetupView));
 		Routing.RegisterRoute("PINView", typeof(PINView));

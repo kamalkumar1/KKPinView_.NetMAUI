@@ -35,8 +35,8 @@ public static class KKPinviewConstant
     public static double KeypadButtonFontSize { get; set; } = 24;
 
     // Dimensions
-    public static double FieldHeight { get; set; } = 60;
-    public static double FieldWidth { get; set; } = 60;
+    public static double FieldHeight { get; set; } = 50;
+    public static double FieldWidth { get; set; } = 50;
     public static double FieldSpacing { get; set; } = 15;
     public static double KeypadButtonSize { get; set; } = 70;
     public static double KeypadSpacing { get; set; } = 10;
