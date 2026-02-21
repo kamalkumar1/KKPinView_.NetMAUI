@@ -44,8 +44,8 @@ public partial class PinDigitField : ContentView
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(CornerRadius), typeof(double), typeof(PinDigitField), KKPinviewConstant.FieldCornerRadius, propertyChanged: OnCornerRadiusChanged);
 
-    public static readonly BindableProperty UseRoundShapeProperty = BindableProperty.Create(
-        nameof(UseRoundShape), typeof(bool), typeof(PinDigitField), KKPinviewConstant.UseRoundFields, propertyChanged: OnShapeChanged);
+    public static readonly BindableProperty FieldShapeTypeProperty = BindableProperty.Create(
+        nameof(FieldShapeType), typeof(PinFieldShapeType), typeof(PinDigitField), KKPinviewConstant.FieldShapeType, propertyChanged: OnShapeChanged);
 
     // Numeric keypad logic fully removed
 
@@ -107,10 +107,11 @@ public partial class PinDigitField : ContentView
         set => SetValue(CornerRadiusProperty, value);
     }
 
-    public bool UseRoundShape
+    /// <summary>Shape type for the PIN field. Comes from KKPinviewConstant.FieldShapeType by default.</summary>
+    public PinFieldShapeType FieldShapeType
     {
-        get => (bool)GetValue(UseRoundShapeProperty);
-        set => SetValue(UseRoundShapeProperty, value);
+        get => (PinFieldShapeType)GetValue(FieldShapeTypeProperty);
+        set => SetValue(FieldShapeTypeProperty, value);
     }
 
     // Numeric keypad property fully removed
@@ -280,23 +281,14 @@ public partial class PinDigitField : ContentView
 
     private void UpdateStrokeShape()
     {
-        if (UseRoundShape)
+        StrokeShape = FieldShapeType switch
         {
-            // Round shape (circle/oval) - use radius equal to half the smaller dimension
-            var radius = Math.Min(FieldWidth, FieldHeight) / 2;
-            StrokeShape = new RoundRectangle
+            PinFieldShapeType.Round => new RoundRectangle
             {
-                CornerRadius = new CornerRadius(radius)
-            };
-        }
-        else
-        {
-            // Rectangle with corner radius from constant
-            StrokeShape = new RoundRectangle
-            {
-                CornerRadius = new CornerRadius(CornerRadius)
-            };
-        }
+                CornerRadius = new CornerRadius(Math.Min(FieldWidth, FieldHeight) / 2)
+            },
+            _ => new RoundRectangle { CornerRadius = new CornerRadius(CornerRadius) } // RoundedRectangle (default)
+        };
 
         if (DigitBorder != null)
         {

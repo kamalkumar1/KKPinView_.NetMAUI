@@ -89,7 +89,9 @@ private void InitializePinFields()
 
     for (int i = 0; i < KKPinviewConstant.TotalPinTextFields; i++)
     {
-        var field = new PinDigitField();
+        var field = new PinDigitField { FieldShapeType = KKPinviewConstant.FieldShapeType };
+        if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+            field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
         _pinFields.Add(field);
         PinFieldsContainer.Children.Add(field);
     }
@@ -277,6 +279,8 @@ private void ValidatePIN()
         var error = _lockoutManager.GetErrorMessage();
         KKPinViewDebug.LogWarning($"PIN validation failed: {error}");
 
+        _viewModel.OnSubmit?.Invoke(false);
+
         // Close keyboard when PIN does not match
         foreach (var f in _pinFields) f.UnfocusEntry();
 
@@ -292,18 +296,17 @@ private void ValidatePIN()
             UpdateUI();
         }
 
-    }
-
-    _viewModel.OnSubmit?.Invoke(false);
-
-    // Clear after showing error
-    Task.Delay(1500).ContinueWith(_ =>
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
+        // Clear after showing error and allow user to re-enter (use ClearDigitSilently to avoid event cascade)
+        Task.Delay(1500).ContinueWith(_ =>
         {
-            ClearPin();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ClearPin();
+                if (!_lockoutManager.IsLockedOut)
+                    _pinFields[0].FocusEntry();
+            });
         });
-    });
+    }
 }
 
 private async void ShowErrorMessage(string message)
@@ -422,14 +425,14 @@ private async void ClearMessages()
 
 private void ClearPin()
 {
+    foreach (var f in _pinFields) f.ClearDigitSilently();
     _currentPin = string.Empty;
     _viewModel.IsPinInvalid = false;
-    UpdatePinFields();
+    UpdateBorderColors();
     if (!_lockoutManager.IsLockedOut)
     {
         ClearMessages();
     }
-
 }
 
 private void UpdateUI()

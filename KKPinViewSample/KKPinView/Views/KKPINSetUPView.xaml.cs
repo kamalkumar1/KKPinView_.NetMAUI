@@ -174,13 +174,14 @@ public partial class KKPINSetUPView : ContentView
             var field = new PinDigitField
             {
                 // Apply constants for field appearance
-                CornerRadius = KKPinviewConstant.FieldCornerRadius,
-                UseRoundShape = KKPinviewConstant.UseRoundFields,
+                FieldShapeType = KKPinviewConstant.FieldShapeType,
                 FieldWidth = KKPinviewConstant.FieldWidth,
                 FieldHeight = KKPinviewConstant.FieldHeight,
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
                 TextColor = KKPinviewConstant.TextColor
             };
+            if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+                field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
 
             _enterPinFields.Add(field);
             EnterPinFieldsContainer.Children.Add(field);
@@ -199,13 +200,14 @@ public partial class KKPINSetUPView : ContentView
             var field = new PinDigitField
             {
                 // Apply constants for field appearance
-                CornerRadius = KKPinviewConstant.FieldCornerRadius,
-                UseRoundShape = KKPinviewConstant.UseRoundFields,
+                FieldShapeType = KKPinviewConstant.FieldShapeType,
                 FieldWidth = KKPinviewConstant.FieldWidth,
                 FieldHeight = KKPinviewConstant.FieldHeight,
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
                 TextColor = KKPinviewConstant.TextColor
             };
+            if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+                field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
 
             _confirmPinFields.Add(field);
             ConfirmPinFieldsContainer.Children.Add(field);

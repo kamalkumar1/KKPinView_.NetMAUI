@@ -3,10 +3,23 @@ using KKPinView.Debug;
 namespace KKPinView.Constants;
 
 /// <summary>
+/// Shape type for PIN digit text fields.
+/// </summary>
+public enum PinFieldShapeType
+{
+    /// <summary>Rectangle with rounded corners (default).</summary>
+    RoundedRectangle,
+    /// <summary>Round shape (circle or oval).</summary>
+    Round
+}
+
+/// <summary>
 /// Constants for KKPinView configuration
 /// </summary>
 public static class KKPinviewConstant
 {
+    /// <summary>Shape type for PIN fields. Default is Rounded.</summary>
+    public static PinFieldShapeType FieldShapeType { get; set; } = PinFieldShapeType.Round;
     // Debug Configuration
     public static bool EnableDebugMode { get; set; } = KKPinViewDebug.IsDebugBuild();
 
@@ -36,7 +49,7 @@ public static class KKPinviewConstant
     public static double FieldWidth { get; set; } = 50;
     public static double FieldSpacing { get; set; } = 15;
     public static double FieldCornerRadius { get; set; } = 10;
-    public static bool UseRoundFields { get; set; } = false;
+
 
     // Strings
     public static string TitleTextFormat { get; set; } = "Enter PIN";
