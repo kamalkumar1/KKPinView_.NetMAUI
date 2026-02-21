@@ -250,6 +250,10 @@ public partial class KKPINSetUPView : ContentView
         {
             try
             {
+                // Close keyboard when PINs don't match
+                foreach (var f in _enterPinFields) f.UnfocusEntry();
+                foreach (var f in _confirmPinFields) f.UnfocusEntry();
+
                 // Brief delay before showing error to improve UX
                 // PINs don't match - show error message
                 ShowErrorMessage(KKPinviewConstant.PinMismatchError);

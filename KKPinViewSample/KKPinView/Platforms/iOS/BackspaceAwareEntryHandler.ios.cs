@@ -1,11 +1,10 @@
 #if IOS
 
-using KKPinView.Platforms.iOS;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 
-namespace KKPinView.Platforms.iOS;
+namespace KKPinView.Handlers;
 
 internal class BackspaceAwareTextField : MauiTextField
 {
@@ -20,7 +19,7 @@ internal class BackspaceAwareTextField : MauiTextField
     }
 }
 
-public partial class BackspaceAwareEntryHandler : EntryHandler
+public partial class BackspaceAwareEntryHandler
 {
     protected override MauiTextField CreatePlatformView()
     {

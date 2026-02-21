@@ -277,6 +277,9 @@ private void ValidatePIN()
         var error = _lockoutManager.GetErrorMessage();
         KKPinViewDebug.LogWarning($"PIN validation failed: {error}");
 
+        // Close keyboard when PIN does not match
+        foreach (var f in _pinFields) f.UnfocusEntry();
+
         // Set invalid state to show red borders
         _viewModel.IsPinInvalid = true;
         UpdatePinFields();

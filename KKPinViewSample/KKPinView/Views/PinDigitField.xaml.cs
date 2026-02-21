@@ -165,7 +165,7 @@ public partial class PinDigitField : ContentView
     private void SetupBackspaceOnEmptyFieldHandler()
     {
 #if IOS
-        if (DigitEntry?.Handler?.PlatformView is KKPinView.Platforms.iOS.BackspaceAwareTextField iosTextField)
+        if (DigitEntry?.Handler?.PlatformView is KKPinView.Handlers.BackspaceAwareTextField iosTextField)
         {
             iosTextField.EmptyBackspacePressed -= OnIOSEmptyBackspace;
             iosTextField.EmptyBackspacePressed += OnIOSEmptyBackspace;
