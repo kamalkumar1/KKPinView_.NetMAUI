@@ -164,13 +164,8 @@ public partial class PinDigitField : ContentView
 
     private void SetupBackspaceOnEmptyFieldHandler()
     {
-#if ANDROID
-        if (DigitEntry?.Handler?.PlatformView is AppCompatEditText editText)
-        {
-            editText.KeyPress -= OnBackspaceWhenEmpty;
-            editText.KeyPress += OnBackspaceWhenEmpty;
-        }
-#endif
+        // Priority: text entry must always work. On Android, KeyPress blocks soft keyboard input,
+        // so we do NOT use it - empty-field backspace is disabled on Android to preserve typing.
 #if IOS
         if (DigitEntry?.Handler?.PlatformView is KKPinView.Platforms.iOS.BackspaceAwareTextField iosTextField)
         {
@@ -184,18 +179,6 @@ public partial class PinDigitField : ContentView
     private void OnIOSEmptyBackspace(object? sender, EventArgs e)
     {
         DigitDeleted?.Invoke(this, EventArgs.Empty);
-    }
-#endif
-
-#if ANDROID
-    private void OnBackspaceWhenEmpty(object? sender, Android.Views.View.KeyEventArgs e)
-    {
-        if (!string.IsNullOrEmpty(Digit)) return; // Has content - TextChanged will handle delete
-        if (e.KeyCode != Android.Views.Keycode.Del && e.KeyCode != Android.Views.Keycode.Back) return;
-
-        // Empty field + backspace: move to previous field and delete there
-        DigitDeleted?.Invoke(this, EventArgs.Empty);
-        e.Handled = true;
     }
 #endif
 
