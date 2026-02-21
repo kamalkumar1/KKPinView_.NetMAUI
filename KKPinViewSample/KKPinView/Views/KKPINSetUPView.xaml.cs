@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Windows.Input;
 using KKPinView.Constants;
 using KKPinView.Security;
 using KKPinView.Storage;
@@ -28,14 +26,7 @@ public partial class KKPINSetUPView : ContentView
         _viewModel = new KKPINSetUPViewModel();
         BindingContext = _viewModel;
 
-        // Set keypad visibility to false by default
-        if (Keypad != null)
-        {
-            Keypad.IsVisible = false;
-        }
-
-
-        // Set up input method visibility and initialize UI elements after page is loaded
+        // Initialize UI elements after page is loaded
         Loaded += OnPageLoaded;
     }
 
@@ -65,60 +56,30 @@ public partial class KKPINSetUPView : ContentView
             SuccessMessageLabel.HeightRequest = 0;
         }
 
-        // Wire up ViewModel events
-        _viewModel.NumberPressed += OnViewModelNumberPressed;
-        _viewModel.DeletePressed += OnViewModelDeletePressed;
-
-        // Initialize PIN fields based on TotalPinTextFields constant
         InitializePinFields();
         InitializeConfirmPinFields();
 
-        //if (KKPinviewConstant.InputMethod == PinInputMethod.s && Keypad != null)
-        //{
-        Keypad.NumberCommand = _viewModel.NumberCommand;
-        Keypad.DeleteCommand = _viewModel.DeleteCommand;
-        // }
-
-        // Ensure input method is set up AFTER fields are initialized
         // Add a small delay to ensure fields are fully loaded in the visual tree
         Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(50), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                SetupInputMethod();
+                SetupPinFields();
             });
         });
     }
 
-    private void SetupInputMethod()
+    private void SetupPinFields()
     {
-        // Show/hide keypad based on input method
-        bool useKeypad = _viewModel.InputMethod == PinInputMethod.NumericKeypad;
-
-        if (Keypad != null)
-        {
-            Keypad.IsVisible = useKeypad;
-        }
-
-        // Set editable state on PIN fields based on input method
-        bool isEditable = _viewModel.InputMethod == PinInputMethod.SystemKeyboard;
-
-        // Remove old handlers first to avoid duplicates
         foreach (var field in _enterPinFields)
         {
             field.DigitChanged -= OnEnterPinFieldDigitChanged;
             field.DigitCompleted -= OnEnterPinFieldCompleted;
             field.DigitDeleted -= OnEnterPinFieldDeleted;
 
-            // Set IsEditable - this will trigger UpdateEditableState via property changed handler
-            field.IsEditable = isEditable;
-
-            if (isEditable)
-            {
-                field.DigitChanged += OnEnterPinFieldDigitChanged;
-                field.DigitCompleted += OnEnterPinFieldCompleted;
-                field.DigitDeleted += OnEnterPinFieldDeleted;
-            }
+            field.DigitChanged += OnEnterPinFieldDigitChanged;
+            field.DigitCompleted += OnEnterPinFieldCompleted;
+            field.DigitDeleted += OnEnterPinFieldDeleted;
         }
 
         foreach (var field in _confirmPinFields)
@@ -127,19 +88,12 @@ public partial class KKPINSetUPView : ContentView
             field.DigitCompleted -= OnConfirmPinFieldCompleted;
             field.DigitDeleted -= OnConfirmPinFieldDeleted;
 
-            // Set IsEditable - this will trigger UpdateEditableState via property changed handler
-            field.IsEditable = isEditable;
-
-            if (isEditable)
-            {
-                field.DigitChanged += OnConfirmPinFieldDigitChanged;
-                field.DigitCompleted += OnConfirmPinFieldCompleted;
-                field.DigitDeleted += OnConfirmPinFieldDeleted;
-            }
+            field.DigitChanged += OnConfirmPinFieldDigitChanged;
+            field.DigitCompleted += OnConfirmPinFieldCompleted;
+            field.DigitDeleted += OnConfirmPinFieldDeleted;
         }
 
-        // Focus first field if using keyboard (with a small delay to ensure UI is ready)
-        if (isEditable && _enterPinFields.Count > 0)
+        if (_enterPinFields.Count > 0)
         {
             Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
             {
@@ -148,108 +102,6 @@ public partial class KKPINSetUPView : ContentView
                     _enterPinFields[0].FocusEntry();
                 });
             });
-        }
-    }
-
-    private void OnViewModelNumberPressed(object? sender, string number)
-    {
-        OnNumberPressed(number);
-    }
-
-    private void OnViewModelDeletePressed(object? sender, EventArgs e)
-    {
-        OnDeletePressed();
-    }
-
-    private void OnNumberPressed(string number)
-    {
-        if (_isConfirmingPin)
-        {
-            // Entering confirm PIN - use actual field count for validation
-            int expectedLength = _confirmPinFields.Count;
-            if (_confirmPin.Length >= expectedLength)
-                return;
-
-            _confirmPin += number;
-            UpdateConfirmPinFields();
-
-            ClearMessages();
-
-            if (_confirmPin.Length == expectedLength)
-            {
-                ValidatePinMatch();
-            }
-        }
-        else
-        {
-            // Entering first PIN - use actual field count for validation
-            int expectedLength = _enterPinFields.Count;
-            if (_currentPin.Length >= expectedLength)
-                return;
-
-            _currentPin += number;
-            UpdatePinFields();
-
-            ClearMessages();
-
-            if (_currentPin.Length == expectedLength)
-            {
-                _isConfirmingPin = true;
-                _viewModel.ShowConfirmPin = true;
-            }
-        }
-    }
-
-    private void OnDeletePressed()
-    {
-        if (_isConfirmingPin)
-        {
-            // Deleting from confirm PIN
-            if (_confirmPin.Length > 0)
-            {
-                _confirmPin = _confirmPin.Substring(0, _confirmPin.Length - 1);
-                UpdateConfirmPinFields();
-                // Clear messages when user deletes
-                ClearMessages();
-            }
-            else
-            {
-                // If confirm PIN is empty, go back to entering first PIN
-                // Keep confirm fields visible even when empty
-                _isConfirmingPin = false;
-                _confirmPin = string.Empty;
-                UpdateConfirmPinFields(); // Clear confirm fields visually
-                ClearMessages();
-
-                // Refocus the last field of enter PIN for continued input
-                if (_enterPinFields.Count > 0 && _currentPin.Length > 0)
-                {
-                    int lastFieldIndex = Math.Min(_currentPin.Length, _enterPinFields.Count - 1);
-                    _enterPinFields[lastFieldIndex].FocusEntry();
-                }
-                else if (_enterPinFields.Count > 0)
-                {
-                    _enterPinFields[0].FocusEntry();
-                }
-            }
-        }
-        else
-        {
-            // Deleting from first PIN
-            if (_currentPin.Length > 0)
-            {
-                _currentPin = _currentPin.Substring(0, _currentPin.Length - 1);
-                UpdatePinFields();
-                // Clear messages when user deletes
-                ClearMessages();
-
-                // Refocus the current field after deletion
-                if (_enterPinFields.Count > 0)
-                {
-                    int currentFieldIndex = Math.Min(_currentPin.Length, _enterPinFields.Count - 1);
-                    _enterPinFields[currentFieldIndex].FocusEntry();
-                }
-            }
         }
     }
 
@@ -531,12 +383,11 @@ public partial class KKPINSetUPView : ContentView
 
     private void OnRootTapped(object? sender, TappedEventArgs e)
     {
-        if (_viewModel.InputMethod != PinInputMethod.SystemKeyboard) return;
         foreach (var f in _enterPinFields) f.UnfocusEntry();
         foreach (var f in _confirmPinFields) f.UnfocusEntry();
     }
 
-    // Event handlers for keyboard input in PIN fields (when InputMethod is SystemKeyboard)
+    // Event handlers for system keyboard input in PIN fields
     private void OnEnterPinFieldDigitChanged(object? sender, string digit)
     {
         if (sender is not PinDigitField field) return;

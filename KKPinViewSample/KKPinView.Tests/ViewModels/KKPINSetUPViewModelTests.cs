@@ -20,40 +20,11 @@ public class KKPINSetUPViewModelTests
             Assert.Equal(KKPinviewConstant.ConfirmPinMessage, vm.ConfirmPinLabelText);
             Assert.Equal(4, vm.MaxPinLength);
             Assert.True(vm.ShowConfirmPin);
-            Assert.Equal(KKPinviewConstant.InputMethod, vm.InputMethod);
         }
         finally
         {
             KKPinviewConstant.TotalPinTextFields = original;
         }
-    }
-
-    [Fact]
-    public void NumberCommand_IsNotNull()
-    {
-        var vm = new KKPINSetUPViewModel();
-        Assert.NotNull(vm.NumberCommand);
-    }
-
-    [Fact]
-    public void DeleteCommand_IsNotNull()
-    {
-        var vm = new KKPINSetUPViewModel();
-        Assert.NotNull(vm.DeleteCommand);
-    }
-
-    [Fact]
-    public void NumberCommand_CanExecuteWithValidDigit()
-    {
-        var vm = new KKPINSetUPViewModel();
-        Assert.True(vm.NumberCommand.CanExecute("5"));
-    }
-
-    [Fact]
-    public void DeleteCommand_CanExecute()
-    {
-        var vm = new KKPINSetUPViewModel();
-        Assert.True(vm.DeleteCommand.CanExecute(null));
     }
 
     [Fact]

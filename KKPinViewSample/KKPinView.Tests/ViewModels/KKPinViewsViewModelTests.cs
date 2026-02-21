@@ -20,34 +20,11 @@ public class KKPinViewsViewModelTests
             Assert.Contains("4", vm.SubtitleText);
             Assert.Equal(KKPinviewConstant.ForgotPinText, vm.ForgotPinText);
             Assert.True(vm.ShowForgotPin);
-            Assert.True(vm.IsKeypadEnabled);
-            Assert.Equal(1.0, vm.KeypadOpacity);
         }
         finally
         {
             KKPinviewConstant.TotalPinTextFields = original;
         }
-    }
-
-    [Fact]
-    public void NumberCommand_IsNotNull()
-    {
-        var vm = new KKPinViewsViewModel();
-        Assert.NotNull(vm.NumberCommand);
-    }
-
-    [Fact]
-    public void DeleteCommand_IsNotNull()
-    {
-        var vm = new KKPinViewsViewModel();
-        Assert.NotNull(vm.DeleteCommand);
-    }
-
-    [Fact]
-    public void NumberCommand_CanExecuteWithValidDigit()
-    {
-        var vm = new KKPinViewsViewModel();
-        Assert.True(vm.NumberCommand.CanExecute("9"));
     }
 
     [Fact]

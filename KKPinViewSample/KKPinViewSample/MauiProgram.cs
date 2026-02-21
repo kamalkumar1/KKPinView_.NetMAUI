@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using KKPinView;
+using Microsoft.Extensions.Logging;
 
 namespace KKPinViewSample;
 
@@ -9,6 +10,7 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+			.UseKKPinView()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

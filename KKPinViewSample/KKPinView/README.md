@@ -209,11 +209,6 @@ PinContentView.Content = pinView;
 
 KKPinView supports two input methods that can be configured via `KKPinviewConstant.InputMethod`:
 
-### NumericKeypad (Default)
-- Custom on-screen numeric keypad
-- PIN fields are read-only
-- Best for touch-first experiences
-
 ### SystemKeyboard
 - Uses the system numeric keyboard
 - PIN fields are editable
@@ -222,9 +217,6 @@ KKPinView supports two input methods that can be configured via `KKPinviewConsta
 
 ```csharp
 using KKPinView.Constants;
-
-// Use custom numeric keypad (default)
-KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;
 
 // Use system keyboard
 KKPinviewConstant.InputMethod = PinInputMethod.SystemKeyboard;

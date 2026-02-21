@@ -25,27 +25,18 @@ public static class KKPinviewConstant
     public static Color DigitFieldBackgroundColor { get; set; } = Colors.Transparent;
     public static Color DigitFieldFilledColor { get; set; } = Colors.Green;
     public static Color InvalidPinBorderColor { get; set; } = Colors.Red;
-    public static Color KeypadButtonColor { get; set; } = Colors.White;
-    public static Color KeypadButtonTextColor { get; set; } = Colors.Black;
 
     // Fonts
     public static double TitleFontSize { get; set; } = 24;
     public static double SubtitleFontSize { get; set; } = 16;
     public static double DigitFontSize { get; set; } = 20;
-    public static double KeypadButtonFontSize { get; set; } = 24;
 
     // Dimensions
     public static double FieldHeight { get; set; } = 50;
     public static double FieldWidth { get; set; } = 50;
     public static double FieldSpacing { get; set; } = 15;
-    public static double KeypadButtonSize { get; set; } = 70;
-    public static double KeypadSpacing { get; set; } = 10;
-    public static double KeypadButtonCornerRadius { get; set; } = 35; // Half of button size for fully round, or adjust for rounded rectangle
     public static double FieldCornerRadius { get; set; } = 10;
     public static bool UseRoundFields { get; set; } = false;
-
-    // Input Method Configuration
-    public static PinInputMethod InputMethod { get; set; } = PinInputMethod.SystemKeyboard;
 
     // Strings
     public static string TitleTextFormat { get; set; } = "Enter PIN";

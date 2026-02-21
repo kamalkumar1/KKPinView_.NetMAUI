@@ -47,8 +47,7 @@ public partial class PinDigitField : ContentView
     public static readonly BindableProperty UseRoundShapeProperty = BindableProperty.Create(
         nameof(UseRoundShape), typeof(bool), typeof(PinDigitField), KKPinviewConstant.UseRoundFields, propertyChanged: OnShapeChanged);
 
-    public static readonly BindableProperty IsEditableProperty = BindableProperty.Create(
-        nameof(IsEditable), typeof(bool), typeof(PinDigitField), false, propertyChanged: OnIsEditableChanged);
+    // Numeric keypad logic fully removed
 
     public event EventHandler<string>? DigitChanged;
     public event EventHandler? DigitCompleted;
@@ -114,11 +113,7 @@ public partial class PinDigitField : ContentView
         set => SetValue(UseRoundShapeProperty, value);
     }
 
-    public bool IsEditable
-    {
-        get => (bool)GetValue(IsEditableProperty);
-        set => SetValue(IsEditableProperty, value);
-    }
+    // Numeric keypad property fully removed
 
     /// <summary>
     /// Gets the stroke shape (round rectangle) used for the border based on corner radius settings
@@ -153,68 +148,54 @@ public partial class PinDigitField : ContentView
     private void OnHandlerChanged(object? sender, EventArgs e)
     {
         RemoveAndroidUnderline();
-        SetupPlatformSpecificDeleteHandler();
+        SetupBackspaceOnEmptyFieldHandler();
     }
 
     private void OnFieldLoaded(object? sender, EventArgs e)
     {
-        // Ensure Entry is always visible
         if (DigitEntry != null)
         {
             DigitEntry.IsVisible = true;
+            DigitEntry.IsReadOnly = false;
         }
-        UpdateEditableState();
         RemoveAndroidUnderline();
-        SetupPlatformSpecificDeleteHandler();
+        SetupBackspaceOnEmptyFieldHandler();
     }
 
-    private void SetupPlatformSpecificDeleteHandler()
+    private void SetupBackspaceOnEmptyFieldHandler()
     {
 #if ANDROID
-        // Android-specific: Set up key event handler for delete button
         if (DigitEntry?.Handler?.PlatformView is AppCompatEditText editText)
         {
-            // Use a small delay to ensure the handler is fully initialized
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(50), () =>
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    if (DigitEntry?.Handler?.PlatformView is AppCompatEditText androidEntry)
-                    {
-                        // Remove old handler first to avoid duplicates
-                        androidEntry.KeyPress -= OnAndroidKeyPress;
-                        // Handle key events to detect backspace on Android
-                        androidEntry.KeyPress += OnAndroidKeyPress;
-                    }
-                });
-            });
+            editText.KeyPress -= OnBackspaceWhenEmpty;
+            editText.KeyPress += OnBackspaceWhenEmpty;
         }
-#elif IOS
-        // iOS-specific: Delete detection is handled through TextChanged event
-        // The TextChanged event reliably detects deletion when oldText has content
-        // but newText is empty, so no additional setup is needed
-        // The OnDigitEntryTextChanged method already handles this correctly
+#endif
+#if IOS
+        if (DigitEntry?.Handler?.PlatformView is KKPinView.Platforms.iOS.BackspaceAwareTextField iosTextField)
+        {
+            iosTextField.EmptyBackspacePressed -= OnIOSEmptyBackspace;
+            iosTextField.EmptyBackspacePressed += OnIOSEmptyBackspace;
+        }
 #endif
     }
 
-#if ANDROID
-    private void OnAndroidKeyPress(object? sender, Android.Views.View.KeyEventArgs e)
+#if IOS
+    private void OnIOSEmptyBackspace(object? sender, EventArgs e)
     {
-        // Detect backspace key (KeycodeDel = 67)
-        if (e.KeyCode == Android.Views.Keycode.Del || e.KeyCode == Android.Views.Keycode.Back)
-        {
-            if (IsEditable && !string.IsNullOrEmpty(Digit))
-            {
-                // Trigger delete callback on Android
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    Digit = string.Empty;
-                    IsFilled = false;
-                    DigitDeleted?.Invoke(this, EventArgs.Empty);
-                });
-                // Don't mark as handled - let the Entry process it normally too
-            }
-        }
+        DigitDeleted?.Invoke(this, EventArgs.Empty);
+    }
+#endif
+
+#if ANDROID
+    private void OnBackspaceWhenEmpty(object? sender, Android.Views.View.KeyEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(Digit)) return; // Has content - TextChanged will handle delete
+        if (e.KeyCode != Android.Views.Keycode.Del && e.KeyCode != Android.Views.Keycode.Back) return;
+
+        // Empty field + backspace: move to previous field and delete there
+        DigitDeleted?.Invoke(this, EventArgs.Empty);
+        e.Handled = true;
     }
 #endif
 
@@ -253,13 +234,7 @@ public partial class PinDigitField : ContentView
         }
     }
 
-    private static void OnIsEditableChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        if (bindable is PinDigitField field)
-        {
-            field.UpdateEditableState();
-        }
-    }
+    // Numeric keypad handler fully removed
 
     private static void OnBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
     {
@@ -298,26 +273,15 @@ public partial class PinDigitField : ContentView
                 DigitBorder.Stroke = Colors.Gray;
             }
         }
-
-        // Update visibility based on editable state
-        UpdateEditableState();
-    }
-
-    private void UpdateEditableState()
-    {
+        // Entry is always editable for system keyboard
         if (DigitEntry != null)
         {
-            // Entry is always visible, but read-only when not editable (numeric keypad mode)
-            DigitEntry.IsReadOnly = !IsEditable;
-            DigitEntry.IsEnabled = true; // Always enabled to show text, but read-only controls editing
-
-            // When read-only, prevent focus (numeric keypad mode)
-            if (!IsEditable)
-            {
-                DigitEntry.Unfocus();
-            }
+            DigitEntry.IsReadOnly = false;
+            DigitEntry.IsEnabled = true;
         }
     }
+
+    // Numeric keypad state update fully removed
 
     private void UpdateStrokeShape()
     {
@@ -347,26 +311,21 @@ public partial class PinDigitField : ContentView
 
     private void OnDigitEntryTextChanged(object? sender, TextChangedEventArgs e)
     {
-        // Only process text changes when editable (system keyboard mode)
-        if (!IsEditable) return;
-
+        // Always process text changes for system keyboard
         if (sender is Entry entry)
         {
             string oldText = e.OldTextValue ?? string.Empty;
             string newText = e.NewTextValue ?? string.Empty;
 
             // Detect delete/backspace: old text had content but new text is empty
-            // This works on both iOS and Android
             bool isDelete = !string.IsNullOrEmpty(oldText) && string.IsNullOrEmpty(newText);
 
             if (isDelete)
             {
-                // Skip if we're clearing programmatically (from parent) to avoid nested DigitDeleted
                 if (_isProgrammaticClear)
                 {
                     return;
                 }
-                // User pressed delete/backspace - trigger delete callback
                 Digit = string.Empty;
                 IsFilled = false;
                 DigitDeleted?.Invoke(this, EventArgs.Empty);
@@ -399,14 +358,10 @@ public partial class PinDigitField : ContentView
 
     private void OnDigitEntryCompleted(object? sender, EventArgs e)
     {
-        // Only process completion when editable (system keyboard mode)
-        if (!IsEditable) return;
-
+        // Always process completion for system keyboard
 #if IOS
-        // On iOS, dismiss the keyboard when return key is pressed
         DigitEntry?.Unfocus();
 #else
-        // On other platforms, move to next field
         DigitCompleted?.Invoke(this, EventArgs.Empty);
 #endif
     }

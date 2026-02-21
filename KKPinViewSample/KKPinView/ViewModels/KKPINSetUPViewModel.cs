@@ -1,17 +1,15 @@
-using System.Windows.Input;
 using KKPinView.Constants;
 
 namespace KKPinView.ViewModels;
 
 /// <summary>
-/// ViewModel for KKPINSetUPView
+/// ViewModel for KKPINSetUPView (system keyboard input only)
 /// </summary>
 public class KKPINSetUPViewModel : BasePinViewModel
 {
     private string _headingText;
     private string _enterPinLabelText;
     private string _confirmPinLabelText;
-    private PinInputMethod _inputMethod;
     private int _maxPinLength;
     private bool _showConfirmPin;
 
@@ -20,17 +18,11 @@ public class KKPINSetUPViewModel : BasePinViewModel
     /// </summary>
     public KKPINSetUPViewModel()
     {
-        // Initialize properties from constants
         _headingText = $"Set {KKPinviewConstant.TotalPinTextFields} digit PIN";
         _enterPinLabelText = KKPinviewConstant.EnterPinMessage;
         _confirmPinLabelText = KKPinviewConstant.ConfirmPinMessage;
-        _inputMethod = KKPinviewConstant.InputMethod;
         _maxPinLength = KKPinviewConstant.TotalPinTextFields;
-        _showConfirmPin = true; // Show confirm PIN fields by default
-
-        // Initialize commands
-        NumberCommand = new Command<string>(OnNumberPressed);
-        DeleteCommand = new Command(OnDeletePressed);
+        _showConfirmPin = true;
     }
 
     /// <summary>
@@ -61,15 +53,6 @@ public class KKPINSetUPViewModel : BasePinViewModel
     }
 
     /// <summary>
-    /// Gets or sets the input method for PIN entry (NumericKeypad or SystemKeyboard)
-    /// </summary>
-    public PinInputMethod InputMethod
-    {
-        get => _inputMethod;
-        set => SetProperty(ref _inputMethod, value);
-    }
-
-    /// <summary>
     /// Gets or sets the maximum PIN length
     /// </summary>
     public int MaxPinLength
@@ -88,16 +71,6 @@ public class KKPINSetUPViewModel : BasePinViewModel
     }
 
     /// <summary>
-    /// Gets the command for number button presses
-    /// </summary>
-    public ICommand NumberCommand { get; }
-
-    /// <summary>
-    /// Gets the command for delete/backspace button presses
-    /// </summary>
-    public ICommand DeleteCommand { get; }
-
-    /// <summary>
     /// Gets or sets the callback action invoked when PIN setup is successful
     /// </summary>
     public Action? OnSetupSuccess { get; set; }
@@ -108,26 +81,6 @@ public class KKPINSetUPViewModel : BasePinViewModel
     public Action<string>? OnSetupFailed { get; set; }
 
     /// <summary>
-    /// Event raised when a number is pressed on the keypad
-    /// </summary>
-    public event EventHandler<string>? NumberPressed;
-
-    /// <summary>
-    /// Event raised when the delete/backspace button is pressed
-    /// </summary>
-    public event EventHandler? DeletePressed;
-
-    private void OnNumberPressed(string number)
-    {
-        NumberPressed?.Invoke(this, number);
-    }
-
-    private void OnDeletePressed()
-    {
-        DeletePressed?.Invoke(this, EventArgs.Empty);
-    }
-
-    /// <summary>
     /// Releases the unmanaged resources used by the ViewModel and optionally releases the managed resources
     /// </summary>
     /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources</param>
@@ -135,10 +88,6 @@ public class KKPINSetUPViewModel : BasePinViewModel
     {
         if (disposing)
         {
-            // Clear event handlers
-            NumberPressed = null;
-            DeletePressed = null;
-
             // Clear callbacks
             OnSetupSuccess = null;
             OnSetupFailed = null;
