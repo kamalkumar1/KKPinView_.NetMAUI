@@ -208,30 +208,9 @@ var pinView = new KKPinViews
 PinContentView.Content = pinView;
 ```
 
-## Input Methods
+## Input
 
-KKPinView supports two input methods that can be configured via `KKPinviewConstant.InputMethod`:
-
-### NumericKeypad (Default)
-- Custom on-screen numeric keypad
-- PIN fields are read-only
-- Best for touch-first experiences
-
-### SystemKeyboard
-- Uses the system numeric keyboard
-- PIN fields are editable
-- Auto-focus moves between fields
-- Best for keyboard-first experiences
-
-```csharp
-using KKPinView.Constants;
-
-// Use custom numeric keypad (default)
-KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;
-
-// Use system keyboard
-KKPinviewConstant.InputMethod = PinInputMethod.SystemKeyboard;
-```
+KKPinView uses the **system numeric keyboard**. PIN fields are single-digit entries; focus moves automatically to the next field when a digit is entered. Tapping anywhere on the PIN area focuses the first empty field so digits always flow left to right. Backspace is handled per field with focus moving to the previous (or first empty) field as appropriate.
 
 ## API Documentation
 

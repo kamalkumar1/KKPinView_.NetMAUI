@@ -38,7 +38,6 @@ Install-Package KKPinView
 ![PIN Entry View](screenshots/pin-entry.png)
 ![Invalid PIN](screenshots/invalid-pin.png)
 ![Lockout Screen](screenshots/lockout.png)
-![Numeric Keypad](screenshots/numeric-keypad.png)
 ![System Keyboard](screenshots/system-keyboard.png)
 -->
 
