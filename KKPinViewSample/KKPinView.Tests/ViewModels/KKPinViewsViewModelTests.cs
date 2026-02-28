@@ -28,11 +28,19 @@ public class KKPinViewsViewModelTests
     }
 
     [Fact]
-    public void TitleText_CanBeSet()
+    public void TitleText_ReflectsConstant()
     {
-        var vm = new KKPinViewsViewModel();
-        vm.TitleText = "Custom Title";
-        Assert.Equal("Custom Title", vm.TitleText);
+        var original = KKPinviewConstant.TitleTextFormat;
+        try
+        {
+            KKPinviewConstant.TitleTextFormat = "Custom Title";
+            var vm = new KKPinViewsViewModel();
+            Assert.Equal("Custom Title", vm.TitleText);
+        }
+        finally
+        {
+            KKPinviewConstant.TitleTextFormat = original;
+        }
     }
 
     [Fact]

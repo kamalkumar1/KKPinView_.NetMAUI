@@ -155,7 +155,7 @@ private void UpdateBorderColors()
         {
             var targetColor = _pinFields[i].IsFilled
                 ? KKPinviewConstant.DigitFieldFilledColor
-                : Colors.Gray;
+                : KKPinviewConstant.DigitFieldEmptyBorderColor;
             _pinFields[i].AnimateBorderToColor(targetColor, borderAnimationDurationMs, Easing.CubicOut);
         }
     }

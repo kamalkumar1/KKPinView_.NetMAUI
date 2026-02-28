@@ -3,67 +3,32 @@ using KKPinView.Constants;
 namespace KKPinView.ViewModels;
 
 /// <summary>
-/// ViewModel for KKPINSetUPView (system keyboard input only)
+/// ViewModel for KKPINSetUPView. All display strings and lengths are read from
+/// <see cref="KKPinviewConstant"/> only; change them via the constant class (e.g. in app startup).
 /// </summary>
 public class KKPINSetUPViewModel : BasePinViewModel
 {
-    private string _headingText;
-    private string _enterPinLabelText;
-    private string _confirmPinLabelText;
-    private int _maxPinLength;
-    private bool _showConfirmPin;
+    private bool _showConfirmPin = true;
 
-    /// <summary>
-    /// Initializes a new instance of the KKPINSetUPViewModel class
-    /// </summary>
-    public KKPINSetUPViewModel()
-    {
-        _headingText = $"Set {KKPinviewConstant.TotalPinTextFields} digit PIN";
-        _enterPinLabelText = KKPinviewConstant.EnterPinMessage;
-        _confirmPinLabelText = KKPinviewConstant.ConfirmPinMessage;
-        _maxPinLength = KKPinviewConstant.TotalPinTextFields;
-        _showConfirmPin = true;
-    }
+    /// <summary>Gets the heading text. Change via <see cref="KKPinviewConstant.TotalPinTextFields"/>.</summary>
+    public string HeadingText => $"Set {KKPinviewConstant.TotalPinTextFields} digit PIN";
 
-    /// <summary>
-    /// Gets or sets the heading text for the PIN setup view
-    /// </summary>
-    public string HeadingText
-    {
-        get => _headingText;
-        set => SetProperty(ref _headingText, value);
-    }
+    /// <summary>Gets the setup title text. Change via <see cref="KKPinviewConstant.SetupTitleText"/>.</summary>
+    public string SetupTitleText => KKPinviewConstant.SetupTitleText;
 
-    /// <summary>
-    /// Gets or sets the label text for entering the PIN
-    /// </summary>
-    public string EnterPinLabelText
-    {
-        get => _enterPinLabelText;
-        set => SetProperty(ref _enterPinLabelText, value);
-    }
+    /// <summary>Gets the confirm section title. Change via <see cref="KKPinviewConstant.ConfirmPinTitleText"/>.</summary>
+    public string ConfirmPinTitleText => KKPinviewConstant.ConfirmPinTitleText;
 
-    /// <summary>
-    /// Gets or sets the label text for confirming the PIN
-    /// </summary>
-    public string ConfirmPinLabelText
-    {
-        get => _confirmPinLabelText;
-        set => SetProperty(ref _confirmPinLabelText, value);
-    }
+    /// <summary>Gets the label text for entering the PIN. Change via <see cref="KKPinviewConstant.EnterPinMessage"/>.</summary>
+    public string EnterPinLabelText => KKPinviewConstant.EnterPinMessage;
 
-    /// <summary>
-    /// Gets or sets the maximum PIN length
-    /// </summary>
-    public int MaxPinLength
-    {
-        get => _maxPinLength;
-        set => SetProperty(ref _maxPinLength, value);
-    }
+    /// <summary>Gets the label text for confirming the PIN. Change via <see cref="KKPinviewConstant.ConfirmPinMessage"/>.</summary>
+    public string ConfirmPinLabelText => KKPinviewConstant.ConfirmPinMessage;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the confirm PIN section should be visible
-    /// </summary>
+    /// <summary>Gets the maximum PIN length. Change via <see cref="KKPinviewConstant.TotalPinTextFields"/>.</summary>
+    public int MaxPinLength => KKPinviewConstant.TotalPinTextFields;
+
+    /// <summary>Gets or sets whether the confirm PIN section is visible (runtime behavior, not from constants).</summary>
     public bool ShowConfirmPin
     {
         get => _showConfirmPin;

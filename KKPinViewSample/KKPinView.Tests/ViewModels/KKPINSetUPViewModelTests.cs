@@ -16,6 +16,8 @@ public class KKPINSetUPViewModelTests
             KKPinviewConstant.TotalPinTextFields = 4;
             var vm = new KKPINSetUPViewModel();
 
+            Assert.Equal(KKPinviewConstant.SetupTitleText, vm.SetupTitleText);
+            Assert.Equal(KKPinviewConstant.ConfirmPinTitleText, vm.ConfirmPinTitleText);
             Assert.Equal(KKPinviewConstant.EnterPinMessage, vm.EnterPinLabelText);
             Assert.Equal(KKPinviewConstant.ConfirmPinMessage, vm.ConfirmPinLabelText);
             Assert.Equal(4, vm.MaxPinLength);
@@ -28,11 +30,19 @@ public class KKPINSetUPViewModelTests
     }
 
     [Fact]
-    public void MaxPinLength_CanBeSet()
+    public void MaxPinLength_ReflectsConstant()
     {
-        var vm = new KKPINSetUPViewModel();
-        vm.MaxPinLength = 6;
-        Assert.Equal(6, vm.MaxPinLength);
+        var original = KKPinviewConstant.TotalPinTextFields;
+        try
+        {
+            KKPinviewConstant.TotalPinTextFields = 6;
+            var vm = new KKPINSetUPViewModel();
+            Assert.Equal(6, vm.MaxPinLength);
+        }
+        finally
+        {
+            KKPinviewConstant.TotalPinTextFields = original;
+        }
     }
 
     [Fact]

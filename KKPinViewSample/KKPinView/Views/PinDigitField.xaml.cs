@@ -42,7 +42,7 @@ public partial class PinDigitField : ContentView
         nameof(BackgroundColor), typeof(MauiColor), typeof(PinDigitField), KKPinviewConstant.DigitFieldBackgroundColor);
 
     public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(
-        nameof(BorderColor), typeof(MauiColor), typeof(PinDigitField), Colors.Gray, propertyChanged: OnBorderColorChanged);
+        nameof(BorderColor), typeof(MauiColor), typeof(PinDigitField), KKPinviewConstant.DigitFieldEmptyBorderColor, propertyChanged: OnBorderColorChanged);
 
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(CornerRadius), typeof(double), typeof(PinDigitField), KKPinviewConstant.FieldCornerRadius, propertyChanged: OnCornerRadiusChanged);
@@ -338,22 +338,17 @@ public partial class PinDigitField : ContentView
     {
         // Use BorderColor property if it's been explicitly set (e.g., red for invalid)
         // Otherwise, use default behavior based on IsFilled
-        if (BorderColor != Colors.Gray && BorderColor != KKPinviewConstant.DigitFieldFilledColor)
+        if (BorderColor != KKPinviewConstant.DigitFieldEmptyBorderColor && BorderColor != KKPinviewConstant.DigitFieldFilledColor)
         {
             // Custom border color is set (e.g., red for invalid), use it
             DigitBorder.Stroke = BorderColor;
         }
         else
         {
-            // Use default behavior based on filled state
             if (IsFilled)
-            {
                 DigitBorder.Stroke = KKPinviewConstant.DigitFieldFilledColor;
-            }
             else
-            {
-                DigitBorder.Stroke = Colors.Gray;
-            }
+                DigitBorder.Stroke = KKPinviewConstant.DigitFieldEmptyBorderColor;
         }
         // Entry is always editable for system keyboard
         if (DigitEntry != null)

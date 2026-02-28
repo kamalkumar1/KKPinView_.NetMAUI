@@ -5,87 +5,37 @@ using KKPinView.Constants;
 namespace KKPinView.ViewModels;
 
 /// <summary>
-/// Base ViewModel class with common properties for PIN views
+/// Base ViewModel for PIN views. Configuration values (colors, fonts, spacing) are read from
+/// <see cref="KKPinviewConstant"/> only; change them via the constant class (e.g. in app startup).
 /// </summary>
 public abstract class BasePinViewModel : INotifyPropertyChanged, IDisposable
 {
-    private Color _backgroundColor = KKPinviewConstant.BackgroundColor;
-    private Color _textColor = KKPinviewConstant.TextColor;
-    private Color _errorTextColor = KKPinviewConstant.ErrorTextColor;
-    private Color _successTextColor = KKPinviewConstant.SuccessTextColor;
-    
-    private double _titleFontSize = KKPinviewConstant.TitleFontSize;
-    private double _subtitleFontSize = KKPinviewConstant.SubtitleFontSize;
-    private double _fieldSpacing = KKPinviewConstant.FieldSpacing;
-    
     private string _errorMessage = string.Empty;
     private string _successMessage = string.Empty;
     private bool _hasError;
     private bool _hasSuccessMessage;
     private bool _disposed;
 
-    /// <summary>
-    /// Gets or sets the background color of the view
-    /// </summary>
-    public Color BackgroundColor
-    {
-        get => _backgroundColor;
-        set => SetProperty(ref _backgroundColor, value);
-    }
+    /// <summary>Gets the background color of the view. Change via <see cref="KKPinviewConstant.BackgroundColor"/>.</summary>
+    public Color BackgroundColor => KKPinviewConstant.BackgroundColor;
 
-    /// <summary>
-    /// Gets or sets the text color used for labels and text elements
-    /// </summary>
-    public Color TextColor
-    {
-        get => _textColor;
-        set => SetProperty(ref _textColor, value);
-    }
+    /// <summary>Gets the text color for labels. Change via <see cref="KKPinviewConstant.TextColor"/>.</summary>
+    public Color TextColor => KKPinviewConstant.TextColor;
 
-    /// <summary>
-    /// Gets or sets the color used for error messages
-    /// </summary>
-    public Color ErrorTextColor
-    {
-        get => _errorTextColor;
-        set => SetProperty(ref _errorTextColor, value);
-    }
+    /// <summary>Gets the color for error messages. Change via <see cref="KKPinviewConstant.ErrorTextColor"/>.</summary>
+    public Color ErrorTextColor => KKPinviewConstant.ErrorTextColor;
 
-    /// <summary>
-    /// Gets or sets the color used for success messages
-    /// </summary>
-    public Color SuccessTextColor
-    {
-        get => _successTextColor;
-        set => SetProperty(ref _successTextColor, value);
-    }
-    
-    /// <summary>
-    /// Gets or sets the font size for title text
-    /// </summary>
-    public double TitleFontSize
-    {
-        get => _titleFontSize;
-        set => SetProperty(ref _titleFontSize, value);
-    }
+    /// <summary>Gets the color for success messages. Change via <see cref="KKPinviewConstant.SuccessTextColor"/>.</summary>
+    public Color SuccessTextColor => KKPinviewConstant.SuccessTextColor;
 
-    /// <summary>
-    /// Gets or sets the font size for subtitle text
-    /// </summary>
-    public double SubtitleFontSize
-    {
-        get => _subtitleFontSize;
-        set => SetProperty(ref _subtitleFontSize, value);
-    }
+    /// <summary>Gets the font size for title text. Change via <see cref="KKPinviewConstant.TitleFontSize"/>.</summary>
+    public double TitleFontSize => KKPinviewConstant.TitleFontSize;
 
-    /// <summary>
-    /// Gets or sets the spacing between PIN digit fields
-    /// </summary>
-    public double FieldSpacing
-    {
-        get => _fieldSpacing;
-        set => SetProperty(ref _fieldSpacing, value);
-    }
+    /// <summary>Gets the font size for subtitle text. Change via <see cref="KKPinviewConstant.SubtitleFontSize"/>.</summary>
+    public double SubtitleFontSize => KKPinviewConstant.SubtitleFontSize;
+
+    /// <summary>Gets the spacing between PIN digit fields. Change via <see cref="KKPinviewConstant.FieldSpacing"/>.</summary>
+    public double FieldSpacing => KKPinviewConstant.FieldSpacing;
     
     /// <summary>
     /// Gets or sets the error message text to display

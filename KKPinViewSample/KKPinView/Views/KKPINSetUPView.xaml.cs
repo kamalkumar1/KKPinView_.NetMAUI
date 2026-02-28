@@ -70,6 +70,12 @@ public partial class KKPINSetUPView : ContentView
             FocusFirstEmptyEnterField();
     }
 
+    /// <summary>Gets the label text for entering the PIN. Change only via <see cref="Constants.KKPinviewConstant.EnterPinMessage"/>.</summary>
+    public string EnterPinLabelText => _viewModel.EnterPinLabelText;
+
+    /// <summary>Gets the label text for confirming the PIN. Change only via <see cref="Constants.KKPinviewConstant.ConfirmPinMessage"/>.</summary>
+    public string ConfirmPinLabelText => _viewModel.ConfirmPinLabelText;
+
     /// <summary>
     /// Callback invoked when PIN setup is successful
     /// </summary>
@@ -301,13 +307,12 @@ public partial class KKPINSetUPView : ContentView
             }
             else
             {
-                string errorMessage = "Failed to save PIN. Please try again.";
-                ShowErrorMessage(errorMessage);
+                ShowErrorMessage(KKPinviewConstant.SetupSaveFailedMessage);
 
                 // Add delay before triggering failure callback
                 Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
                 {
-                    _viewModel.OnSetupFailed?.Invoke(errorMessage);
+                    _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.SetupSaveFailedMessage);
                 });
             }
         }

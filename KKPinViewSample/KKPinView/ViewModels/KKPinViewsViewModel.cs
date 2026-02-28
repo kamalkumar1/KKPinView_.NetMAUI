@@ -3,55 +3,29 @@ using KKPinView.Constants;
 namespace KKPinView.ViewModels;
 
 /// <summary>
-/// ViewModel for KKPinViews (system keyboard input only)
+/// ViewModel for KKPinViews. Title, subtitle and button text are read from
+/// <see cref="KKPinviewConstant"/> only; change them via the constant class (e.g. in app startup).
 /// </summary>
 public class KKPinViewsViewModel : BasePinViewModel
 {
-    private string _titleText;
-    private string _subtitleText;
-    private string _forgotPinText;
-    private bool _showForgotPin;
+    private bool _showForgotPin = true;
     private bool _isPinInvalid;
 
-    /// <summary>
-    /// Initializes a new instance of the KKPinViewsViewModel class
-    /// </summary>
+    /// <summary>Initializes a new instance of the KKPinViewsViewModel class.</summary>
     public KKPinViewsViewModel()
     {
         HasError = false;
         HasSuccessMessage = false;
-        _titleText = KKPinviewConstant.TitleTextFormat;
-        _subtitleText = string.Format(KKPinviewConstant.SubtitleText, KKPinviewConstant.TotalPinTextFields);
-        _forgotPinText = KKPinviewConstant.ForgotPinText;
-        _showForgotPin = true;
     }
 
-    /// <summary>
-    /// Gets or sets the title text displayed at the top of the PIN entry view
-    /// </summary>
-    public string TitleText
-    {
-        get => _titleText;
-        set => SetProperty(ref _titleText, value);
-    }
+    /// <summary>Gets the title text. Change via <see cref="KKPinviewConstant.TitleTextFormat"/>.</summary>
+    public string TitleText => KKPinviewConstant.TitleTextFormat;
 
-    /// <summary>
-    /// Gets or sets the subtitle text displayed below the title
-    /// </summary>
-    public string SubtitleText
-    {
-        get => _subtitleText;
-        set => SetProperty(ref _subtitleText, value);
-    }
+    /// <summary>Gets the subtitle text. Change via <see cref="KKPinviewConstant.SubtitleText"/> and <see cref="KKPinviewConstant.TotalPinTextFields"/>.</summary>
+    public string SubtitleText => string.Format(KKPinviewConstant.SubtitleText, KKPinviewConstant.TotalPinTextFields);
 
-    /// <summary>
-    /// Gets or sets the text displayed on the "Forgot PIN?" button
-    /// </summary>
-    public string ForgotPinText
-    {
-        get => _forgotPinText;
-        set => SetProperty(ref _forgotPinText, value);
-    }
+    /// <summary>Gets the "Forgot PIN?" button text. Change via <see cref="KKPinviewConstant.ForgotPinText"/>.</summary>
+    public string ForgotPinText => KKPinviewConstant.ForgotPinText;
 
     /// <summary>
     /// Gets or sets a value indicating whether the "Forgot PIN?" button should be visible
