@@ -1,11 +1,11 @@
+using KKPinView.Helpers;
 using Xunit;
 
 namespace KKPinView.Tests.Views;
 
 /// <summary>
 /// Documents and tests the expected state after PIN mismatch reset.
-/// After mismatch: both PINs cleared, isConfirmingPin false, user re-enters from first Enter PIN field.
-/// Ensures reset logic (ClearDigitSilently + state) doesn't affect existing validation.
+/// After mismatch: both PINs cleared via ClearDigitSilently, isConfirmingPin false, focus first Enter PIN field.
 /// </summary>
 public class PinMismatchResetTests
 {
@@ -57,6 +57,14 @@ public class PinMismatchResetTests
         state.ApplyReset();
         Assert.Empty(state.CurrentPin);
         Assert.False(state.IsConfirmingPin);
-        // Spec: next input should go to "Enter PIN" (first empty = index 0 of enter section)
+    }
+
+    [Fact]
+    public void AfterReset_FirstEmptyEnterFieldIndexIsZero()
+    {
+        // After mismatch reset, enter section is all empty; next tap/input should focus index 0
+        var enterDigits = new[] { "", "", "", "" };
+        int firstEmpty = PinFieldHelpers.GetFirstEmptyFieldIndex(enterDigits, 4);
+        Assert.Equal(0, firstEmpty);
     }
 }

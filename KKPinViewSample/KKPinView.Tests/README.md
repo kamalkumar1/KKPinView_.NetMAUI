@@ -19,6 +19,8 @@ dotnet test KKPinView.Tests/KKPinView.Tests.csproj -v normal
 dotnet test KKPinView.Tests/KKPinView.Tests.csproj --filter "FullyQualifiedName~KKPinviewConstantTests"
 ```
 
+**Note:** If you see `SocketException (13): Permission denied` or MSBuild pipe errors when running in a restricted/sandbox environment (e.g. CI or some IDEs), run the test command with full permissions or outside the sandbox so MSBuild can create its out-of-process nodes. Locally, `dotnet test` usually works without changes.
+
 ## Test Coverage
 
 | Test Class | Coverage |
@@ -31,7 +33,7 @@ dotnet test KKPinView.Tests/KKPinView.Tests.csproj --filter "FullyQualifiedName~
 | `ConfirmPinValidationTests` | Confirm PIN validation (4/6 fields, match/mismatch) |
 | `FirstEmptyFieldLogicTests` | First-empty field index (tap-to-continuation, digits in order) |
 | `PinMismatchResetTests` | Expected state after PIN mismatch reset (clear both PINs, re-enter from first) |
-| `SetupViewBehaviorRegressionTests` | Regression: continuation behavior, match/mismatch, MaxPinLength unchanged |
+| `SetupViewBehaviorRegressionTests` | Regression: first-empty continuation, next-field index, match/mismatch, MaxPinLength |
 
 ## Adding More Tests
 

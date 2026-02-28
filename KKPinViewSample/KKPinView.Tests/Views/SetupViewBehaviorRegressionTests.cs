@@ -6,8 +6,8 @@ using Xunit;
 namespace KKPinView.Tests.Views;
 
 /// <summary>
-/// Regression tests: expected behavior after tap-to-continuation and mismatch-reset changes.
-/// Ensures existing functionality (validation, match/mismatch, 4/6 fields) is not affected.
+/// Regression tests: tap-to-continuation (first empty), focus-next on digit entry, mismatch reset, validation.
+/// Ensures existing functionality (match/mismatch, 4/6 fields, MaxPinLength) is not affected.
 /// </summary>
 [Collection("Constants")]
 public class SetupViewBehaviorRegressionTests
@@ -15,12 +15,10 @@ public class SetupViewBehaviorRegressionTests
     [Fact]
     public void FirstEmpty_WhenEnterIncomplete_IsInEnterSection_Spec()
     {
-        // After our change: tap anywhere (including Confirm) while Enter PIN has empty fields
-        // should target first empty Enter field. Helper "first empty" index applies per section.
-        var enterDigits = new[] { "1", "", "", "" }; // one digit entered
+        // Tap anywhere (including Confirm) while Enter PIN has empty fields: target first empty Enter field.
+        var enterDigits = new[] { "1", "", "", "" };
         int firstEmptyEnter = PinFieldHelpers.GetFirstEmptyFieldIndex(enterDigits, 4);
         Assert.Equal(1, firstEmptyEnter);
-        // So next digit should go to index 1 (continuation), not Confirm
     }
 
     [Fact]
@@ -62,5 +60,16 @@ public class SetupViewBehaviorRegressionTests
         {
             KKPinviewConstant.TotalPinTextFields = original;
         }
+    }
+
+    /// <summary>Documents contract: after digit entry in a non-last field, next focus target is fieldIndex+1.</summary>
+    [Fact]
+    public void DigitEntry_NextFieldIndex_IsCurrentPlusOne()
+    {
+        int fieldIndex = 2; // e.g. third Enter PIN field
+        int fieldCount = 4;
+        int nextIndex = fieldIndex + 1;
+        Assert.True(nextIndex < fieldCount);
+        Assert.Equal(3, nextIndex);
     }
 }

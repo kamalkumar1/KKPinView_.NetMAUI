@@ -4,8 +4,8 @@ using Xunit;
 namespace KKPinView.Tests.Helpers;
 
 /// <summary>
-/// Tests for "first empty field" logic used when user taps anywhere so digits continue in order.
-/// Covers: tap on any box -> focus first empty (continuation); existing behavior unchanged.
+/// Tests for PinFieldHelpers.GetFirstEmptyFieldIndex: tap anywhere -> focus first empty (continuation).
+/// Used by setup and enter-PIN views for TapCommand / FocusFirstEmpty*.
 /// </summary>
 public class FirstEmptyFieldLogicTests
 {
@@ -86,5 +86,21 @@ public class FirstEmptyFieldLogicTests
         var digits = new[] { "1", "2", "3", "4", "", "6" };
         int index = PinFieldHelpers.GetFirstEmptyFieldIndex(digits, 6);
         Assert.Equal(4, index);
+    }
+
+    [Fact]
+    public void GetFirstEmptyFieldIndex_DigitsShorterThanCount_FirstEmptyInRange_ReturnsIndex()
+    {
+        var digits = new[] { "1", "" }; // count 4: only indices 0,1 are checked
+        int index = PinFieldHelpers.GetFirstEmptyFieldIndex(digits, 4);
+        Assert.Equal(1, index);
+    }
+
+    [Fact]
+    public void GetFirstEmptyFieldIndex_DigitsShorterThanCount_AllCheckedFilled_ReturnsZero()
+    {
+        var digits = new[] { "1", "2" }; // count 4, len 2: both filled, return 0
+        int index = PinFieldHelpers.GetFirstEmptyFieldIndex(digits, 4);
+        Assert.Equal(0, index);
     }
 }

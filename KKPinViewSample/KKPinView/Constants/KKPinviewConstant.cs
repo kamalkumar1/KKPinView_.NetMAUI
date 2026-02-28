@@ -66,5 +66,8 @@ public static class KKPinviewConstant
 
     public static int SuccessMessageLabelHeight = 24;
     public static int ErrorMessageLabelHeight = 24;
+
+    /// <summary>How long the PIN mismatch error is shown (ms) before it fades out and PIN fields are reset.</summary>
+    public static int PinMismatchErrorDisplayDurationMs { get; set; } = 1500;
 }
 

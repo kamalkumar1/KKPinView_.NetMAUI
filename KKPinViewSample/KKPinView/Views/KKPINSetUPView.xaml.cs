@@ -313,73 +313,78 @@ public partial class KKPINSetUPView : ContentView
         }
         else
         {
-            try
+            _ = RunPinMismatchErrorSequenceAsync();
+        }
+    }
+
+    /// <summary>Runs the PIN mismatch flow: show error with animation, hold, fade out error, then reset all PIN fields. Keeps OnSetupFailed callback behavior.</summary>
+    private async Task RunPinMismatchErrorSequenceAsync()
+    {
+        try
+        {
+            // Close keyboard and allow any initial ClearMessages() to settle
+            foreach (var f in _enterPinFields) f.UnfocusEntry();
+            foreach (var f in _confirmPinFields) f.UnfocusEntry();
+            await Task.Delay(50);
+
+            // Notify host immediately so existing functionality (e.g. analytics) is unchanged
+            _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
+
+            // Show error with clean fade + scale-in animation
+            await ShowErrorMessageAsync(KKPinviewConstant.PinMismatchError);
+
+            // Hold error visible so user can read it, then fade out
+            await Task.Delay(KKPinviewConstant.PinMismatchErrorDisplayDurationMs);
+
+            // Fade out error message
+            await ClearMessagesAsync();
+
+            // Reset all PINs after error animation is complete (on UI thread)
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                // Close keyboard when PINs don't match
-                foreach (var f in _enterPinFields) f.UnfocusEntry();
-                foreach (var f in _confirmPinFields) f.UnfocusEntry();
-
-                // Brief delay before showing error to improve UX
-                // PINs don't match - show error message
-                ShowErrorMessage(KKPinviewConstant.PinMismatchError);
-
-                // Clear both Enter PIN and Confirm PIN fields and reset to enter-from-first so user can re-enter.
-                // Use ClearDigitSilently() to avoid firing DigitDeleted (which would run delete handlers and move focus to wrong field).
-                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(150), () =>
+                try
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        try
-                        {
-                            _currentPin = string.Empty;
-                            _confirmPin = string.Empty;
-                            foreach (var f in _enterPinFields) f.ClearDigitSilently();
-                            foreach (var f in _confirmPinFields) f.ClearDigitSilently();
-
-                            // Reset to enter PIN mode (keep confirm section visible) and focus first Enter PIN field
-                            _isConfirmingPin = false;
-                            if (_enterPinFields.Count > 0)
-                                _enterPinFields[0].FocusEntry();
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error clearing PIN fields: {ex.Message}");
-                        }
-                    });
-                });
-
-                // Add delay before triggering failure callback
-                Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+                    _currentPin = string.Empty;
+                    _confirmPin = string.Empty;
+                    foreach (var f in _enterPinFields) f.ClearDigitSilently();
+                    foreach (var f in _confirmPinFields) f.ClearDigitSilently();
+                    _isConfirmingPin = false;
+                    if (_enterPinFields.Count > 0)
+                        _enterPinFields[0].FocusEntry();
+                }
+                catch (Exception ex)
                 {
-                    _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ValidatePinMatch Exception: {ex.Message}");
-                // Ignore any exceptions from delay
-            }
-
+                    System.Diagnostics.Debug.WriteLine($"Error clearing PIN fields: {ex.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"RunPinMismatchErrorSequence Exception: {ex.Message}");
         }
     }
 
     private async void ShowErrorMessage(string message)
+    {
+        await ShowErrorMessageAsync(message);
+    }
+
+    /// <summary>Shows the error message with a clean fade + scale-in animation. Returns when the animation completes.</summary>
+    private async Task ShowErrorMessageAsync(string message)
     {
         SuccessMessageLabel.HeightRequest = 0;
         _viewModel.ErrorMessage = message;
         _viewModel.HasError = true;
         _viewModel.HasSuccessMessage = false;
 
-        // Animate error message appearance - fade and scale simultaneously
         if (ErrorMessageLabel != null)
         {
             ErrorMessageLabel.Opacity = 0;
-            ErrorMessageLabel.Scale = 0.3; // Start from smaller scale
+            ErrorMessageLabel.Scale = 0.3;
             ErrorMessageLabel.HeightRequest = 0;
             var heightAnimation = new Animation(v => ErrorMessageLabel.HeightRequest = v, 0, KKPinviewConstant.ErrorMessageLabelHeight, Easing.CubicOut);
             var heightTaskCompletionSource = new TaskCompletionSource<bool>();
             heightAnimation.Commit(ErrorMessageLabel, "height", 16, 300, Easing.CubicOut, (v, c) => heightTaskCompletionSource.SetResult(true));
-            // Run fade and scale animations simultaneously
             await Task.WhenAll(
                 heightTaskCompletionSource.Task,
                 ErrorMessageLabel.FadeToAsync(1, 300, Easing.CubicOut),
@@ -416,7 +421,12 @@ public partial class KKPINSetUPView : ContentView
 
     private async void ClearMessages()
     {
-        // Animate fade out before clearing
+        await ClearMessagesAsync();
+    }
+
+    /// <summary>Fades out error/success messages and clears view model. Returns when the animation completes.</summary>
+    private async Task ClearMessagesAsync()
+    {
         if (ErrorMessageLabel != null && _viewModel.HasError)
         {
             var currentHeight = ErrorMessageLabel.HeightRequest;
@@ -424,20 +434,17 @@ public partial class KKPINSetUPView : ContentView
             var heightTaskCompletionSource = new TaskCompletionSource<bool>();
             heightAnimation.Commit(ErrorMessageLabel, "height", 16, 200, Easing.CubicIn, (v, c) => heightTaskCompletionSource.SetResult(true));
             await Task.WhenAll(
-               heightTaskCompletionSource.Task,
-               ErrorMessageLabel.FadeToAsync(0, 200)
-           );
-
+                heightTaskCompletionSource.Task,
+                ErrorMessageLabel.FadeToAsync(0, 200)
+            );
         }
 
         if (SuccessMessageLabel != null && SuccessMessageLabel.HeightRequest > 0)
         {
-            // Animate height back to 0 and fade out simultaneously
             var currentHeight = SuccessMessageLabel.HeightRequest;
             var heightAnimation = new Animation(v => SuccessMessageLabel.HeightRequest = v, currentHeight, 0, Easing.CubicIn);
             var heightTaskCompletionSource = new TaskCompletionSource<bool>();
             heightAnimation.Commit(SuccessMessageLabel, "height", 16, 200, Easing.CubicIn, (v, c) => heightTaskCompletionSource.SetResult(true));
-
             await Task.WhenAll(
                 heightTaskCompletionSource.Task,
                 SuccessMessageLabel.FadeToAsync(0, 200)
@@ -448,7 +455,6 @@ public partial class KKPINSetUPView : ContentView
         _viewModel.HasSuccessMessage = false;
         _viewModel.ErrorMessage = string.Empty;
         _viewModel.SuccessMessage = string.Empty;
-
     }
 
     private void OnRootTapped(object? sender, TappedEventArgs e)
@@ -559,20 +565,13 @@ public partial class KKPINSetUPView : ContentView
         // PinDigitField already cleared current field before invoking. Use _currentPin to detect
         // if it had a digit (we haven't rebuilt yet).
         bool currentFieldHadDigit = _currentPin.Length > fieldIndex;
-        int fieldToFocus;
 
-        if (currentFieldHadDigit)
+        if (!currentFieldHadDigit && fieldIndex > 0)
         {
-            // Current had a digit - already cleared; move focus to previous field
-            fieldToFocus = fieldIndex > 0 ? fieldIndex - 1 : 0;
-        }
-        else if (fieldIndex > 0)
-        {
-            // Current was empty - clear previous and move focus to it
+            // Current was empty - clear previous field so backspace removes the digit to the left
             _enterPinFields[fieldIndex - 1].ClearDigitSilently();
-            fieldToFocus = fieldIndex - 1;
         }
-        else
+        else if (!currentFieldHadDigit && fieldIndex == 0)
         {
             // First field and empty - nothing to delete
             return;
@@ -588,12 +587,13 @@ public partial class KKPINSetUPView : ContentView
 
         ClearMessages();
 
-        // Move focus
+        // Focus first empty field so the next digit the user types goes in the correct box (re-entry after partial delete)
+        int firstEmptyIndex = Math.Min(_currentPin.Length, _enterPinFields.Count - 1);
         Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                _enterPinFields[fieldToFocus].FocusEntry();
+                _enterPinFields[firstEmptyIndex].FocusEntry();
             });
         });
     }
@@ -696,8 +696,9 @@ public partial class KKPINSetUPView : ContentView
                 {
                     if (_enterPinFields.Count > 0)
                     {
-                        int last = Math.Max(0, _currentPin.Length - 1);
-                        _enterPinFields[last].FocusEntry();
+                        // Focus first empty enter field so next digit goes in the correct box
+                        int firstEmpty = Math.Min(_currentPin.Length, _enterPinFields.Count - 1);
+                        _enterPinFields[firstEmpty].FocusEntry();
                     }
                 });
             });
@@ -727,8 +728,8 @@ public partial class KKPINSetUPView : ContentView
                 {
                     if (_enterPinFields.Count > 0)
                     {
-                        int last = Math.Max(0, _currentPin.Length - 1);
-                        _enterPinFields[last].FocusEntry();
+                        int firstEmpty = Math.Min(_currentPin.Length, _enterPinFields.Count - 1);
+                        _enterPinFields[firstEmpty].FocusEntry();
                     }
                 });
             });

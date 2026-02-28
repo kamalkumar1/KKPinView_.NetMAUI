@@ -144,25 +144,19 @@ private void UpdatePinFields()
 
 private void UpdateBorderColors()
 {
+    const uint borderAnimationDurationMs = 220;
     for (int i = 0; i < _pinFields.Count; i++)
     {
-        // Set border color to invalid color if PIN is invalid
         if (_viewModel.IsPinInvalid)
         {
-            _pinFields[i].BorderColor = KKPinviewConstant.InvalidPinBorderColor;
+            _pinFields[i].AnimateBorderToColor(KKPinviewConstant.InvalidPinBorderColor, borderAnimationDurationMs, Easing.CubicOut);
         }
         else
         {
-            // Reset to default - let UpdateAppearance handle it based on IsFilled
-            // Set to a sentinel value that will trigger default behavior
-            if (_pinFields[i].IsFilled)
-            {
-                _pinFields[i].BorderColor = KKPinviewConstant.DigitFieldFilledColor;
-            }
-            else
-            {
-                _pinFields[i].BorderColor = Colors.Gray;
-            }
+            var targetColor = _pinFields[i].IsFilled
+                ? KKPinviewConstant.DigitFieldFilledColor
+                : Colors.Gray;
+            _pinFields[i].AnimateBorderToColor(targetColor, borderAnimationDurationMs, Easing.CubicOut);
         }
     }
 }

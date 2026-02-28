@@ -307,6 +307,33 @@ public partial class PinDigitField : ContentView
         }
     }
 
+    private const string BorderAnimationName = "PinDigitFieldBorder";
+
+    /// <summary>Animates the border stroke from the current color to <paramref name="targetColor"/> over the given duration.</summary>
+    public void AnimateBorderToColor(MauiColor targetColor, uint durationMs = 250, Easing? easing = null)
+    {
+        if (DigitBorder == null) return;
+        this.AbortAnimation(BorderAnimationName);
+        MauiColor fromColor = BorderColor;
+        easing ??= Easing.CubicInOut;
+        var animation = new Animation(v =>
+        {
+            MauiColor interpolated = Lerp(fromColor, targetColor, (float)v);
+            BorderColor = interpolated;
+        }, 0, 1);
+        animation.Commit(this, BorderAnimationName, 16, durationMs, easing);
+    }
+
+    private static MauiColor Lerp(MauiColor from, MauiColor to, float t)
+    {
+        t = Math.Clamp(t, 0f, 1f);
+        float r = from.Red + (to.Red - from.Red) * t;
+        float g = from.Green + (to.Green - from.Green) * t;
+        float b = from.Blue + (to.Blue - from.Blue) * t;
+        float a = from.Alpha + (to.Alpha - from.Alpha) * t;
+        return new MauiColor(r, g, b, a);
+    }
+
     private void UpdateAppearance()
     {
         // Use BorderColor property if it's been explicitly set (e.g., red for invalid)
