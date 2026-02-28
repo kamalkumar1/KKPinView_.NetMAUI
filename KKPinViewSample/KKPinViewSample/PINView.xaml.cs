@@ -14,6 +14,16 @@ public partial class PINView : ContentPage
         Loaded += OnPageLoaded;
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        // Bring keyboard when page is visible (e.g. after setup completed and navigated here)
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() => PinEntryContentView?.ShowKeyboard());
+        });
+    }
+
     private void OnPageLoaded(object? sender, EventArgs e)
     {
         if (PinEntryContentView != null)

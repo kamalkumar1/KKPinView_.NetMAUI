@@ -13,21 +13,29 @@
         HeightRequest="{Binding Source={x:Reference Root}, Path=FieldHeight}"
         StrokeShape="{Binding Source={x:Reference Root}, Path=StrokeShape}">
 
-        <!-- BackspaceAwareEntry raises event when backspace pressed on empty field (iOS/Android) -->
-        <views:BackspaceAwareEntry
-            x:Name="DigitEntry"
-            Text="{Binding Source={x:Reference Root}, Path=Digit}"
-            Keyboard="Numeric"
-            MaxLength="1"
-            IsPassword="True"
-            FontSize="{Binding Source={x:Reference Root}, Path=FontSize}"
-            TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
-            BackgroundColor="Transparent"
-            HorizontalOptions="Fill"
-            VerticalOptions="Fill"
-            HorizontalTextAlignment="Center"
-            VerticalTextAlignment="Center"
-            TextChanged="OnDigitEntryTextChanged"
-            Completed="OnDigitEntryCompleted" />
+        <!-- Grid: Entry receives keyboard when focused programmatically; overlay blocks hand taps so user cannot tap to focus/move cursor. -->
+        <Grid>
+            <views:BackspaceAwareEntry
+                x:Name="DigitEntry"
+                Text="{Binding Source={x:Reference Root}, Path=Digit}"
+                Keyboard="Numeric"
+                MaxLength="1"
+                IsPassword="False"
+                FontSize="{Binding Source={x:Reference Root}, Path=FontSize}"
+                TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
+                BackgroundColor="Transparent"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                TextChanged="OnDigitEntryTextChanged"
+                Completed="OnDigitEntryCompleted" />
+            <!-- Overlay captures touches so user cannot tap entry; keyboard input still works when entry is focused programmatically -->
+            <BoxView x:Name="TouchBlocker" BackgroundColor="Transparent" InputTransparent="False">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding Source={x:Reference Root}, Path=FocusEntryCommand}" />
+                </BoxView.GestureRecognizers>
+            </BoxView>
+        </Grid>
     </Border>
 </ContentView>

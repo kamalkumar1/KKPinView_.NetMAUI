@@ -1,11 +1,14 @@
 using KKPinView.Constants;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Shapes;
+using MauiEntry = Microsoft.Maui.Controls.Entry;
+using MauiColor = Microsoft.Maui.Graphics.Color;
 
 #if ANDROID
 using AndroidX.AppCompat.Widget;
 using Android.Views.InputMethods;
 using Android.Content;
+using Android.Graphics;
 #endif
 
 #if IOS
@@ -33,13 +36,13 @@ public partial class PinDigitField : ContentView
         nameof(FontSize), typeof(double), typeof(PinDigitField), KKPinviewConstant.DigitFontSize);
 
     public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
-        nameof(TextColor), typeof(Color), typeof(PinDigitField), KKPinviewConstant.TextColor);
+        nameof(TextColor), typeof(MauiColor), typeof(PinDigitField), KKPinviewConstant.TextColor);
 
     public static new readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
-        nameof(BackgroundColor), typeof(Color), typeof(PinDigitField), KKPinviewConstant.DigitFieldBackgroundColor);
+        nameof(BackgroundColor), typeof(MauiColor), typeof(PinDigitField), KKPinviewConstant.DigitFieldBackgroundColor);
 
     public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(
-        nameof(BorderColor), typeof(Color), typeof(PinDigitField), Colors.Gray, propertyChanged: OnBorderColorChanged);
+        nameof(BorderColor), typeof(MauiColor), typeof(PinDigitField), Colors.Gray, propertyChanged: OnBorderColorChanged);
 
     public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(
         nameof(CornerRadius), typeof(double), typeof(PinDigitField), KKPinviewConstant.FieldCornerRadius, propertyChanged: OnCornerRadiusChanged);
@@ -83,21 +86,21 @@ public partial class PinDigitField : ContentView
         set => SetValue(FontSizeProperty, value);
     }
 
-    public Color TextColor
+    public MauiColor TextColor
     {
-        get => (Color)GetValue(TextColorProperty);
+        get => (MauiColor)GetValue(TextColorProperty);
         set => SetValue(TextColorProperty, value);
     }
 
-    public new Color BackgroundColor
+    public new MauiColor BackgroundColor
     {
-        get => (Color)GetValue(BackgroundColorProperty);
+        get => (MauiColor)GetValue(BackgroundColorProperty);
         set => SetValue(BackgroundColorProperty, value);
     }
 
-    public Color BorderColor
+    public MauiColor BorderColor
     {
-        get => (Color)GetValue(BorderColorProperty);
+        get => (MauiColor)GetValue(BorderColorProperty);
         set => SetValue(BorderColorProperty, value);
     }
 
@@ -121,7 +124,20 @@ public partial class PinDigitField : ContentView
     /// </summary>
     public RoundRectangle? StrokeShape { get; private set; }
 
+    /// <summary>
+    /// Command that focuses the entry and brings the keyboard. Bind to TapGestureRecognizer.Command to bring keyboard on overlay tap without code-behind handler.
+    /// When <see cref="TapCommand"/> is set (e.g. by parent), overlay tap runs that instead so input always goes to the logical first-empty field.
+    /// </summary>
+    public System.Windows.Input.ICommand FocusEntryCommand { get; }
+
+    /// <summary>
+    /// If set by the parent, overlay tap executes this instead of focusing this field. Use to focus the first empty field so digits always flow left-to-right.
+    /// Delete/backspace focus is set by the parent's DigitDeleted handler; TapCommand only affects tap-to-open and does not change delete logic.
+    /// </summary>
+    public System.Windows.Input.ICommand? TapCommand { get; set; }
+
     private bool _isProgrammaticClear;
+    private bool _suppressDigitEvents;
 
     /// <summary>
     /// Clears the digit without triggering DigitDeleted. Use when clearing from parent (e.g. delete handler).
@@ -136,19 +152,31 @@ public partial class PinDigitField : ContentView
 
     public PinDigitField()
     {
+        FocusEntryCommand = new Command(() =>
+        {
+            if (TapCommand != null)
+                TapCommand.Execute(null);
+            else
+                FocusEntry();
+        });
         InitializeComponent();
         UpdateStrokeShape();
 
         // Initialize editable state after component is loaded
         Loaded += OnFieldLoaded;
 
-        // Remove Android underline when handler is attached
+        // Remove Android underline and make cursor invisible when handler is attached
         HandlerChanged += OnHandlerChanged;
+
+        // Keep cursor at end and invisible; user cannot move cursor (InputTransparent on entry)
+        if (DigitEntry != null)
+            DigitEntry.Focused += OnDigitEntryFocused;
     }
 
     private void OnHandlerChanged(object? sender, EventArgs e)
     {
         RemoveAndroidUnderline();
+        MakeCursorInvisible();
         SetupBackspaceOnEmptyFieldHandler();
     }
 
@@ -160,7 +188,38 @@ public partial class PinDigitField : ContentView
             DigitEntry.IsReadOnly = false;
         }
         RemoveAndroidUnderline();
+        MakeCursorInvisible();
         SetupBackspaceOnEmptyFieldHandler();
+    }
+
+    private void OnDigitEntryFocused(object? sender, FocusEventArgs e)
+    {
+        if (e.IsFocused && DigitEntry != null)
+            SetCursorToEnd(DigitEntry);
+    }
+
+    private static void SetCursorToEnd(MauiEntry entry)
+    {
+        var len = entry.Text?.Length ?? 0;
+        entry.CursorPosition = len;
+        entry.SelectionLength = 0;
+    }
+
+    private void MakeCursorInvisible()
+    {
+#if IOS
+        // Native UITextField only — no MAUI platform-specific Entry API (custom handler uses BackspaceAwareTextField)
+        if (DigitEntry?.Handler?.PlatformView is KKPinView.Handlers.BackspaceAwareTextField nativeField)
+            nativeField.TintColor = UIKit.UIColor.Clear;
+#endif
+#if ANDROID
+        if (DigitEntry?.Handler?.PlatformView is AppCompatEditText editText)
+        {
+            editText.SetCursorVisible(false);
+            if (editText.TextCursorDrawable != null)
+                editText.TextCursorDrawable.SetColorFilter(new PorterDuffColorFilter(global::Android.Graphics.Color.Transparent, PorterDuff.Mode.SrcIn!));
+        }
+#endif
     }
 
     private void SetupBackspaceOnEmptyFieldHandler()
@@ -234,13 +293,13 @@ public partial class PinDigitField : ContentView
 
     private static void OnBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        if (bindable is PinDigitField field && newValue is Color color)
+        if (bindable is PinDigitField field && newValue is MauiColor color)
         {
             field.UpdateBorderColor(color);
         }
     }
 
-    private void UpdateBorderColor(Color color)
+    private void UpdateBorderColor(MauiColor color)
     {
         if (DigitBorder != null)
         {
@@ -298,49 +357,38 @@ public partial class PinDigitField : ContentView
 
     private void OnDigitEntryTextChanged(object? sender, TextChangedEventArgs e)
     {
-        // Always process text changes for system keyboard
-        if (sender is Entry entry)
+        if (_suppressDigitEvents) return;
+
+        if (sender is not MauiEntry entry) return;
+
+        string oldText = e.OldTextValue ?? string.Empty;
+        string newText = e.NewTextValue ?? string.Empty;
+
+        // OTP: enforce single character only (take last character if paste/append in same field)
+        if (newText.Length > 1)
+            newText = newText.Length > 0 ? newText.Substring(newText.Length - 1) : string.Empty;
+        if (!string.IsNullOrEmpty(newText) && !char.IsDigit(newText[0]))
+            newText = string.Empty;
+
+        // Delete/backspace: old had content, new is empty
+        if (!string.IsNullOrEmpty(oldText) && string.IsNullOrEmpty(newText))
         {
-            string oldText = e.OldTextValue ?? string.Empty;
-            string newText = e.NewTextValue ?? string.Empty;
-
-            // Detect delete/backspace: old text had content but new text is empty
-            bool isDelete = !string.IsNullOrEmpty(oldText) && string.IsNullOrEmpty(newText);
-
-            if (isDelete)
-            {
-                if (_isProgrammaticClear)
-                {
-                    return;
-                }
-                Digit = string.Empty;
-                IsFilled = false;
-                DigitDeleted?.Invoke(this, EventArgs.Empty);
-                return;
-            }
-
-            // Filter to only allow single digit
-            if (newText.Length > 1)
-            {
-                newText = newText.Length > 0 ? newText.Substring(newText.Length - 1) : string.Empty;
-            }
-
-            // Only allow digits
-            if (!string.IsNullOrEmpty(newText) && !char.IsDigit(newText[0]))
-            {
-                newText = string.Empty;
-            }
-
-            if (newText != e.NewTextValue)
-            {
-                entry.Text = newText;
-                return;
-            }
-
-            Digit = newText;
-            IsFilled = !string.IsNullOrEmpty(newText);
-            DigitChanged?.Invoke(this, newText);
+            if (_isProgrammaticClear) return;
+            Digit = string.Empty;
+            IsFilled = false;
+            DigitDeleted?.Invoke(this, EventArgs.Empty);
+            return;
         }
+
+        // Update Digit only; binding updates Entry.Text. Do not set entry.Text so TextChanged keeps firing on every keystroke.
+        _suppressDigitEvents = true;
+        Digit = newText;
+        IsFilled = !string.IsNullOrEmpty(newText);
+        _suppressDigitEvents = false;
+
+        var digitToSend = newText;
+        SetCursorToEnd(entry);
+        Dispatcher.DispatchDelayed(TimeSpan.Zero, () => DigitChanged?.Invoke(this, digitToSend));
     }
 
     private void OnDigitEntryCompleted(object? sender, EventArgs e)
@@ -385,5 +433,10 @@ public partial class PinDigitField : ContentView
     {
         DigitEntry?.Unfocus();
     }
+
+    /// <summary>
+    /// True when the inner entry has focus (keyboard is open for this field).
+    /// </summary>
+    public bool IsEntryFocused => DigitEntry?.IsFocused ?? false;
 }
 

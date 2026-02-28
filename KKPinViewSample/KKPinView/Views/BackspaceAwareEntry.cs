@@ -6,4 +6,12 @@ namespace KKPinView.Views;
 /// </summary>
 public class BackspaceAwareEntry : Entry
 {
+  protected override void OnTextChanged(string oldValue, string newValue)
+  {
+    base.OnTextChanged(oldValue, newValue);
+
+
+  }
+
+  // public event EventHandler? EmptyBackspacePressed;
 }
