@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using KKPinView.Constants;
+using KKPinView.Helpers;
 using KKPinView.Debug;
 using KKPinView.Security;
 using KKPinView.Storage;
@@ -13,12 +15,14 @@ public partial class KKPinViews : ContentView
     private readonly ObservableCollection<PinDigitField> _pinFields = new();
     private readonly KKPinLockoutManager _lockoutManager;
     private readonly KKPinViewsViewModel _viewModel;
+    private readonly System.Windows.Input.ICommand _focusFirstEmptyCommand;
     private string _currentPin = string.Empty;
 
     public KKPinViewsViewModel ViewModel => _viewModel;
 
     public KKPinViews()
     {
+        _focusFirstEmptyCommand = new Command(FocusFirstEmptyField);
         InitializeComponent();
         _lockoutManager = new KKPinLockoutManager();
 
@@ -31,6 +35,15 @@ public partial class KKPinViews : ContentView
         UpdateUI();
 
         Loaded += OnPageLoaded;
+    }
+
+    /// <summary>Focus the first empty PIN field so the next digit goes there. Used by TapCommand; delete/backspace focus is set explicitly in OnPinFieldDigitDeleted.</summary>
+    private void FocusFirstEmptyField()
+    {
+        if (_pinFields.Count == 0) return;
+        var digits = _pinFields.Select(f => f.Digit).ToList();
+        int idx = PinFieldHelpers.GetFirstEmptyFieldIndex(digits, _pinFields.Count);
+        _pinFields[idx].FocusEntry();
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -53,7 +66,7 @@ public partial class KKPinViews : ContentView
 
         if (_pinFields.Count > 0)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(400), () =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
@@ -61,6 +74,18 @@ public partial class KKPinViews : ContentView
                 });
             });
         }
+    }
+
+    /// <summary>
+    /// Focuses the first PIN field so the keyboard appears. Call from the host Page's OnAppearing for best results.
+    /// </summary>
+    public void ShowKeyboard()
+    {
+        if (_pinFields.Count == 0) return;
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+        {
+            MainThread.BeginInvokeOnMainThread(() => _pinFields[0].FocusEntry());
+        });
     }
 
     /// <summary>
@@ -92,6 +117,7 @@ private void InitializePinFields()
         var field = new PinDigitField { FieldShapeType = KKPinviewConstant.FieldShapeType };
         if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
             field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
+        field.TapCommand = _focusFirstEmptyCommand;
         _pinFields.Add(field);
         PinFieldsContainer.Children.Add(field);
     }

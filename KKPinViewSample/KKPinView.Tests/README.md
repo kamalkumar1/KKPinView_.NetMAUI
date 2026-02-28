@@ -28,6 +28,10 @@ dotnet test KKPinView.Tests/KKPinView.Tests.csproj --filter "FullyQualifiedName~
 | `KKPINSetUPViewModelTests` | Setup ViewModel initialization, commands, properties |
 | `KKPinViewsViewModelTests` | PIN entry ViewModel initialization, commands, properties |
 | `KKPinLockoutManagerTests` | Lockout manager constructor, configuration, reset behavior |
+| `ConfirmPinValidationTests` | Confirm PIN validation (4/6 fields, match/mismatch) |
+| `FirstEmptyFieldLogicTests` | First-empty field index (tap-to-continuation, digits in order) |
+| `PinMismatchResetTests` | Expected state after PIN mismatch reset (clear both PINs, re-enter from first) |
+| `SetupViewBehaviorRegressionTests` | Regression: continuation behavior, match/mismatch, MaxPinLength unchanged |
 
 ## Adding More Tests
 

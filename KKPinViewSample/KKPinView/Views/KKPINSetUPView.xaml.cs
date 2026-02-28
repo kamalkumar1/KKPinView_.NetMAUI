@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Linq;
 using KKPinView.Constants;
+using KKPinView.Helpers;
 using KKPinView.Security;
 using KKPinView.Storage;
 using KKPinView.ViewModels;
@@ -15,11 +17,22 @@ public partial class KKPINSetUPView : ContentView
     private string _currentPin = string.Empty;
     private string _confirmPin = string.Empty;
     private bool _isConfirmingPin = false;
+    /// <summary>Index of the enter-PIN field that had focus when keyboard was last closed; -1 means use first field.</summary>
+    private int _lastFocusedEnterIndex = -1;
+    /// <summary>Index of the confirm-PIN field that had focus when keyboard was last closed; -1 means use first field.</summary>
+    private int _lastFocusedConfirmIndex = -1;
+    private readonly System.Windows.Input.ICommand _focusFirstEmptyEnterCommand;
+    private readonly System.Windows.Input.ICommand _focusFirstEmptyConfirmCommand;
+    /// <summary>Tap anywhere (enter or confirm area): focus first empty field in the current step so digits always continue in order.</summary>
+    private readonly System.Windows.Input.ICommand _focusFirstEmptyInCurrentStepCommand;
 
     public KKPINSetUPViewModel ViewModel => _viewModel;
 
     public KKPINSetUPView()
     {
+        _focusFirstEmptyEnterCommand = new Command(FocusFirstEmptyEnterField);
+        _focusFirstEmptyConfirmCommand = new Command(FocusFirstEmptyConfirmField);
+        _focusFirstEmptyInCurrentStepCommand = new Command(FocusFirstEmptyInCurrentStep);
         InitializeComponent();
 
         // Create and set ViewModel
@@ -28,6 +41,33 @@ public partial class KKPINSetUPView : ContentView
 
         // Initialize UI elements after page is loaded
         Loaded += OnPageLoaded;
+    }
+
+    /// <summary>Focus the first empty enter-PIN field so the next digit goes there. Used by TapCommand; delete/backspace focus is set explicitly in OnEnterPinFieldDeleted.</summary>
+    private void FocusFirstEmptyEnterField()
+    {
+        if (_enterPinFields.Count == 0) return;
+        var digits = _enterPinFields.Select(f => f.Digit).ToList();
+        int idx = PinFieldHelpers.GetFirstEmptyFieldIndex(digits, _enterPinFields.Count);
+        _enterPinFields[idx].FocusEntry();
+    }
+
+    /// <summary>Focus the first empty confirm-PIN field. Used by TapCommand; delete/backspace focus is set explicitly in OnConfirmPinFieldDeleted.</summary>
+    private void FocusFirstEmptyConfirmField()
+    {
+        if (_confirmPinFields.Count == 0) return;
+        var digits = _confirmPinFields.Select(f => f.Digit).ToList();
+        int idx = PinFieldHelpers.GetFirstEmptyFieldIndex(digits, _confirmPinFields.Count);
+        _confirmPinFields[idx].FocusEntry();
+    }
+
+    /// <summary>Focus first empty field in the current step: Enter PIN when not yet confirming, Confirm PIN when confirming. So tapping anywhere (including on Confirm fields) keeps input in the correct section.</summary>
+    private void FocusFirstEmptyInCurrentStep()
+    {
+        if (_isConfirmingPin)
+            FocusFirstEmptyConfirmField();
+        else
+            FocusFirstEmptyEnterField();
     }
 
     /// <summary>
@@ -46,6 +86,27 @@ public partial class KKPINSetUPView : ContentView
     {
         get => _viewModel.OnSetupFailed;
         set => _viewModel.OnSetupFailed = value;
+    }
+
+    /// <summary>
+    /// Focuses the first PIN field so the keyboard appears. Call from the host Page's OnAppearing for best results.
+    /// </summary>
+    public void ShowKeyboard()
+    {
+        if (_isConfirmingPin && _confirmPinFields.Count > 0)
+        {
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+            {
+                MainThread.BeginInvokeOnMainThread(() => _confirmPinFields[0].FocusEntry());
+            });
+        }
+        else if (_enterPinFields.Count > 0)
+        {
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+            {
+                MainThread.BeginInvokeOnMainThread(() => _enterPinFields[0].FocusEntry());
+            });
+        }
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -95,7 +156,7 @@ public partial class KKPINSetUPView : ContentView
 
         if (_enterPinFields.Count > 0)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(400), () =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
@@ -182,6 +243,7 @@ public partial class KKPINSetUPView : ContentView
             };
             if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
+            field.TapCommand = _focusFirstEmptyInCurrentStepCommand;
 
             _enterPinFields.Add(field);
             EnterPinFieldsContainer.Children.Add(field);
@@ -208,6 +270,7 @@ public partial class KKPINSetUPView : ContentView
             };
             if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
+            field.TapCommand = _focusFirstEmptyInCurrentStepCommand;
 
             _confirmPinFields.Add(field);
             ConfirmPinFieldsContainer.Children.Add(field);
@@ -260,22 +323,23 @@ public partial class KKPINSetUPView : ContentView
                 // PINs don't match - show error message
                 ShowErrorMessage(KKPinviewConstant.PinMismatchError);
 
-                // Clear both Enter PIN and Confirm PIN fields asynchronously to avoid blocking UI
-                // Add delay to ensure text input processing is complete before clearing fields
+                // Clear both Enter PIN and Confirm PIN fields and reset to enter-from-first so user can re-enter.
+                // Use ClearDigitSilently() to avoid firing DigitDeleted (which would run delete handlers and move focus to wrong field).
                 Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(150), () =>
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         try
                         {
-                            // _currentPin = string.Empty;
-                            // _confirmPin = string.Empty;
-                            // UpdatePinFields();
-                            // UpdateConfirmPinFields();
+                            _currentPin = string.Empty;
+                            _confirmPin = string.Empty;
+                            foreach (var f in _enterPinFields) f.ClearDigitSilently();
+                            foreach (var f in _confirmPinFields) f.ClearDigitSilently();
 
-                            // Reset to enter PIN mode (but keep confirm section visible)
+                            // Reset to enter PIN mode (keep confirm section visible) and focus first Enter PIN field
                             _isConfirmingPin = false;
-
+                            if (_enterPinFields.Count > 0)
+                                _enterPinFields[0].FocusEntry();
                         }
                         catch (Exception ex)
                         {
@@ -389,8 +453,31 @@ public partial class KKPINSetUPView : ContentView
 
     private void OnRootTapped(object? sender, TappedEventArgs e)
     {
-        foreach (var f in _enterPinFields) f.UnfocusEntry();
-        foreach (var f in _confirmPinFields) f.UnfocusEntry();
+        bool keyboardOpen = _enterPinFields.Any(f => f.IsEntryFocused) || _confirmPinFields.Any(f => f.IsEntryFocused);
+        if (keyboardOpen)
+        {
+            for (int i = 0; i < _enterPinFields.Count; i++)
+                if (_enterPinFields[i].IsEntryFocused) { _lastFocusedEnterIndex = i; break; }
+            for (int i = 0; i < _confirmPinFields.Count; i++)
+                if (_confirmPinFields[i].IsEntryFocused) { _lastFocusedConfirmIndex = i; break; }
+            // foreach (var f in _enterPinFields) f.UnfocusEntry();
+            // foreach (var f in _confirmPinFields) f.UnfocusEntry();
+        }
+        else
+        {
+            if (_isConfirmingPin && _confirmPinFields.Count > 0)
+            {
+                int idx = _lastFocusedConfirmIndex;
+                if (idx < 0 || idx >= _confirmPinFields.Count) idx = 0;
+                _confirmPinFields[idx].FocusEntry();
+            }
+            else if (_enterPinFields.Count > 0)
+            {
+                int idx = _lastFocusedEnterIndex;
+                if (idx < 0 || idx >= _enterPinFields.Count) idx = 0;
+                _enterPinFields[idx].FocusEntry();
+            }
+        }
     }
 
     // Event handlers for system keyboard input in PIN fields
