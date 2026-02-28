@@ -5,15 +5,16 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 ## Features
 
 - 🔒 **Secure Storage**: AES-256 encryption with device-specific keys
-- 🔐 **PIN Authentication**: Easy-to-use PIN entry views
+- 🔐 **PIN Authentication**: Easy-to-use PIN entry views (setup + confirm, then entry)
 - 🛡️ **Lockout Protection**: Configurable attempt limits and lockout duration
-- 🎨 **Customizable UI**: Fully customizable colors, fonts, and dimensions
+- 🎨 **Customizable UI**: All colors, fonts, and dimensions via `KKPinviewConstant` (single source of truth)
 - 📱 **Cross-Platform**: Supports Android, iOS, and Windows
-- ✨ **Modern UI**: Beautiful, native-looking PIN entry interface
-- ⌨️ **Dual Input Methods**: Support for both numeric keypad and system keyboard
-- 🎯 **Visual Feedback**: Red border indicators for invalid PIN entries
-- 📏 **Dynamic Layout**: Auto-adjusting error message heights based on content
-- 🔄 **Dynamic View Switching**: Automatically shows setup or entry view based on PIN status
+- ✨ **Modern UI**: Native-looking PIN entry with system keyboard
+- ⌨️ **System Keyboard**: Numeric keyboard with auto-focus between fields, tap-to-continue (first empty field)
+- 🎯 **Visual Feedback**: Animated red border for invalid PIN; border animates when showing/hiding error state
+- 📏 **Dynamic Layout**: Auto-adjusting error/success message heights with fade and scale animations
+- 🔄 **PIN Mismatch Flow**: Error message animates in, holds, then fades out; all PIN fields reset and focus returns to first Enter field
+- 📍 **Focus Behavior**: After backspace or re-entry, focus goes to the first empty field so the next digit goes in the right box
 
 ## Installation
 
@@ -45,10 +46,12 @@ Install-Package KKPinView
 
 ### Visual Features
 
-- **Invalid PIN Indicator**: All PIN fields display red borders when an invalid PIN is entered
-- **Dynamic Error Messages**: Error message height automatically adjusts based on message length
-- **Smooth Animations**: Fade and scale animations for error/success messages
-- **Auto-focus Management**: Automatic focus movement between fields when using system keyboard
+- **Invalid PIN Indicator**: All PIN fields show red borders when the PIN is wrong; border color animates in/out
+- **PIN Mismatch (Setup)**: On mismatch, error message animates in, displays for a configurable duration, then fades out and all Enter/Confirm fields are cleared and focus moves to the first Enter field
+- **Dynamic Error/Success Messages**: Message height and opacity animate; configurable label heights via constants
+- **Border Animation**: Border color transitions smoothly when switching between normal, filled, and invalid states
+- **Auto-focus**: Focus moves to the next field on digit entry; tap anywhere focuses the first empty field in the current step (Enter or Confirm)
+- **Re-entry After Delete**: After backspace, focus is set to the first empty field so typing again fills digits in order
 
 ## Quick Start
 
@@ -205,22 +208,9 @@ var pinView = new KKPinViews
 PinContentView.Content = pinView;
 ```
 
-## Input Methods
+## Input
 
-KKPinView supports two input methods that can be configured via `KKPinviewConstant.InputMethod`:
-
-### SystemKeyboard
-- Uses the system numeric keyboard
-- PIN fields are editable
-- Auto-focus moves between fields
-- Best for keyboard-first experiences
-
-```csharp
-using KKPinView.Constants;
-
-// Use system keyboard
-KKPinviewConstant.InputMethod = PinInputMethod.SystemKeyboard;
-```
+KKPinView uses the **system numeric keyboard**. PIN fields are single-digit entries; focus moves automatically to the next field when a digit is entered. Tapping anywhere on the PIN area focuses the first empty field so digits always flow left to right. Backspace is handled per field with focus moving to the previous (or first empty) field as appropriate.
 
 ## API Documentation
 
@@ -233,22 +223,14 @@ Main PIN entry view for authenticating users.
 - `OnForgotPin`: Optional callback when "Forgot PIN?" is tapped
 - `OnSubmit`: Callback with validation result (`true` if PIN is valid, `false` otherwise)
 - `ShowForgotPin`: Whether to show the "Forgot PIN?" button (default: `true`)
-- `BackgroundColor`: Background color of the view
-- `TextColor`: Text color
-- `ErrorTextColor`: Error message color
-- `SuccessTextColor`: Success message color
-- `TitleFontSize`: Title font size
-- `SubtitleFontSize`: Subtitle font size
-- `FieldSpacing`: Spacing between PIN fields
+- Display values (colors, fonts, spacing, labels) are read from `KKPinviewConstant`; set them on the constant class (e.g. in app startup) to customize.
 
 #### Behavior
 
-- Automatically validates PIN when all digits are entered
-- Displays error messages for invalid PINs with dynamic height based on message length
-- Shows red borders on all PIN fields when PIN is invalid
-- Handles lockout automatically (disables input when locked out)
-- Clears PIN fields after validation
-- Supports both numeric keypad and system keyboard input methods
+- Validates PIN when all digits are entered (compares to securely stored PIN)
+- Error message and invalid-state borders animate in; border color animates when showing or clearing error
+- Handles lockout automatically (shows lockout message, disables input when locked out)
+- Tap anywhere focuses the first empty field; backspace focuses the previous or first empty field
 
 ---
 
@@ -258,22 +240,17 @@ PIN setup view for creating a new PIN with confirmation.
 
 #### Properties
 
-- `OnSetupComplete`: Optional callback when PIN setup is completed successfully. Receives the PIN string.
-- `BackgroundColor`: Background color of the view
-- `TextColor`: Text color
-- `ErrorTextColor`: Error message color
-- `SuccessTextColor`: Success message color
-- `TitleFontSize`: Title font size
-- `SubtitleFontSize`: Subtitle font size
-- `FieldSpacing`: Spacing between PIN fields
+- `OnSetupSuccess`: Callback when PIN setup completes successfully (PIN is already saved)
+- `OnSetupFailed`: Callback when setup fails (e.g. mismatch or save error); receives the error message string
+- `EnterPinLabelText`, `ConfirmPinLabelText`: Read-only; values come from `KKPinviewConstant.EnterPinMessage` and `ConfirmPinMessage`. Change labels by setting those constants.
+- Other display values (colors, fonts, spacing) are read from `KKPinviewConstant`; customize via the constant class only.
 
 #### Behavior
 
 - Two-step flow: Enter PIN → Confirm PIN
-- Validates that both PINs match
-- Automatically saves PIN when both match
-- Clears previous PIN and lockout state before saving
-- Displays success/error messages with animations
+- On match: saves PIN, shows success animation, invokes `OnSetupSuccess`
+- On mismatch: shows error with animation, holds for `PinMismatchErrorDisplayDurationMs`, then fades out and resets all Enter/Confirm fields and focus to first Enter field; invokes `OnSetupFailed`
+- Tap anywhere focuses the first empty field in the current step (Enter or Confirm)
 
 ---
 
@@ -385,54 +362,62 @@ else
 
 ## Customization
 
-### Constants
+### Constants (single source of truth)
 
-Most UI elements can be customized via `KKPinviewConstant`:
+All UI text, colors, dimensions, and behavior are configured **only** via `KKPinviewConstant`. ViewModels expose these as read-only; set constants (e.g. in app startup) to customize.
 
 ```csharp
 using KKPinView.Constants;
 
 // PIN Configuration
-KKPinviewConstant.TotalPinTextFields = 4;  // Change PIN length (default: 4)
+KKPinviewConstant.TotalPinTextFields = 4;  // 4 or 6 (default: 4)
 
-// Lockout Configuration
-KKPinviewConstant.MaxPinAttempts = 5;  // Default: 5
-KKPinviewConstant.PinLockoutDurationMinutes = 5;  // Default: 5 minutes
+// Lockout
+KKPinviewConstant.MaxPinAttempts = 5;
+KKPinviewConstant.PinLockoutDurationMinutes = 5;
 
 // Colors
 KKPinviewConstant.BackgroundColor = Colors.White;
 KKPinviewConstant.TextColor = Colors.Black;
 KKPinviewConstant.ErrorTextColor = Colors.Red;
 KKPinviewConstant.SuccessTextColor = Colors.Green;
-KKPinviewConstant.DigitFieldBackgroundColor = Colors.LightGray;
-KKPinviewConstant.DigitFieldFilledColor = Colors.Blue;
-KKPinviewConstant.InvalidPinBorderColor = Colors.Red;  // Border color when PIN is invalid
+KKPinviewConstant.DigitFieldBackgroundColor = Colors.Transparent;
+KKPinviewConstant.DigitFieldFilledColor = Colors.Green;
+KKPinviewConstant.DigitFieldEmptyBorderColor = Colors.Gray;   // Unfilled field border
+KKPinviewConstant.InvalidPinBorderColor = Colors.Red;        // Wrong PIN border
 
 // Fonts
 KKPinviewConstant.TitleFontSize = 24;
 KKPinviewConstant.SubtitleFontSize = 16;
 KKPinviewConstant.DigitFontSize = 20;
-KKPinviewConstant.KeypadButtonFontSize = 24;
 
 // Dimensions
-KKPinviewConstant.FieldHeight = 60;
-KKPinviewConstant.FieldWidth = 60;
+KKPinviewConstant.FieldHeight = 50;
+KKPinviewConstant.FieldWidth = 50;
 KKPinviewConstant.FieldSpacing = 15;
-KKPinviewConstant.KeypadButtonSize = 70;
-KKPinviewConstant.KeypadSpacing = 10;
+KKPinviewConstant.FieldCornerRadius = 10;
+KKPinviewConstant.SuccessMessageLabelHeight = 24;
+KKPinviewConstant.ErrorMessageLabelHeight = 24;
 
-// Strings
+// Strings (labels and messages)
 KKPinviewConstant.TitleTextFormat = "Enter PIN";
 KKPinviewConstant.SubtitleText = "Enter your {0}-digit PIN";
 KKPinviewConstant.ForgotPinText = "Forgot PIN?";
 KKPinviewConstant.SetupTitleText = "Setup PIN";
 KKPinviewConstant.ConfirmPinTitleText = "Confirm PIN";
-KKPinviewConstant.InvalidPinError = "Invalid PIN";
+KKPinviewConstant.EnterPinMessage = "Enter your PIN";
+KKPinviewConstant.ConfirmPinMessage = "Confirm your PIN";
 KKPinviewConstant.PinMismatchError = "PINs do not match";
+KKPinviewConstant.InvalidPinError = "Invalid PIN";
 KKPinviewConstant.LockedOutError = "Too many failed attempts. Please try again in {0} minutes";
+KKPinviewConstant.SetupSuccessMessage = "PIN setup successful";
+KKPinviewConstant.SetupSaveFailedMessage = "Failed to save PIN. Please try again.";
 
-// Input Method
-KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;  // or PinInputMethod.SystemKeyboard
+// PIN mismatch: how long (ms) the error is shown before fade-out and field reset
+KKPinviewConstant.PinMismatchErrorDisplayDurationMs = 1500;
+
+// Shape
+KKPinviewConstant.FieldShapeType = PinFieldShapeType.Round;  // or RoundedRectangle
 ```
 
 ## Security Features
@@ -468,22 +453,41 @@ KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;  // or PinInputMet
 ```
 KKPinView/
 ├── Views/
-│   ├── KKPinViews.xaml/cs          # PIN entry view
-│   ├── KKPINSetUPView.xaml/cs      # PIN setup view
-│   ├── PinDigitField.xaml/cs       # Individual digit field
-│   └── NumericKeypad.xaml/cs       # Custom keypad
+│   ├── KKPinViews.xaml/cs          # PIN entry (authenticate)
+│   ├── KKPINSetUPView.xaml/cs      # PIN setup (enter + confirm)
+│   ├── PinDigitField.xaml/cs       # Single digit field (system keyboard)
+│   └── BackspaceAwareEntry.cs      # Entry with empty-backspace event
+├── Helpers/
+│   └── PinFieldHelpers.cs           # First-empty field index, etc.
+├── Handlers/
+│   └── BackspaceAwareEntryHandler  # Platform backspace handling
 ├── Storage/
-│   └── KKPinStorage.cs             # High-level storage API
+│   └── KKPinStorage.cs             # Save/Load/Verify/Delete PIN
 ├── Security/
-│   └── KKPinLockoutManager.cs      # Lockout management
+│   └── KKPinLockoutManager.cs      # Lockout and attempt tracking
+├── ViewModels/
+│   ├── BasePinViewModel.cs         # Shared bindings (read from constants)
+│   ├── KKPINSetUPViewModel.cs      # Setup view model
+│   └── KKPinViewsViewModel.cs     # Entry view model
 ├── Constants/
-│   └── KKPinviewConstant.cs        # Configuration constants
+│   └── KKPinviewConstant.cs        # All configuration (single source)
+├── MauiAppBuilderExtensions.cs    # Optional UseKKPinView() registration
 └── Platforms/
     ├── Android/
-    │   └── KKEncryptionHelper.cs   # Android encryption
+    │   ├── BackspaceAwareEditText  # Android backspace on empty
+    │   └── (encryption/storage)
     └── iOS/
-        └── KKEncryptionHelper.cs   # iOS encryption
+        └── (BackspaceAwareTextField, encryption/storage)
 ```
+
+## Sample App
+
+The **KKPinViewSample** project includes:
+
+- **Demo menu** – Home screen with buttons to try PIN Setup, PIN Entry, Reset, and Forgot PIN flow
+- **DEMO_VIDEO_SCRIPT.md** – Step-by-step script for recording a short demo (e.g. for LinkedIn)
+
+Run the sample, open the Demo menu, and use "Reset PIN → PIN Setup" to start a clean flow. All configuration is via `KKPinviewConstant` in the sample app.
 
 ## Requirements
 
