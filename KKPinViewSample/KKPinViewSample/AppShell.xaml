@@ -7,8 +7,8 @@
     Title="KKPinViewSample">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
+        Title="Demo"
+        ContentTemplate="{DataTemplate local:DemoMenuPage}"
         Route="MainPage" />
 
 </Shell>

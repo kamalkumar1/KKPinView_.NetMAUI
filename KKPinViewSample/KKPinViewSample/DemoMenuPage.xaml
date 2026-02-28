@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="KKPinViewSample.DemoMenuPage"
+    Title="KKPinView Demo"
+    BackgroundColor="White">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+            <Label Text="KKPinView Demo"
+                FontSize="28"
+                FontAttributes="Bold"
+                HorizontalOptions="Center"
+                Margin="0,0,0,8" />
+            <Label Text="Tap a demo to showcase for your video. Use the script in DEMO_VIDEO_SCRIPT.md for recording."
+                FontSize="14"
+                TextColor="Gray"
+                HorizontalTextAlignment="Center"
+                Margin="0,0,0,16" />
+
+            <Button x:Name="BtnResetAndSetup"
+                Text="1. Reset PIN → PIN Setup"
+                Clicked="OnResetAndSetupClicked"
+                BackgroundColor="#512BD4"
+                TextColor="White"
+                CornerRadius="8"
+                Padding="16,12" />
+            <Label Text="Clears stored PIN and opens Setup. Show: Enter PIN, Confirm PIN, success animation."
+                FontSize="12" TextColor="Gray" Margin="0,-8,0,0" />
+
+            <Button x:Name="BtnPinSetup"
+                Text="2. PIN Setup (if no PIN)"
+                Clicked="OnPinSetupClicked"
+                BackgroundColor="#512BD4"
+                TextColor="White"
+                CornerRadius="8"
+                Padding="16,12" />
+            <Label Text="Opens Setup when no PIN exists. Try mismatch to see error animation and reset."
+                FontSize="12" TextColor="Gray" Margin="0,-8,0,0" />
+
+            <Button x:Name="BtnPinEntry"
+                Text="3. PIN Entry (authenticate)"
+                Clicked="OnPinEntryClicked"
+                BackgroundColor="#512BD4"
+                TextColor="White"
+                CornerRadius="8"
+                Padding="16,12" />
+            <Label Text="Opens PIN entry when PIN exists. Show: correct PIN → success, wrong PIN → red border."
+                FontSize="12" TextColor="Gray" Margin="0,-8,0,0" />
+
+            <Button x:Name="BtnForgotPin"
+                Text="4. Forgot PIN flow"
+                Clicked="OnForgotPinClicked"
+                BackgroundColor="#6c757d"
+                TextColor="White"
+                CornerRadius="8"
+                Padding="16,12" />
+            <Label Text="Go to PIN Entry, tap Forgot PIN → returns to Setup. Good for full-flow demo."
+                FontSize="12" TextColor="Gray" Margin="0,-8,0,0" />
+
+            <BoxView HeightRequest="1" Color="#eee" Margin="0,16,0,8" />
+            <Label Text="Features demonstrated: Secure storage • Setup &amp; Confirm • Mismatch animation • Invalid PIN border • Lockout • Forgot PIN"
+                FontSize="13"
+                TextColor="Gray"
+                HorizontalTextAlignment="Center"
+                LineBreakMode="WordWrap" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
