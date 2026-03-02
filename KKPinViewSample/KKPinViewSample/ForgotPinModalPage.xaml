@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="KKPinViewSample.ForgotPinModalPage"
+    Title="Forgot PIN"
+    BackgroundColor="White">
+
+    <VerticalStackLayout Padding="24" Spacing="24" VerticalOptions="Center">
+        <Label Text="Forgot PIN?"
+            FontSize="24"
+            FontAttributes="Bold"
+            HorizontalOptions="Center" />
+        <Label Text="Resetting will delete your stored PIN. You can create a new one with Setup PIN."
+            FontSize="16"
+            TextColor="Gray"
+            HorizontalTextAlignment="Center"
+            LineBreakMode="WordWrap" />
+        <Button x:Name="BtnResetPin"
+            Text="Reset PIN"
+            Clicked="OnResetPinClicked"
+            BackgroundColor="#512BD4"
+            TextColor="White"
+            CornerRadius="8"
+            Padding="16,12" />
+    </VerticalStackLayout>
+</ContentPage>

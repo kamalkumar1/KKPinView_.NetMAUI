@@ -1,5 +1,4 @@
 using KKPinView.Storage;
-using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinViewSample;
 
@@ -13,42 +12,35 @@ public partial class DemoMenuPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        BtnPinEntry.IsEnabled = KKPinStorage.HasStoredPIN();
+        BtnValidatePin.IsEnabled = KKPinStorage.HasStoredPIN();
         BtnForgotPin.IsEnabled = KKPinStorage.HasStoredPIN();
     }
 
-    private async void OnResetAndSetupClicked(object? sender, EventArgs e)
-    {
-        KKPinStorage.DeletePIN();
-        if (Shell.Current != null)
-            await Shell.Current.GoToAsync("PinSetupView");
-    }
-
-    private async void OnPinSetupClicked(object? sender, EventArgs e)
+    private async void OnSetupPinClicked(object? sender, EventArgs e)
     {
         if (Shell.Current != null)
-            await Shell.Current.GoToAsync("PinSetupView");
+            await Shell.Current.Navigation.PushModalAsync(new PinSetupModalPage());
     }
 
-    private async void OnPinEntryClicked(object? sender, EventArgs e)
+    private async void OnValidatePinClicked(object? sender, EventArgs e)
     {
         if (!KKPinStorage.HasStoredPIN())
         {
-            await DisplayAlert("No PIN", "Create a PIN first via \"Reset PIN → PIN Setup\".", "OK");
+            await DisplayAlert("No PIN", "Create a PIN first with Setup PIN.", "OK");
             return;
         }
         if (Shell.Current != null)
-            await Shell.Current.GoToAsync("PINView");
+            await Shell.Current.Navigation.PushModalAsync(new PinValidateModalPage());
     }
 
     private async void OnForgotPinClicked(object? sender, EventArgs e)
     {
         if (!KKPinStorage.HasStoredPIN())
         {
-            await DisplayAlert("No PIN", "Create a PIN first via \"Reset PIN → PIN Setup\", then open PIN Entry and tap Forgot PIN.", "OK");
+            await DisplayAlert("No PIN", "No PIN to reset. Create one with Setup PIN first.", "OK");
             return;
         }
         if (Shell.Current != null)
-            await Shell.Current.GoToAsync("PINView");
+            await Shell.Current.Navigation.PushModalAsync(new ForgotPinModalPage());
     }
 }
