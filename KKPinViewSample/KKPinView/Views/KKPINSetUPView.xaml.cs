@@ -332,6 +332,13 @@ public partial class KKPINSetUPView : ContentView
             foreach (var f in _confirmPinFields) f.UnfocusEntry();
             await Task.Delay(50);
 
+            // Animate all fields to red (invalid) border so user sees mismatch feedback
+            const uint borderAnimationDurationMs = 220;
+            foreach (var f in _enterPinFields)
+                f.AnimateBorderToColor(KKPinviewConstant.InvalidPinBorderColor, borderAnimationDurationMs, Easing.CubicOut);
+            foreach (var f in _confirmPinFields)
+                f.AnimateBorderToColor(KKPinviewConstant.InvalidPinBorderColor, borderAnimationDurationMs, Easing.CubicOut);
+
             // Notify host immediately so existing functionality (e.g. analytics) is unchanged
             _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
 
@@ -351,8 +358,16 @@ public partial class KKPINSetUPView : ContentView
                 {
                     _currentPin = string.Empty;
                     _confirmPin = string.Empty;
-                    foreach (var f in _enterPinFields) f.ClearDigitSilently();
-                    foreach (var f in _confirmPinFields) f.ClearDigitSilently();
+                    foreach (var f in _enterPinFields)
+                    {
+                        f.BorderColor = KKPinviewConstant.DigitFieldEmptyBorderColor;
+                        f.ClearDigitSilently();
+                    }
+                    foreach (var f in _confirmPinFields)
+                    {
+                        f.BorderColor = KKPinviewConstant.DigitFieldEmptyBorderColor;
+                        f.ClearDigitSilently();
+                    }
                     _isConfirmingPin = false;
                     if (_enterPinFields.Count > 0)
                         _enterPinFields[0].FocusEntry();
