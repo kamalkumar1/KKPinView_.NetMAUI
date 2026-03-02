@@ -1,6 +1,7 @@
 using KKPinView.Storage;
 using KKPinView.Views;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
 
 namespace KKPinViewSample;
 
@@ -34,17 +35,14 @@ public partial class PINView : ContentPage
                 KKPinStorage.DeletePIN();
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
+                    App.HidePinOverlay();
                     try
                     {
                         var shell = Shell.Current;
                         if (shell != null)
-                        {
                             await shell.GoToAsync("PinSetupView");
-                        }
                         else
-                        {
                             System.Diagnostics.Debug.WriteLine("Shell.Current is null");
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -59,22 +57,17 @@ public partial class PINView : ContentPage
             {
                 if (isValid)
                 {
-                    // PIN is valid - user is authenticated
                     System.Diagnostics.Debug.WriteLine("PIN validated successfully!");
-                    // Navigate back to main page or show authenticated content
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
+                        App.HidePinOverlay();
                         try
                         {
                             var shell = Shell.Current;
                             if (shell != null)
-                            {
                                 await shell.GoToAsync("//MainPage");
-                            }
                             else
-                            {
                                 System.Diagnostics.Debug.WriteLine("Shell.Current is null");
-                            }
                         }
                         catch (Exception ex)
                         {

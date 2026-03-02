@@ -207,6 +207,46 @@ var pinView = new KKPinViews
 PinContentView.Content = pinView;
 ```
 
+## PIN overlay (root overlay)
+
+To show PIN above the whole app without modals (e.g. for “PIN on resume” or a global lock screen), use the **root overlay** (Architecture 2). This avoids modal-on-modal issues and keeps a single PIN view instance.
+
+### 1. Register the overlay in `CreateWindow`
+
+```csharp
+using KKPinView;
+
+protected override Window CreateWindow(IActivationState? activationState)
+{
+    var shell = new AppShell(); // or your Shell
+    var pinOverlayView = new YourPinEntryOverlayView(); // a View (e.g. ContentView with KKPinViews), create once, reuse
+    PinOverlay.Register(shell);
+    return new Window(shell);
+}
+```
+
+### 2. Show and hide from anywhere
+
+```csharp
+// Show PIN overlay (e.g. from menu or OnResume)
+PinOverlay.Show(pinPage);
+
+// Hide overlay (e.g. in your PIN page’s OnSubmit / OnForgotPin, then navigate)
+PinOverlay.Hide();
+```
+
+Use **one** PIN view instance and pass it to `PinOverlay.Show()` each time so you don’t create duplicate content.
+
+### 3. Android back button
+
+When the overlay is visible, you can dismiss it with the hardware back button. Subscribe to `PinOverlay.OverlayVisibilityChanged` and enable a back callback only when the overlay is visible (see the KKPinViewSample `MainActivity` for an example).
+
+### 4. iOS safe area
+
+For notch and home indicator, either wrap your overlay content in a layout that respects safe area, or set padding on your PIN page. The host’s `ApplySafeAreaToOverlay` is reserved for a future built-in option.
+
+---
+
 ## Input
 
 KKPinView uses the **system numeric keyboard**. PIN fields are single-digit entries; focus moves automatically to the next field when a digit is entered. Tapping anywhere on the PIN area focuses the first empty field so digits always flow left to right. Backspace is handled per field with focus moving to the previous (or first empty) field as appropriate.

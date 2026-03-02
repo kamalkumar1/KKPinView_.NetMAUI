@@ -30,25 +30,23 @@ public partial class DemoMenuPage : ContentPage
             await Shell.Current.GoToAsync("PinSetupView");
     }
 
-    private async void OnPinEntryClicked(object? sender, EventArgs e)
+    private void OnPinEntryClicked(object? sender, EventArgs e)
     {
         if (!KKPinStorage.HasStoredPIN())
         {
-            await DisplayAlert("No PIN", "Create a PIN first via \"Reset PIN → PIN Setup\".", "OK");
+            _ = DisplayAlert("No PIN", "Create a PIN first via \"Reset PIN → PIN Setup\".", "OK");
             return;
         }
-        if (Shell.Current != null)
-            await Shell.Current.GoToAsync("PINView");
+        App.ShowPinOverlay();
     }
 
-    private async void OnForgotPinClicked(object? sender, EventArgs e)
+    private void OnForgotPinClicked(object? sender, EventArgs e)
     {
         if (!KKPinStorage.HasStoredPIN())
         {
-            await DisplayAlert("No PIN", "Create a PIN first via \"Reset PIN → PIN Setup\", then open PIN Entry and tap Forgot PIN.", "OK");
+            _ = DisplayAlert("No PIN", "Create a PIN first via \"Reset PIN → PIN Setup\", then open PIN Entry and tap Forgot PIN.", "OK");
             return;
         }
-        if (Shell.Current != null)
-            await Shell.Current.GoToAsync("PINView");
+        App.ShowPinOverlay();
     }
 }

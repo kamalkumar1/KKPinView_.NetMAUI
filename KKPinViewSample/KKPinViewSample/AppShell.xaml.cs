@@ -6,9 +6,8 @@ public partial class AppShell : Shell
 	{
 		InitializeComponent();
 		
-		// Register routes for demo and PIN flows
+		// Register routes for demo and PIN flows (PINView is shown via overlay, not Shell)
 		Routing.RegisterRoute("DemoMenuPage", typeof(DemoMenuPage));
 		Routing.RegisterRoute("PinSetupView", typeof(PinSetupView));
-		Routing.RegisterRoute("PINView", typeof(PINView));
 	}
 }
