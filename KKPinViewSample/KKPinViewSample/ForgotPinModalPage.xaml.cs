@@ -13,6 +13,12 @@ public partial class ForgotPinModalPage : ContentPage
         InitializeComponent();
     }
 
+    private async void OnCloseClicked(object? sender, EventArgs e)
+    {
+        if (Shell.Current != null)
+            await Shell.Current.Navigation.PopModalAsync();
+    }
+
     private void OnResetPinClicked(object? sender, EventArgs e)
     {
         KKPinStorage.DeletePIN();

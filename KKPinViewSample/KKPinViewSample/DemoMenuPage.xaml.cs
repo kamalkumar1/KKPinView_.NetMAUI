@@ -9,6 +9,12 @@ public partial class DemoMenuPage : ContentPage
         InitializeComponent();
     }
 
+    private async void OnCloseClicked(object? sender, EventArgs e)
+    {
+        if (Shell.Current != null)
+            await Shell.Current.GoToAsync("//MainPage");
+    }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();

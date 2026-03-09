@@ -18,7 +18,7 @@ using Foundation;
 
 namespace KKPinView.Views;
 
-public partial class PinDigitField : ContentView
+public sealed partial class PinDigitField : ContentView
 {
     public static readonly BindableProperty DigitProperty = BindableProperty.Create(
         nameof(Digit), typeof(string), typeof(PinDigitField), string.Empty);
@@ -35,6 +35,9 @@ public partial class PinDigitField : ContentView
     public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(
         nameof(FontSize), typeof(double), typeof(PinDigitField), KKPinviewConstant.DigitFontSize);
 
+    public static readonly BindableProperty DigitFontAttributesProperty = BindableProperty.Create(
+        nameof(DigitFontAttributes), typeof(FontAttributes), typeof(PinDigitField), KKPinviewConstant.DigitFontAttributes);
+
     public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
         nameof(TextColor), typeof(MauiColor), typeof(PinDigitField), KKPinviewConstant.TextColor);
 
@@ -48,7 +51,7 @@ public partial class PinDigitField : ContentView
         nameof(CornerRadius), typeof(double), typeof(PinDigitField), KKPinviewConstant.FieldCornerRadius, propertyChanged: OnCornerRadiusChanged);
 
     public static readonly BindableProperty FieldShapeTypeProperty = BindableProperty.Create(
-        nameof(FieldShapeType), typeof(PinFieldShapeType), typeof(PinDigitField), KKPinviewConstant.FieldShapeType, propertyChanged: OnShapeChanged);
+        nameof(FieldShapeType), typeof(KKPinFieldShapeType), typeof(PinDigitField), KKPinviewConstant.FieldShapeType, propertyChanged: OnShapeChanged);
 
     // Numeric keypad logic fully removed
 
@@ -86,6 +89,12 @@ public partial class PinDigitField : ContentView
         set => SetValue(FontSizeProperty, value);
     }
 
+    public FontAttributes DigitFontAttributes
+    {
+        get => (FontAttributes)GetValue(DigitFontAttributesProperty);
+        set => SetValue(DigitFontAttributesProperty, value);
+    }
+
     public MauiColor TextColor
     {
         get => (MauiColor)GetValue(TextColorProperty);
@@ -111,9 +120,9 @@ public partial class PinDigitField : ContentView
     }
 
     /// <summary>Shape type for the PIN field. Comes from KKPinviewConstant.FieldShapeType by default.</summary>
-    public PinFieldShapeType FieldShapeType
+    public KKPinFieldShapeType FieldShapeType
     {
-        get => (PinFieldShapeType)GetValue(FieldShapeTypeProperty);
+        get => (KKPinFieldShapeType)GetValue(FieldShapeTypeProperty);
         set => SetValue(FieldShapeTypeProperty, value);
     }
 
@@ -364,7 +373,7 @@ public partial class PinDigitField : ContentView
     {
         StrokeShape = FieldShapeType switch
         {
-            PinFieldShapeType.Round => new RoundRectangle
+            KKPinFieldShapeType.Round => new RoundRectangle
             {
                 CornerRadius = new CornerRadius(Math.Min(FieldWidth, FieldHeight) / 2)
             },

@@ -14,11 +14,16 @@ public partial class PinSetupModalPage : ContentPage
         Loaded += OnPageLoaded;
     }
 
+    private async void OnCloseClicked(object? sender, EventArgs e)
+    {
+        if (Shell.Current != null)
+            await Shell.Current.Navigation.PopModalAsync();
+    }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
-            MainThread.BeginInvokeOnMainThread(() => PinSetupContentView?.ShowKeyboard()));
+
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -36,6 +41,7 @@ public partial class PinSetupModalPage : ContentPage
                 });
             });
         };
+        PinSetupContentView.OnCreationCompleted = () => PinSetupContentView?.ShowKeyboard();
 
         PinSetupContentView.OnSetupFailed = (errorMessage) =>
         {

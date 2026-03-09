@@ -28,11 +28,19 @@ public abstract class BasePinViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>Gets the color for success messages. Change via <see cref="KKPinviewConstant.SuccessTextColor"/>.</summary>
     public Color SuccessTextColor => KKPinviewConstant.SuccessTextColor;
 
-    /// <summary>Gets the font size for title text. Change via <see cref="KKPinviewConstant.TitleFontSize"/>.</summary>
+    /// <summary>Gets the font size for title and subtitle text. Change via <see cref="KKPinviewConstant.TitleFontSize"/>.</summary>
     public double TitleFontSize => KKPinviewConstant.TitleFontSize;
+    /// <summary>Gets the font attributes for title and message labels (Bold, Italic, None). Change via <see cref="KKPinviewConstant.TitleFontAttributes"/>.</summary>
+    public FontAttributes TitleFontAttributes => KKPinviewConstant.TitleFontAttributes;
+    /// <summary>Gets the font family for title and message labels. Empty uses system default. Change via <see cref="KKPinviewConstant.TitleFontFamily"/>.</summary>
+    public string TitleFontFamily => KKPinviewConstant.TitleFontFamily;
 
-    /// <summary>Gets the font size for subtitle text. Change via <see cref="KKPinviewConstant.SubtitleFontSize"/>.</summary>
-    public double SubtitleFontSize => KKPinviewConstant.SubtitleFontSize;
+    /// <summary>Gets the font size for error message text. Change via <see cref="KKPinviewConstant.ErrorMessageFontSize"/>.</summary>
+    public double ErrorMessageFontSize => KKPinviewConstant.ErrorMessageFontSize;
+    /// <summary>Gets the font attributes for error message text (Bold, Italic, None). Change via <see cref="KKPinviewConstant.ErrorMessageFontAttributes"/>.</summary>
+    public FontAttributes ErrorMessageFontAttributes => KKPinviewConstant.ErrorMessageFontAttributes;
+    /// <summary>Gets the font family for error message text. Empty uses system default. Change via <see cref="KKPinviewConstant.ErrorMessageFontFamily"/>.</summary>
+    public string ErrorMessageFontFamily => KKPinviewConstant.ErrorMessageFontFamily;
 
     /// <summary>Gets the spacing between PIN digit fields. Change via <see cref="KKPinviewConstant.FieldSpacing"/>.</summary>
     public double FieldSpacing => KKPinviewConstant.FieldSpacing;

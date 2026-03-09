@@ -9,7 +9,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinView.Views;
 
-public partial class KKPINSetUPView : ContentView
+public sealed partial class KKPINSetUPView : ContentView
 {
     private readonly ObservableCollection<PinDigitField> _enterPinFields = new();
     private readonly ObservableCollection<PinDigitField> _confirmPinFields = new();
@@ -95,7 +95,7 @@ public partial class KKPINSetUPView : ContentView
     }
 
     /// <summary>
-    /// Focuses the first PIN field so the keyboard appears. Call from the host Page's OnAppearing for best results.
+    /// Focuses the first PIN field so the keyboard appears. Call from <see cref="OnCreationCompleted"/> or when you want to show the keyboard.
     /// </summary>
     public void ShowKeyboard()
     {
@@ -162,15 +162,14 @@ public partial class KKPINSetUPView : ContentView
 
         if (_enterPinFields.Count > 0)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(400), () =>
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    _enterPinFields[0].FocusEntry();
-                });
-            });
+            OnCreationCompleted?.Invoke();
         }
     }
+
+    /// <summary>
+    /// Callback invoked when the PIN setup view is fully created and ready. Use this to call <see cref="ShowKeyboard"/> or perform other setup.
+    /// </summary>
+    public Action? OnCreationCompleted { get; set; }
 
     private void UpdatePinFields()
     {
@@ -247,7 +246,7 @@ public partial class KKPINSetUPView : ContentView
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
                 TextColor = KKPinviewConstant.TextColor
             };
-            if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+            if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
             field.TapCommand = _focusFirstEmptyInCurrentStepCommand;
 
@@ -274,7 +273,7 @@ public partial class KKPINSetUPView : ContentView
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
                 TextColor = KKPinviewConstant.TextColor
             };
-            if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+            if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
             field.TapCommand = _focusFirstEmptyInCurrentStepCommand;
 

@@ -7,7 +7,7 @@ using KKPinView.Debug;
 
 namespace KKPinView.Platforms.iOS;
 
-public static class KKEncryptionHelperiOS
+internal static class KKEncryptionHelperiOS
 {
   /// <summary>
   /// Encrypts NSData using AES-256 encryption with the provided secure key

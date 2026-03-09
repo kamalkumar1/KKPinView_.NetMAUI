@@ -8,7 +8,7 @@ namespace KKPinView.Security;
 /// <summary>
 /// Manages PIN validation attempts and lockout logic
 /// </summary>
-public class KKPinLockoutManager
+public sealed class KKPinLockoutManager
 {
     private const string FailedAttemptsKey = "KKPinView_FailedAttempts";
     private const string LockoutUntilKey = "KKPinView_LockoutUntil";

@@ -6,7 +6,7 @@ namespace KKPinView.ViewModels;
 /// ViewModel for KKPINSetUPView. All display strings and lengths are read from
 /// <see cref="KKPinviewConstant"/> only; change them via the constant class (e.g. in app startup).
 /// </summary>
-public class KKPINSetUPViewModel : BasePinViewModel
+public sealed class KKPINSetUPViewModel : BasePinViewModel
 {
     private bool _showConfirmPin = true;
 

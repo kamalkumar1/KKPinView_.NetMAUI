@@ -69,9 +69,9 @@ public static class MauiProgram
 }
 ```
 
-### Step 2: Configure constants in App.xaml.cs
+### Step 2: Configure in App.xaml.cs
 
-Set `TotalPinTextFields` (and any other constants) in your `App` constructor. This must be done before any PIN view is created.
+Call `Configure()` in your `App` constructor before any PIN view is created. Use the fluent API for easy setup:
 
 ```csharp
 using KKPinView.Constants;
@@ -81,8 +81,15 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-        KKPinviewConstant.TotalPinTextFields = 4;  // 4 or 6 digits
-        // Optional: customize colors, lockout, labels, etc. (see Customization section)
+        // Minimal: 4 digits, default lockout (5 attempts, 5 min)
+        KKPinviewConstant.Configure(c => c.PinLength(4));
+
+        // Or customize more:
+        // KKPinviewConstant.Configure(c => c
+        //     .PinLength(6)
+        //     .Lockout(3, 10)
+        //     .LabelColors(errorColor: Colors.Red)
+        //     .PinField(fontSize: 20, shape: KKPinFieldShapeType.RoundedRectangle));
     }
 }
 ```
@@ -95,7 +102,7 @@ Register routes for your PIN pages in `App.xaml.cs` or `AppShell.xaml.cs`:
 public App()
 {
     InitializeComponent();
-    KKPinviewConstant.TotalPinTextFields = 4;
+    KKPinviewConstant.Configure(c => c.PinLength(4));
     Routing.RegisterRoute("PinSetupView", typeof(PinSetupView));
     Routing.RegisterRoute("PINView", typeof(PINView));  // or "PinEntryView"
 }
@@ -135,14 +142,8 @@ public partial class PinSetupView : ContentPage
     public PinSetupView()
     {
         InitializeComponent();
+        PinSetupContentView.OnCreationCompleted = () => PinSetupContentView?.ShowKeyboard();
         Loaded += OnPageLoaded;
-    }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
-            MainThread.BeginInvokeOnMainThread(() => PinSetupContentView?.ShowKeyboard()));
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -199,14 +200,8 @@ public partial class PINView : ContentPage
     public PINView()
     {
         InitializeComponent();
+        PinEntryContentView.OnCreationCompleted = () => PinEntryContentView?.ShowKeyboard();
         Loaded += OnPageLoaded;
-    }
-
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
-            MainThread.BeginInvokeOnMainThread(() => PinEntryContentView?.ShowKeyboard()));
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -358,7 +353,7 @@ var setupView = new KKPINSetUPView
     OnSetupFailed = (msg) => { /* Error already shown in view */ }
 };
 // Add to ContentPage: Content = setupView;
-// Call setupView.ShowKeyboard() in OnAppearing for best UX
+setupView.OnCreationCompleted = () => setupView.ShowKeyboard();
 ```
 
 ### PIN Entry (`KKPinViews`)
@@ -371,7 +366,7 @@ var pinView = new KKPinViews
     ShowForgotPin = true
 };
 // Add to ContentPage: Content = pinView;
-// Call pinView.ShowKeyboard() in OnAppearing for best UX
+pinView.OnCreationCompleted = () => pinView.ShowKeyboard();
 ```
 
 ---
@@ -380,7 +375,7 @@ var pinView = new KKPinViews
 
 KKPinView uses the **system numeric keyboard**. PIN fields are single-digit entries; focus moves automatically to the next field when a digit is entered. Tapping anywhere on the PIN area focuses the first empty field. Backspace moves focus to the previous (or first empty) field.
 
-**Tip:** Call `ShowKeyboard()` on `KKPINSetUPView` or `KKPinViews` from the host page's `OnAppearing` (with a short delay, e.g. 350ms) so the keyboard opens when the page becomes visible.
+**Tip:** Set `OnCreationCompleted = () => view.ShowKeyboard()` so the keyboard opens when the view is ready. The library does not auto-focus; the host app controls when to show the keyboard via this callback.
 
 ---
 
@@ -399,7 +394,8 @@ Main PIN entry view for authenticating users.
 
 #### Methods
 
-- `ShowKeyboard()`: Focuses the first PIN field to bring up the system keyboard. Call from the host page's `OnAppearing` (with a short delay) for best UX.
+- `OnCreationCompleted`: Callback invoked when the PIN view is fully created and ready. Use this to call `ShowKeyboard()` or perform other setup.
+- `ShowKeyboard()`: Focuses the first PIN field to bring up the system keyboard. Call from `OnCreationCompleted` or when you want to show the keyboard.
 
 #### Behavior
 
@@ -416,6 +412,7 @@ PIN setup view for creating a new PIN with confirmation.
 
 #### Properties
 
+- `OnCreationCompleted`: Callback invoked when the PIN setup view is fully created and ready. Use this to call `ShowKeyboard()` or perform other setup.
 - `OnSetupSuccess`: Callback when PIN setup completes successfully (PIN is already saved)
 - `OnSetupFailed`: Callback when setup fails (e.g. mismatch or save error); receives the error message string
 - `EnterPinLabelText`, `ConfirmPinLabelText`: Read-only; values come from `KKPinviewConstant.EnterPinMessage` and `ConfirmPinMessage`. Change labels by setting those constants.
@@ -423,7 +420,7 @@ PIN setup view for creating a new PIN with confirmation.
 
 #### Methods
 
-- `ShowKeyboard()`: Focuses the first PIN field to bring up the system keyboard. Call from the host page's `OnAppearing` (with a short delay) for best UX.
+- `ShowKeyboard()`: Focuses the first PIN field to bring up the system keyboard. Call from `OnCreationCompleted` or when you want to show the keyboard.
 
 #### Behavior
 
@@ -542,9 +539,33 @@ else
 
 ## Customization
 
-### Constants (single source of truth)
+### Easy configuration: Configure()
 
-All UI text, colors, dimensions, and behavior are configured **only** via `KKPinviewConstant`. ViewModels expose these as read-only; set constants (e.g. in app startup) to customize.
+Use `KKPinviewConstant.Configure()` for one-call setup. Call from your `App` constructor:
+
+```csharp
+using KKPinView.Constants;
+
+// Minimal - defaults (4 digits, 5 attempts, 5 min lockout)
+KKPinviewConstant.Configure();
+
+// Or customize with fluent API
+KKPinviewConstant.Configure(c => c
+    .PinLength(6)                                    // 6-digit PIN
+    .Lockout(3, 10)                                  // 3 attempts, 10 min lockout
+    .BackgroundColor(Colors.White)
+    .LabelColors(textColor: Colors.Black, errorColor: Colors.Red)
+    .LabelFont(fontSize: 18, attributes: FontAttributes.Bold)
+    .ErrorMessageFont(fontSize: 24)
+    .PinFieldColors(filled: Colors.Green, empty: Colors.Gray, invalid: Colors.Red)
+    .PinField(fontSize: 20, height: 50, width: 50, spacing: 15, shape: KKPinFieldShapeType.Round)
+    .PinFieldCornerRadius(10)                        // For RoundedRectangle
+    .Labels(enterPin: "Enter your PIN", confirmPin: "Confirm your PIN", forgotPin: "Forgot PIN?"));
+```
+
+### Constants (advanced)
+
+For fine-grained control, set properties directly on `KKPinviewConstant`, `LabelConstants`, and `PinFieldConstants`:
 
 ```csharp
 using KKPinView.Constants;
@@ -558,26 +579,32 @@ KKPinviewConstant.PinLockoutDurationMinutes = 5;
 
 // Colors
 KKPinviewConstant.BackgroundColor = Colors.White;
-KKPinviewConstant.TextColor = Colors.Black;
-KKPinviewConstant.ErrorTextColor = Colors.Red;
-KKPinviewConstant.SuccessTextColor = Colors.Green;
-KKPinviewConstant.DigitFieldBackgroundColor = Colors.Transparent;
-KKPinviewConstant.DigitFieldFilledColor = Colors.Green;
-KKPinviewConstant.DigitFieldEmptyBorderColor = Colors.Gray;   // Unfilled field border
-KKPinviewConstant.InvalidPinBorderColor = Colors.Red;        // Wrong PIN border
 
-// Fonts
-KKPinviewConstant.TitleFontSize = 24;
-KKPinviewConstant.SubtitleFontSize = 16;
-KKPinviewConstant.DigitFontSize = 20;
+// Label properties (titles, messages)
+LabelConstants.TextColor = Colors.Black;
+LabelConstants.ErrorTextColor = Colors.Red;
+LabelConstants.SuccessTextColor = Colors.Green;
+LabelConstants.FontSize = 16;
+LabelConstants.FontAttributes = FontAttributes.None;
+LabelConstants.FontFamily = string.Empty;
+LabelConstants.ErrorMessageFontSize = 24;
+LabelConstants.ErrorMessageFontAttributes = FontAttributes.None;
+LabelConstants.ErrorMessageFontFamily = string.Empty;
+LabelConstants.SuccessMessageLabelHeight = 24;
+LabelConstants.ErrorMessageLabelHeight = 24;
 
-// Dimensions
-KKPinviewConstant.FieldHeight = 50;
-KKPinviewConstant.FieldWidth = 50;
-KKPinviewConstant.FieldSpacing = 15;
-KKPinviewConstant.FieldCornerRadius = 10;
-KKPinviewConstant.SuccessMessageLabelHeight = 24;
-KKPinviewConstant.ErrorMessageLabelHeight = 24;
+// Pin field properties (digit boxes)
+PinFieldConstants.BackgroundColor = Colors.Transparent;
+PinFieldConstants.FilledBorderColor = Colors.Green;
+PinFieldConstants.EmptyBorderColor = Colors.Gray;
+PinFieldConstants.InvalidBorderColor = Colors.Red;
+PinFieldConstants.FontSize = 20;
+PinFieldConstants.FontAttributes = FontAttributes.None;
+PinFieldConstants.FontFamily = string.Empty;
+PinFieldConstants.Height = 50;
+PinFieldConstants.Width = 50;
+PinFieldConstants.Spacing = 15;
+PinFieldConstants.CornerRadius = 10;
 
 // Strings (labels and messages)
 KKPinviewConstant.TitleTextFormat = "Enter PIN";
@@ -597,7 +624,7 @@ KKPinviewConstant.SetupSaveFailedMessage = "Failed to save PIN. Please try again
 KKPinviewConstant.PinMismatchErrorDisplayDurationMs = 1500;
 
 // Shape
-KKPinviewConstant.FieldShapeType = PinFieldShapeType.Round;  // or RoundedRectangle
+PinFieldConstants.ShapeType = KKPinFieldShapeType.Round;  // or RoundedRectangle
 ```
 
 ## Security Features
@@ -659,6 +686,50 @@ KKPinView/
     └── iOS/
         └── (BackspaceAwareTextField, encryption/storage)
 ```
+
+## API Design
+
+The library uses access specifiers and sealing to protect the implementation and prevent unintended overrides.
+
+### Public API (consumer-facing)
+
+| Type | Purpose |
+|------|---------|
+| `KKPinViews` | Main PIN entry view |
+| `KKPINSetUPView` | PIN setup view |
+| `PinDigitField` | Single digit field (used in XAML) |
+| `BackspaceAwareEntry` | Entry with backspace-on-empty support |
+| `KKPinStorage` | Save/Load/Verify/Delete PIN |
+| `KKPinLockoutManager` | Lockout and attempt tracking |
+| `KKPinviewConstant`, `KKPinViewConfig`, `LabelConstants`, `PinFieldConstants`, `KKPinFieldShapeType` | Configuration |
+| `BasePinViewModel`, `KKPinViewsViewModel`, `KKPINSetUPViewModel` | ViewModels (exposed via `ViewModel` property) |
+| `MauiAppBuilderExtensions` | `UseKKPinView()` registration |
+
+### Internal (implementation details)
+
+| Type | Reason |
+|------|--------|
+| `PinFieldHelpers` | First-empty field logic; used only by views |
+| `IKKPinStorage`, `KKPinStorageFallback`, `KKPinStorageiOS`, `KKPinStorageAndroid` | Platform storage abstraction |
+| `SharedEncryptionHelper` | AES encryption for Preferences mode |
+| `KKEncryptionHelperiOS`, `KKEncryptionHelperAndroid` | Platform-specific encryption |
+| `BackspaceAwareTextField`, `BackspaceAwareEditText` | Platform-specific views |
+| `PlatformClass1` | Placeholder; not referenced |
+
+### Sealed classes (no inheritance)
+
+These types are `sealed` so consumers cannot subclass and override behavior:
+
+- `KKPinViews`, `KKPINSetUPView`, `PinDigitField`, `BackspaceAwareEntry`
+- `KKPinLockoutManager`
+- `KKPinViewsViewModel`, `KKPINSetUPViewModel`
+- `KKPinViewConfig`
+
+Customization is done via `KKPinviewConstant.Configure()`, bindable properties, and callbacks—not inheritance.
+
+### Test access
+
+The test project (`KKPinView.Tests`) uses `InternalsVisibleTo` to access `PinFieldHelpers` for unit tests.
 
 ## Sample App
 

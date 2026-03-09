@@ -6,7 +6,7 @@ using KKPinView.Debug;
 
 namespace KKPinView.Platforms.Android;
 
-public static class KKEncryptionHelperAndroid
+internal static class KKEncryptionHelperAndroid
 {
   /// <summary>
   /// Encrypts a string using AES-256 encryption with the provided secure key

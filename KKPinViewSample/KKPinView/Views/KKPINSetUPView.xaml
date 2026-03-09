@@ -22,7 +22,9 @@
                 <Label
                     x:Name="EnterPinLabel"
                     Text="{Binding EnterPinLabelText}"
-                    FontSize="{Binding SubtitleFontSize}"
+                    FontSize="{Binding TitleFontSize}"
+                    FontAttributes="{Binding TitleFontAttributes}"
+                    FontFamily="{Binding TitleFontFamily}"
                     TextColor="{Binding TextColor}"
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center" />
@@ -38,7 +40,9 @@
                 <Label
                     x:Name="ConfirmPinLabel"
                     Text="{Binding ConfirmPinLabelText}"
-                    FontSize="{Binding SubtitleFontSize}"
+                    FontSize="{Binding TitleFontSize}"
+                    FontAttributes="{Binding TitleFontAttributes}"
+                    FontFamily="{Binding TitleFontFamily}"
                     TextColor="{Binding TextColor}"
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
@@ -58,7 +62,9 @@
                     x:Name="ErrorMessageLabel"
                     HeightRequest="0"
                     Text="{Binding ErrorMessage}"
-                    FontSize="{Binding SubtitleFontSize}"
+                    FontSize="{Binding ErrorMessageFontSize}"
+                    FontAttributes="{Binding ErrorMessageFontAttributes}"
+                    FontFamily="{Binding ErrorMessageFontFamily}"
                     TextColor="{Binding ErrorTextColor}"
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center" />
@@ -67,7 +73,9 @@
                 <Label
                     x:Name="SuccessMessageLabel"
                     Text="{Binding SuccessMessage}"
-                    FontSize="{Binding SubtitleFontSize}"
+                    FontSize="{Binding TitleFontSize}"
+                    FontAttributes="{Binding TitleFontAttributes}"
+                    FontFamily="{Binding TitleFontFamily}"
                     TextColor="{Binding SuccessTextColor}"
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"

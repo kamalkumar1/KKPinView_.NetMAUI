@@ -5,6 +5,10 @@
     Title="KKPinView Demo"
     BackgroundColor="White">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="✕" Clicked="OnCloseClicked" />
+    </ContentPage.ToolbarItems>
+
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="16">
             <Label Text="KKPinView Demo"

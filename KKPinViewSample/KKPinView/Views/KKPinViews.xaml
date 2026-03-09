@@ -1,62 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:KKPinView.Views"
     x:Class="KKPinView.Views.KKPinViews"
     x:Name="Root"
     BackgroundColor="{Binding BackgroundColor}">
+
     <ContentView.GestureRecognizers>
         <TapGestureRecognizer Tapped="OnRootTapped" />
     </ContentView.GestureRecognizers>
+    <ScrollView>
         <Grid
-            Padding="30,60,0,30"
-            RowDefinitions="Auto,Auto,Auto"
-            RowSpacing="30"
-            VerticalOptions="Center">
-
-            <!-- PIN Fields -->
-            <HorizontalStackLayout
-                x:Name="PinFieldsContainer"
+            RowDefinitions="Auto"
+            RowSpacing="0">
+            <VerticalStackLayout
                 Grid.Row="0"
-                Spacing="{Binding FieldSpacing}"
-                HorizontalOptions="Center" />
+                Spacing="30"
+                Padding="30,60,30,30"
+                VerticalOptions="Start">
 
-            <!-- Forgot PIN Button -->
-            <Button
-                x:Name="ForgotPinButton"
-                Grid.Row="1"
-                Text="{Binding ForgotPinText}"
-                TextColor="{Binding TextColor}"
-                BackgroundColor="Transparent"
-                Clicked="OnForgotPinClicked"
-                IsVisible="{Binding ShowForgotPin}"
-                Margin="0,-15,0,0" />
+                <!-- PIN digit text fields -->
+                <HorizontalStackLayout
+                    x:Name="PinFieldsContainer"
+                    Spacing="{Binding FieldSpacing}"
+                    HorizontalOptions="Center" />
 
-            <!-- Error Message -->
-            <Label
-                x:Name="ErrorMessageLabel"
-                Grid.Row="2"
-                Margin="0,-15,0,0"
-                Padding="30,0"
-                Text="{Binding ErrorMessage}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding ErrorTextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                IsVisible="{Binding HasError}" />
+                <!-- Forgot PIN Button -->
+                <Button
+                    x:Name="ForgotPinButton"
+                    Text="{Binding ForgotPinText}"
+                    TextColor="{Binding TextColor}"
+                    BackgroundColor="Transparent"
+                    Clicked="OnForgotPinClicked"
+                    IsVisible="{Binding ShowForgotPin}"
+                    Margin="0,-15,0,0" />
 
-            <!-- Success Message -->
-            <Label
-                Margin="0,-15,0,0"
-                x:Name="SuccessMessageLabel"
-                Grid.Row="2"
-                IsVisible="{Binding HasSuccess}"
-                Text="{Binding SuccessMessage}"
-                FontSize="{Binding SubtitleFontSize}"
-                TextColor="{Binding SuccessTextColor}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center"
-                HeightRequest="0" />
+                <!-- Error message label -->
+                <Label
+                    x:Name="ErrorMessageLabel"
+                    HeightRequest="0"
+                    Text="{Binding ErrorMessage}"
+                    FontSize="{Binding ErrorMessageFontSize}"
+                    FontAttributes="{Binding ErrorMessageFontAttributes}"
+                    FontFamily="{Binding ErrorMessageFontFamily}"
+                    TextColor="{Binding ErrorTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center" />
+
+                <!-- Success message label -->
+                <Label
+                    x:Name="SuccessMessageLabel"
+                    Text="{Binding SuccessMessage}"
+                    FontSize="{Binding TitleFontSize}"
+                    FontAttributes="{Binding TitleFontAttributes}"
+                    FontFamily="{Binding TitleFontFamily}"
+                    TextColor="{Binding SuccessTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    HeightRequest="0" />
+            </VerticalStackLayout>
 
         </Grid>
+    </ScrollView>
+
 </ContentView>
