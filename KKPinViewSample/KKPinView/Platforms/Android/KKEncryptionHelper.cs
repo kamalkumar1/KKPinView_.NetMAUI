@@ -31,24 +31,41 @@ internal static class KKEncryptionHelperAndroid
 
       // Derive key from secure key string
       var keyBytes = DeriveKeyFromString(secureKey);
-      aes.Key = keyBytes;
-      aes.GenerateIV();
+      try
+      {
+        aes.Key = keyBytes;
+        aes.GenerateIV();
 
-      using var encryptor = aes.CreateEncryptor();
+        using var encryptor = aes.CreateEncryptor();
 
-      // Convert string to bytes
+        // Convert string to bytes
       var plainBytes = Encoding.UTF8.GetBytes(plainText);
-
-      // Encrypt
-      var encryptedBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
-
-      // Combine IV + encrypted data
-      var combined = new byte[aes.IV.Length + encryptedBytes.Length];
-      Buffer.BlockCopy(aes.IV, 0, combined, 0, aes.IV.Length);
-      Buffer.BlockCopy(encryptedBytes, 0, combined, aes.IV.Length, encryptedBytes.Length);
-
-      // Return as Base64 string
-      return Convert.ToBase64String(combined);
+      try
+      {
+        // Encrypt
+        var encryptedBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+        try
+        {
+          // Combine IV + encrypted data
+          var combined = new byte[aes.IV.Length + encryptedBytes.Length];
+          Buffer.BlockCopy(aes.IV, 0, combined, 0, aes.IV.Length);
+          Buffer.BlockCopy(encryptedBytes, 0, combined, aes.IV.Length, encryptedBytes.Length);
+          return Convert.ToBase64String(combined);
+        }
+        finally
+        {
+          Array.Clear(encryptedBytes, 0, encryptedBytes.Length);
+        }
+      }
+      finally
+      {
+        Array.Clear(plainBytes, 0, plainBytes.Length);
+      }
+      }
+      finally
+      {
+        Array.Clear(keyBytes, 0, keyBytes.Length);
+      }
     }
     catch (Exception ex)
     {
@@ -80,24 +97,41 @@ internal static class KKEncryptionHelperAndroid
 
       // Derive key from secure key string
       var keyBytes = DeriveKeyFromString(secureKey);
-      aes.Key = keyBytes;
+      try
+      {
+        aes.Key = keyBytes;
 
-      // Convert Base64 string to bytes
+        // Convert Base64 string to bytes
       var combinedBytes = Convert.FromBase64String(encryptedText);
+      try
+      {
+        // Extract IV (first 16 bytes) and encrypted data
+        var iv = new byte[16];
+        var encryptedBytes = new byte[combinedBytes.Length - 16];
+        Buffer.BlockCopy(combinedBytes, 0, iv, 0, 16);
+        Buffer.BlockCopy(combinedBytes, 16, encryptedBytes, 0, encryptedBytes.Length);
+        aes.IV = iv;
 
-      // Extract IV (first 16 bytes) and encrypted data
-      var iv = new byte[16];
-      var encryptedBytes = new byte[combinedBytes.Length - 16];
-      Buffer.BlockCopy(combinedBytes, 0, iv, 0, 16);
-      Buffer.BlockCopy(combinedBytes, 16, encryptedBytes, 0, encryptedBytes.Length);
-
-      aes.IV = iv;
-
-      using var decryptor = aes.CreateDecryptor();
-      var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
-
-      // Convert bytes back to string
-      return Encoding.UTF8.GetString(decryptedBytes);
+        using var decryptor = aes.CreateDecryptor();
+        var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
+        try
+        {
+          return Encoding.UTF8.GetString(decryptedBytes);
+        }
+        finally
+        {
+          Array.Clear(decryptedBytes, 0, decryptedBytes.Length);
+        }
+      }
+      finally
+      {
+        Array.Clear(combinedBytes, 0, combinedBytes.Length);
+      }
+      }
+      finally
+      {
+        Array.Clear(keyBytes, 0, keyBytes.Length);
+      }
     }
     catch (Exception ex)
     {

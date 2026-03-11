@@ -9,8 +9,9 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinView.Views;
 
-public sealed partial class KKPINSetUPView : ContentView
+public sealed partial class KKPINSetUPView : ContentView, IDisposable
 {
+    private bool _disposed;
     private readonly ObservableCollection<PinDigitField> _enterPinFields = new();
     private readonly ObservableCollection<PinDigitField> _confirmPinFields = new();
     private readonly KKPINSetUPViewModel _viewModel;
@@ -763,5 +764,41 @@ public sealed partial class KKPINSetUPView : ContentView
                 _confirmPinFields[fieldToFocus].FocusEntry();
             });
         });
+    }
+
+    /// <summary>
+    /// Clears PIN values from memory and releases resources. Call before dismissing the page for security.
+    /// Safe to call multiple times.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        Loaded -= OnPageLoaded;
+
+        foreach (var field in _enterPinFields)
+        {
+            field.DigitChanged -= OnEnterPinFieldDigitChanged;
+            field.DigitCompleted -= OnEnterPinFieldCompleted;
+            field.DigitDeleted -= OnEnterPinFieldDeleted;
+            field.ClearDigitSilently();
+        }
+
+        foreach (var field in _confirmPinFields)
+        {
+            field.DigitChanged -= OnConfirmPinFieldDigitChanged;
+            field.DigitCompleted -= OnConfirmPinFieldCompleted;
+            field.DigitDeleted -= OnConfirmPinFieldDeleted;
+            field.ClearDigitSilently();
+        }
+
+        _currentPin = string.Empty;
+        _confirmPin = string.Empty;
+        _viewModel.HasError = false;
+        _viewModel.HasSuccessMessage = false;
+        _viewModel.ErrorMessage = string.Empty;
+        _viewModel.SuccessMessage = string.Empty;
+        _viewModel.Dispose();
     }
 }

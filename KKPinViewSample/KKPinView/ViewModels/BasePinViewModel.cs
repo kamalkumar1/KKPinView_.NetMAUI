@@ -141,8 +141,10 @@ public abstract class BasePinViewModel : INotifyPropertyChanged, IDisposable
         {
             if (disposing)
             {
-                // Clear event handlers
+                // Clear event handlers and sensitive data
                 PropertyChanged = null;
+                _errorMessage = string.Empty;
+                _successMessage = string.Empty;
             }
             _disposed = true;
         }

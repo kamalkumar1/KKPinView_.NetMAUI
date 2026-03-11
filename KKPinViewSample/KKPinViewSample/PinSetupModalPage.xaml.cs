@@ -16,6 +16,7 @@ public partial class PinSetupModalPage : ContentPage
 
     private async void OnCloseClicked(object? sender, EventArgs e)
     {
+        PinSetupContentView?.Dispose();
         if (Shell.Current != null)
             await Shell.Current.Navigation.PopModalAsync();
     }
@@ -36,6 +37,7 @@ public partial class PinSetupModalPage : ContentPage
             {
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
+                    PinSetupContentView?.Dispose();
                     if (Shell.Current != null)
                         await Shell.Current.Navigation.PopModalAsync();
                 });

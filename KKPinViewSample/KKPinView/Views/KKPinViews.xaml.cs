@@ -10,8 +10,9 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinView.Views;
 
-public sealed partial class KKPinViews : ContentView
+public sealed partial class KKPinViews : ContentView, IDisposable
 {
+    private bool _disposed;
     private readonly ObservableCollection<PinDigitField> _pinFields = new();
     private readonly KKPinLockoutManager _lockoutManager;
     private readonly KKPinViewsViewModel _viewModel;
@@ -507,5 +508,33 @@ public sealed partial class KKPinViews : ContentView
             _lockoutManager.CheckLockoutStatus();
             UpdateUI();
         }
+    }
+
+    /// <summary>
+    /// Clears PIN values from memory and releases resources. Call before dismissing the page for security.
+    /// Safe to call multiple times.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        Loaded -= OnPageLoaded;
+
+        foreach (var f in _pinFields)
+        {
+            f.DigitChanged -= OnPinFieldDigitChanged;
+            f.DigitCompleted -= OnPinFieldCompleted;
+            f.DigitDeleted -= OnPinFieldDigitDeleted;
+            f.ClearDigitSilently();
+        }
+
+        _currentPin = string.Empty;
+        _viewModel.IsPinInvalid = false;
+        _viewModel.HasError = false;
+        _viewModel.HasSuccessMessage = false;
+        _viewModel.ErrorMessage = string.Empty;
+        _viewModel.SuccessMessage = string.Empty;
+        _viewModel.Dispose();
     }
 }

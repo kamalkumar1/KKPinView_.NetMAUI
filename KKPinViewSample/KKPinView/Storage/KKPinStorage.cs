@@ -166,15 +166,21 @@ public static class KKPinStorage
             KKPinViewDebug.LogVerbose($"Device ID: {deviceId}");
             
             var keyBytes = new byte[32];
-            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            try
             {
-                rng.GetBytes(keyBytes);
+                using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(keyBytes);
+                }
+                var keyString = Convert.ToBase64String(keyBytes) + deviceId;
+                SecureStorage.SetAsync(KeyName, keyString).Wait();
+                KKPinViewDebug.LogVerbose("Generated and saved new secure key");
+                return keyString;
             }
-            
-            var keyString = Convert.ToBase64String(keyBytes) + deviceId;
-            SecureStorage.SetAsync(KeyName, keyString).Wait();
-            KKPinViewDebug.LogVerbose("Generated and saved new secure key");
-            return keyString;
+            finally
+            {
+                Array.Clear(keyBytes, 0, keyBytes.Length);
+            }
         }
         catch (Exception ex)
         {
