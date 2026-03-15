@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="KKOTPView.Views.KKOTPView"
+    x:Name="Root"
+    BackgroundColor="{Binding BackgroundColor}">
+
+    <ContentView.GestureRecognizers>
+        <TapGestureRecognizer Tapped="OnRootTapped" />
+    </ContentView.GestureRecognizers>
+    <ScrollView>
+        <Grid
+            RowDefinitions="Auto"
+            RowSpacing="0">
+            <VerticalStackLayout
+                Grid.Row="0"
+                Spacing="30"
+                Padding="30,60,30,30"
+                VerticalOptions="Start">
+
+                <!-- OTP digit text fields -->
+                <HorizontalStackLayout
+                    x:Name="PinFieldsContainer"
+                    Spacing="{Binding FieldSpacing}"
+                    HorizontalOptions="Center" />
+
+                <!-- Resend OTP Button (with countdown) -->
+                <Button
+                    x:Name="ForgotPinButton"
+                    Text="{Binding ForgotPinText}"
+                    TextColor="{Binding TextColor}"
+                    FontSize="{Binding ResendFontSize}"
+                    FontAttributes="{Binding ResendFontAttributes}"
+                    FontFamily="{Binding ResendFontFamily}"
+                    BackgroundColor="Transparent"
+                    Clicked="OnForgotPinClicked"
+                    IsVisible="{Binding ShowForgotPin}"
+                    IsEnabled="{Binding IsResendEnabled}"
+                    Margin="0,-15,0,0" />
+
+                <!-- Error message label -->
+                <Label
+                    x:Name="ErrorMessageLabel"
+                    HeightRequest="0"
+                    Text="{Binding ErrorMessage}"
+                    FontSize="{Binding ErrorMessageFontSize}"
+                    FontAttributes="{Binding ErrorMessageFontAttributes}"
+                    FontFamily="{Binding ErrorMessageFontFamily}"
+                    TextColor="{Binding ErrorTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center" />
+
+                <!-- Success message label -->
+                <Label
+                    x:Name="SuccessMessageLabel"
+                    Text="{Binding SuccessMessage}"
+                    FontSize="{Binding TitleFontSize}"
+                    FontAttributes="{Binding TitleFontAttributes}"
+                    FontFamily="{Binding TitleFontFamily}"
+                    TextColor="{Binding SuccessTextColor}"
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    HeightRequest="0" />
+            </VerticalStackLayout>
+
+        </Grid>
+    </ScrollView>
+
+</ContentView>

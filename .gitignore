@@ -416,3 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+KKPinViewSample/.DS_Store
+KKPinViewSample/KKOTPView/.DS_Store
+KKPinViewSample/KKPinView/.DS_Store

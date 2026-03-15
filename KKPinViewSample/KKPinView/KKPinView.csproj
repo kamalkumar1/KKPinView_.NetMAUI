@@ -2,6 +2,7 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="KKPinView.Tests" />
+		<InternalsVisibleTo Include="KKOTPView" />
 	</ItemGroup>
 
 	<PropertyGroup>
