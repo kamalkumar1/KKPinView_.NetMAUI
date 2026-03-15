@@ -25,13 +25,11 @@
 		<Authors>kamalkumar</Authors>
 		<Company>KKPinView</Company>
 		<Product>KKPinView</Product>
-		<Description>A secure PIN entry and management library for .NET MAUI applications. Provides
-			PIN setup, authentication, secure storage with AES-256 encryption, and lockout
-			protection.</Description>
+		<Description>A secure, enterprise-ready PIN entry and management library for .NET MAUI applications. Provides PIN setup, authentication, secure storage with AES-256 encryption, and lockout protection.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/kamalkumar1/KKPinView_.NetMAUI</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/kamalkumar1/KKPinView_.NetMAUI</RepositoryUrl>
-		<PackageTags>maui;pin;security;authentication;encryption;lockout</PackageTags>
+		<PackageTags>maui;dotnet-maui;ios;android;mobile;mobile-app;pin;pin-setup;security;authentication;encryption;lockout;keypad;secure-storage;keychain;aes-256</PackageTags>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>

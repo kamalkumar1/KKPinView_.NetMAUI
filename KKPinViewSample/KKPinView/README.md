@@ -5,6 +5,8 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-10.0-blue.svg)](https://dotnet.microsoft.com/apps/maui)
 
+> 📖 **Full integration guide:** For complete setup, step-by-step integration, API reference, and examples, see the [GitHub README](https://github.com/kamalkumar1/KKPinView_.NetMAUI#readme).
+
 ## Features
 
 - 🔒 **Secure Storage**: AES-256 encryption with device-specific keys
