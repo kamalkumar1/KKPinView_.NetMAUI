@@ -11,6 +11,7 @@ public partial class PinSetupModalPage : ContentPage
     public PinSetupModalPage()
     {
         InitializeComponent();
+        PinSetupContentView.OnCreationCompleted = () => PinSetupContentView?.ShowKeyboard();
         Loaded += OnPageLoaded;
     }
 
@@ -43,7 +44,6 @@ public partial class PinSetupModalPage : ContentPage
                 });
             });
         };
-        PinSetupContentView.OnCreationCompleted = () => PinSetupContentView?.ShowKeyboard();
 
         PinSetupContentView.OnSetupFailed = (errorMessage) =>
         {
