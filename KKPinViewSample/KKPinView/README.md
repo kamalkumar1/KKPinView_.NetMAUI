@@ -86,15 +86,21 @@ public partial class App : Application
     {
         InitializeComponent();
         // Minimal: 4 digits, default lockout (5 attempts, 5 min)
-        KKPinviewConstant.Configure(c => c.PinLength(4));
+       // KKPinviewConstant.Configure(c => c.PinLength(4));
 
-        // Or customize more:
-        // KKPinviewConstant.Configure(c => c
-        //     .PinLength(6)
-        //     .Lockout(3, 10)
-        //     .LabelColors(errorColor: Colors.Red)
-        //     .PinField(fontSize: 20, shape: KKPinFieldShapeType.RoundedRectangle)
-        //     .PinFieldSecure(true));  // true = masked (dots), false = visible digits
+       
+       // Or customize more with fluent API
+		KKPinviewConstant.Configure(c => c
+				.PinLength(4)
+				.Lockout(2, 10)
+				.LabelColors(errorColor: Colors.Red, successColor: Colors.Green, textColor: Colors.Black)
+				.LabelFont(fontSize: 18, attributes: FontAttributes.Bold, fontFamily: "OpenSansSemibold")
+				.ErrorMessageFont(fontSize: 17, attributes: FontAttributes.Bold, fontFamily: "OpenSansSemibold")
+				.DigitFont(fontSize: 20, attributes: FontAttributes.Bold, fontFamily: "OpenSansSemibold")
+				.PinFieldColors(filled: Colors.Green, invalid: Colors.Red)
+				.PinStoragePersistsAfterUninstall(true)
+				.PinField(fontSize: 20, shape: KKPinFieldShapeType.Round)
+				.PinFieldSecure(true));  // true = masked (dots), false = visible digits
     }
 }
 ```
