@@ -9,8 +9,9 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace KKPinView.Views;
 
-public partial class KKPINSetUPView : ContentView
+public sealed partial class KKPINSetUPView : ContentView, IDisposable
 {
+    private bool _disposed;
     private readonly ObservableCollection<PinDigitField> _enterPinFields = new();
     private readonly ObservableCollection<PinDigitField> _confirmPinFields = new();
     private readonly KKPINSetUPViewModel _viewModel;
@@ -95,7 +96,7 @@ public partial class KKPINSetUPView : ContentView
     }
 
     /// <summary>
-    /// Focuses the first PIN field so the keyboard appears. Call from the host Page's OnAppearing for best results.
+    /// Focuses the first PIN field so the keyboard appears. Call from <see cref="OnCreationCompleted"/> or when you want to show the keyboard.
     /// </summary>
     public void ShowKeyboard()
     {
@@ -162,15 +163,14 @@ public partial class KKPINSetUPView : ContentView
 
         if (_enterPinFields.Count > 0)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(400), () =>
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    _enterPinFields[0].FocusEntry();
-                });
-            });
+            OnCreationCompleted?.Invoke();
         }
     }
+
+    /// <summary>
+    /// Callback invoked when the PIN setup view is fully created and ready. Use this to call <see cref="ShowKeyboard"/> or perform other setup.
+    /// </summary>
+    public Action? OnCreationCompleted { get; set; }
 
     private void UpdatePinFields()
     {
@@ -240,14 +240,14 @@ public partial class KKPINSetUPView : ContentView
         {
             var field = new PinDigitField
             {
-                // Apply constants for field appearance
                 FieldShapeType = KKPinviewConstant.FieldShapeType,
                 FieldWidth = KKPinviewConstant.FieldWidth,
                 FieldHeight = KKPinviewConstant.FieldHeight,
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
-                TextColor = KKPinviewConstant.TextColor
+                TextColor = KKPinviewConstant.TextColor,
+                IsSecure = KKPinviewConstant.PinFieldIsSecure
             };
-            if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+            if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
             field.TapCommand = _focusFirstEmptyInCurrentStepCommand;
 
@@ -267,14 +267,14 @@ public partial class KKPINSetUPView : ContentView
         {
             var field = new PinDigitField
             {
-                // Apply constants for field appearance
                 FieldShapeType = KKPinviewConstant.FieldShapeType,
                 FieldWidth = KKPinviewConstant.FieldWidth,
                 FieldHeight = KKPinviewConstant.FieldHeight,
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
-                TextColor = KKPinviewConstant.TextColor
+                TextColor = KKPinviewConstant.TextColor,
+                IsSecure = KKPinviewConstant.PinFieldIsSecure
             };
-            if (KKPinviewConstant.FieldShapeType == PinFieldShapeType.RoundedRectangle)
+            if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
             field.TapCommand = _focusFirstEmptyInCurrentStepCommand;
 
@@ -332,6 +332,13 @@ public partial class KKPINSetUPView : ContentView
             foreach (var f in _confirmPinFields) f.UnfocusEntry();
             await Task.Delay(50);
 
+            // Animate all fields to red (invalid) border so user sees mismatch feedback
+            const uint borderAnimationDurationMs = 220;
+            foreach (var f in _enterPinFields)
+                f.AnimateBorderToColor(KKPinviewConstant.InvalidPinBorderColor, borderAnimationDurationMs, Easing.CubicOut);
+            foreach (var f in _confirmPinFields)
+                f.AnimateBorderToColor(KKPinviewConstant.InvalidPinBorderColor, borderAnimationDurationMs, Easing.CubicOut);
+
             // Notify host immediately so existing functionality (e.g. analytics) is unchanged
             _viewModel.OnSetupFailed?.Invoke(KKPinviewConstant.PinMismatchError);
 
@@ -351,8 +358,16 @@ public partial class KKPINSetUPView : ContentView
                 {
                     _currentPin = string.Empty;
                     _confirmPin = string.Empty;
-                    foreach (var f in _enterPinFields) f.ClearDigitSilently();
-                    foreach (var f in _confirmPinFields) f.ClearDigitSilently();
+                    foreach (var f in _enterPinFields)
+                    {
+                        f.BorderColor = KKPinviewConstant.DigitFieldEmptyBorderColor;
+                        f.ClearDigitSilently();
+                    }
+                    foreach (var f in _confirmPinFields)
+                    {
+                        f.BorderColor = KKPinviewConstant.DigitFieldEmptyBorderColor;
+                        f.ClearDigitSilently();
+                    }
                     _isConfirmingPin = false;
                     if (_enterPinFields.Count > 0)
                         _enterPinFields[0].FocusEntry();
@@ -749,5 +764,41 @@ public partial class KKPINSetUPView : ContentView
                 _confirmPinFields[fieldToFocus].FocusEntry();
             });
         });
+    }
+
+    /// <summary>
+    /// Clears PIN values from memory and releases resources. Call before dismissing the page for security.
+    /// Safe to call multiple times.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        Loaded -= OnPageLoaded;
+
+        foreach (var field in _enterPinFields)
+        {
+            field.DigitChanged -= OnEnterPinFieldDigitChanged;
+            field.DigitCompleted -= OnEnterPinFieldCompleted;
+            field.DigitDeleted -= OnEnterPinFieldDeleted;
+            field.ClearDigitSilently();
+        }
+
+        foreach (var field in _confirmPinFields)
+        {
+            field.DigitChanged -= OnConfirmPinFieldDigitChanged;
+            field.DigitCompleted -= OnConfirmPinFieldCompleted;
+            field.DigitDeleted -= OnConfirmPinFieldDeleted;
+            field.ClearDigitSilently();
+        }
+
+        _currentPin = string.Empty;
+        _confirmPin = string.Empty;
+        _viewModel.HasError = false;
+        _viewModel.HasSuccessMessage = false;
+        _viewModel.ErrorMessage = string.Empty;
+        _viewModel.SuccessMessage = string.Empty;
+        _viewModel.Dispose();
     }
 }

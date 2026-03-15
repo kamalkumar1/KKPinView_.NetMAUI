@@ -7,7 +7,7 @@ using KKPinView.Debug;
 
 namespace KKPinView.Platforms.iOS;
 
-public static class KKEncryptionHelperiOS
+internal static class KKEncryptionHelperiOS
 {
   /// <summary>
   /// Encrypts NSData using AES-256 encryption with the provided secure key
@@ -29,24 +29,42 @@ public static class KKEncryptionHelperiOS
 
       // Derive key from secure key string
       var keyBytes = DeriveKeyFromString(secureKey);
-      aes.Key = keyBytes;
-      aes.GenerateIV();
+      try
+      {
+        aes.Key = keyBytes;
+        aes.GenerateIV();
 
-      using var encryptor = aes.CreateEncryptor();
+        using var encryptor = aes.CreateEncryptor();
 
-      // Convert NSData to byte array
-      var dataBytes = new byte[data.Length];
-      System.Runtime.InteropServices.Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
-
-      // Encrypt
-      var encryptedBytes = encryptor.TransformFinalBlock(dataBytes, 0, dataBytes.Length);
-
-      // Combine IV + encrypted data
-      var combined = new byte[aes.IV.Length + encryptedBytes.Length];
-      Buffer.BlockCopy(aes.IV, 0, combined, 0, aes.IV.Length);
-      Buffer.BlockCopy(encryptedBytes, 0, combined, aes.IV.Length, encryptedBytes.Length);
-
-      return NSData.FromArray(combined);
+        // Convert NSData to byte array
+        var dataBytes = new byte[data.Length];
+        System.Runtime.InteropServices.Marshal.Copy(data.Bytes, dataBytes, 0, (int)data.Length);
+        try
+        {
+          // Encrypt
+          var encryptedBytes = encryptor.TransformFinalBlock(dataBytes, 0, dataBytes.Length);
+          try
+          {
+            // Combine IV + encrypted data
+            var combined = new byte[aes.IV.Length + encryptedBytes.Length];
+            Buffer.BlockCopy(aes.IV, 0, combined, 0, aes.IV.Length);
+            Buffer.BlockCopy(encryptedBytes, 0, combined, aes.IV.Length, encryptedBytes.Length);
+            return NSData.FromArray(combined);
+          }
+          finally
+          {
+            Array.Clear(encryptedBytes, 0, encryptedBytes.Length);
+          }
+        }
+        finally
+        {
+          Array.Clear(dataBytes, 0, dataBytes.Length);
+        }
+      }
+      finally
+      {
+        Array.Clear(keyBytes, 0, keyBytes.Length);
+      }
     }
     catch (Exception ex)
     {
@@ -75,24 +93,42 @@ public static class KKEncryptionHelperiOS
 
       // Derive key from secure key string
       var keyBytes = DeriveKeyFromString(secureKey);
-      aes.Key = keyBytes;
+      try
+      {
+        aes.Key = keyBytes;
 
-      // Convert NSData to byte array
-      var combinedBytes = new byte[encryptedData.Length];
-      System.Runtime.InteropServices.Marshal.Copy(encryptedData.Bytes, combinedBytes, 0, (int)encryptedData.Length);
+        // Convert NSData to byte array
+        var combinedBytes = new byte[encryptedData.Length];
+        System.Runtime.InteropServices.Marshal.Copy(encryptedData.Bytes, combinedBytes, 0, (int)encryptedData.Length);
+        try
+        {
+          // Extract IV (first 16 bytes) and encrypted data
+          var iv = new byte[16];
+          var encryptedBytes = new byte[combinedBytes.Length - 16];
+          Buffer.BlockCopy(combinedBytes, 0, iv, 0, 16);
+          Buffer.BlockCopy(combinedBytes, 16, encryptedBytes, 0, encryptedBytes.Length);
+          aes.IV = iv;
 
-      // Extract IV (first 16 bytes) and encrypted data
-      var iv = new byte[16];
-      var encryptedBytes = new byte[combinedBytes.Length - 16];
-      Buffer.BlockCopy(combinedBytes, 0, iv, 0, 16);
-      Buffer.BlockCopy(combinedBytes, 16, encryptedBytes, 0, encryptedBytes.Length);
-
-      aes.IV = iv;
-
-      using var decryptor = aes.CreateDecryptor();
-      var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
-
-      return NSData.FromArray(decryptedBytes);
+          using var decryptor = aes.CreateDecryptor();
+          var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
+          try
+          {
+            return NSData.FromArray(decryptedBytes);
+          }
+          finally
+          {
+            Array.Clear(decryptedBytes, 0, decryptedBytes.Length);
+          }
+        }
+        finally
+        {
+          Array.Clear(combinedBytes, 0, combinedBytes.Length);
+        }
+      }
+      finally
+      {
+        Array.Clear(keyBytes, 0, keyBytes.Length);
+      }
     }
     catch (Exception ex)
     {

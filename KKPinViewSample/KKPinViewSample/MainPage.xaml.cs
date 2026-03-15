@@ -1,10 +1,16 @@
-﻿namespace KKPinViewSample;
+namespace KKPinViewSample;
 
 public partial class MainPage : ContentPage
 {
 	public MainPage()
 	{
 		InitializeComponent();
+	}
+
+	private async void OnCloseClicked(object? sender, EventArgs e)
+	{
+		if (Shell.Current != null)
+			await Shell.Current.GoToAsync("..");
 	}
 
 	/// <summary>

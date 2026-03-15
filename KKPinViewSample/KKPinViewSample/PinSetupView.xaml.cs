@@ -9,30 +9,14 @@ public partial class PinSetupView : ContentPage
     public PinSetupView()
     {
         InitializeComponent();
-        
-        // // Ensure the view is set if XAML didn't load it
-        // if (PinSetupContentView == null)
-        // {
-        //     PinSetupContentView = new KKPINSetUPView
-        //     {
-        //         VerticalOptions = LayoutOptions.Fill,
-        //         HorizontalOptions = LayoutOptions.Fill
-        //     };
-        //     Content = PinSetupContentView;
-        // }
-        
-        // Set up event handlers after page is loaded
+        PinSetupContentView.OnCreationCompleted = () => PinSetupContentView?.ShowKeyboard();
         Loaded += OnPageLoaded;
     }
 
-    protected override void OnAppearing()
+    private async void OnCloseClicked(object? sender, EventArgs e)
     {
-        base.OnAppearing();
-        // Bring keyboard when page is visible (after setup or when opening setup)
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
-        {
-            MainThread.BeginInvokeOnMainThread(() => PinSetupContentView?.ShowKeyboard());
-        });
+        if (Shell.Current != null)
+            await Shell.Current.GoToAsync("..");
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)

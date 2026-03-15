@@ -11,14 +11,14 @@ public partial class PinValidateModalPage : ContentPage
     public PinValidateModalPage()
     {
         InitializeComponent();
+        PinEntryContentView.OnCreationCompleted = () => PinEntryContentView?.ShowKeyboard();
         Loaded += OnPageLoaded;
     }
 
-    protected override void OnAppearing()
+    private async void OnCloseClicked(object? sender, EventArgs e)
     {
-        base.OnAppearing();
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
-            MainThread.BeginInvokeOnMainThread(() => PinEntryContentView?.ShowKeyboard()));
+        PinEntryContentView?.Dispose();
+        await Navigation.PopModalAsync();
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -30,14 +30,13 @@ public partial class PinValidateModalPage : ContentPage
         PinEntryContentView.OnSubmit = (isValid) =>
         {
             if (!isValid) return;
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(500), () =>
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    if (Shell.Current != null)
-                        await Shell.Current.Navigation.PopModalAsync();
-                });
+                await Task.Delay(500);
+                PinEntryContentView?.Dispose();
+                await Navigation.PopModalAsync();
             });
         };
+
     }
 }

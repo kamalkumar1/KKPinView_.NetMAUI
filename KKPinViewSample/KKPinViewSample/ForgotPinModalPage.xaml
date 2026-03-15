@@ -5,6 +5,10 @@
     Title="Forgot PIN"
     BackgroundColor="White">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="✕" Clicked="OnCloseClicked" />
+    </ContentPage.ToolbarItems>
+
     <VerticalStackLayout Padding="24" Spacing="24" VerticalOptions="Center">
         <Label Text="Forgot PIN?"
             FontSize="24"

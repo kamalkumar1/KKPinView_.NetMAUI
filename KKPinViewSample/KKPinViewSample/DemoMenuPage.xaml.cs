@@ -9,6 +9,12 @@ public partial class DemoMenuPage : ContentPage
         InitializeComponent();
     }
 
+    private async void OnCloseClicked(object? sender, EventArgs e)
+    {
+        if (Shell.Current != null)
+            await Shell.Current.GoToAsync("//MainPage");
+    }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -19,7 +25,7 @@ public partial class DemoMenuPage : ContentPage
     private async void OnSetupPinClicked(object? sender, EventArgs e)
     {
         if (Shell.Current != null)
-            await Shell.Current.Navigation.PushModalAsync(new PinSetupModalPage());
+            await Shell.Current.Navigation.PushModalAsync(new NavigationPage(new PinSetupModalPage()));
     }
 
     private async void OnValidatePinClicked(object? sender, EventArgs e)
@@ -30,7 +36,7 @@ public partial class DemoMenuPage : ContentPage
             return;
         }
         if (Shell.Current != null)
-            await Shell.Current.Navigation.PushModalAsync(new PinValidateModalPage());
+            await Shell.Current.Navigation.PushModalAsync(new NavigationPage(new PinValidateModalPage()));
     }
 
     private async void OnForgotPinClicked(object? sender, EventArgs e)
@@ -41,6 +47,6 @@ public partial class DemoMenuPage : ContentPage
             return;
         }
         if (Shell.Current != null)
-            await Shell.Current.Navigation.PushModalAsync(new ForgotPinModalPage());
+            await Shell.Current.Navigation.PushModalAsync(new NavigationPage(new ForgotPinModalPage()));
     }
 }

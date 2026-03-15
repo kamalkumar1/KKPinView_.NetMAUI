@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- CA1416: Targeting only iOS/Android in app removes most; net10.0 baseline needed for tests. Suppress remainder. -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+</Project>

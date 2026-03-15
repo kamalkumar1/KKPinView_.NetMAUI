@@ -6,7 +6,7 @@ namespace KKPinView.ViewModels;
 /// ViewModel for KKPinViews. Title, subtitle and button text are read from
 /// <see cref="KKPinviewConstant"/> only; change them via the constant class (e.g. in app startup).
 /// </summary>
-public class KKPinViewsViewModel : BasePinViewModel
+public sealed class KKPinViewsViewModel : BasePinViewModel
 {
     private bool _showForgotPin = true;
     private bool _isPinInvalid;

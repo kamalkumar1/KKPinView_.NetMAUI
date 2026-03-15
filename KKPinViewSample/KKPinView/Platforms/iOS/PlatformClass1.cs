@@ -1,6 +1,6 @@
-﻿namespace KKPinView;
+namespace KKPinView;
 
 // All the code in this file is only included on iOS.
-public class PlatformClass1
+internal class PlatformClass1
 {
 }

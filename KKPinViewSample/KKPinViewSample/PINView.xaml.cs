@@ -9,19 +9,14 @@ public partial class PINView : ContentPage
     public PINView()
     {
         InitializeComponent();
-        
-        // Set up event handlers after page is loaded
+        PinEntryContentView.OnCreationCompleted = () => PinEntryContentView?.ShowKeyboard();
         Loaded += OnPageLoaded;
     }
 
-    protected override void OnAppearing()
+    private async void OnCloseClicked(object? sender, EventArgs e)
     {
-        base.OnAppearing();
-        // Bring keyboard when page is visible (e.g. after setup completed and navigated here)
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(350), () =>
-        {
-            MainThread.BeginInvokeOnMainThread(() => PinEntryContentView?.ShowKeyboard());
-        });
+        if (Shell.Current != null)
+            await Shell.Current.GoToAsync("..");
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)

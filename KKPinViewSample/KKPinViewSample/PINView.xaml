@@ -6,6 +6,10 @@
     Title="PIN Entry"
     BackgroundColor="White">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="✕" Clicked="OnCloseClicked" />
+    </ContentPage.ToolbarItems>
+
     <ContentPage.Content>
         <views:KKPinViews
             x:Name="PinEntryContentView"
