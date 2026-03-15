@@ -558,10 +558,12 @@ KKPinviewConstant.Configure();
 KKPinviewConstant.Configure(c => c
     .PinLength(6)                                    // 6-digit PIN
     .Lockout(3, 10)                                  // 3 attempts, 10 min lockout
+    .PinStoragePersistsAfterUninstall(false)          // true = PIN survives app uninstall (iOS Keychain)
     .BackgroundColor(Colors.White)
-    .LabelColors(textColor: Colors.Black, errorColor: Colors.Red)
-    .LabelFont(fontSize: 18, attributes: FontAttributes.Bold)
-    .ErrorMessageFont(fontSize: 24)
+    .LabelColors(textColor: Colors.Black, errorColor: Colors.Red, successColor: Colors.Green)
+    .LabelFont(fontSize: 18, attributes: FontAttributes.Bold, fontFamily: "OpenSansSemibold")
+    .ErrorMessageFont(fontSize: 24, attributes: FontAttributes.Bold)
+    .DigitFont(fontSize: 20, attributes: FontAttributes.Bold)  // PIN digit field font
     .PinFieldColors(filled: Colors.Green, empty: Colors.Gray, invalid: Colors.Red)
     .PinField(fontSize: 20, height: 50, width: 50, spacing: 15, shape: KKPinFieldShapeType.Round)
     .PinFieldCornerRadius(10)                        // For RoundedRectangle
