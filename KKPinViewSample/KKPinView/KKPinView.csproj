@@ -30,7 +30,7 @@
 		<PackageProjectUrl>https://github.com/kamalkumar1/KKPinView_.NetMAUI</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/kamalkumar1/KKPinView_.NetMAUI</RepositoryUrl>
 		<PackageTags>maui;dotnet-maui;ios;android;mobile;mobile-app;pin;pin-setup;security;authentication;encryption;lockout;keypad;secure-storage;keychain;aes-256</PackageTags>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageReadmeFile>PackageREADME.md</PackageReadmeFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
@@ -39,7 +39,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
+		<None Include="PackageREADME.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>
