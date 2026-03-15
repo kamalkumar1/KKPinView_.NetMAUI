@@ -20,17 +20,11 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 
 ## Screenshots
 
-<!-- Add your screenshots here -->
-<!-- 
-![PIN Setup View](screenshots/pin-setup.png)
-![PIN Entry View](screenshots/pin-entry.png)
-![Invalid PIN](screenshots/invalid-pin.png)
-![Lockout Screen](screenshots/lockout.png)
-![Numeric Keypad](screenshots/numeric-keypad.png)
-![System Keyboard](screenshots/system-keyboard.png)
--->
-
-> **Note**: Screenshots will be added here. Please add your screenshots to the `screenshots/` folder and update the paths above.
+![Demo Menu](KKPinViewSample/KKPinViewSample/screenshots/demo-menu.png)
+![PIN Setup](KKPinViewSample/KKPinViewSample/screenshots/pin-setup.png)
+![PIN Entry](KKPinViewSample/KKPinViewSample/screenshots/pin-entry.png)
+![Invalid PIN - Setup](KKPinViewSample/KKPinViewSample/screenshots/invalid-setuppin.png)
+![Invalid PIN - Entry](KKPinViewSample/KKPinViewSample/screenshots/invalid-Entrypin.png)
 
 ### Visual Features
 

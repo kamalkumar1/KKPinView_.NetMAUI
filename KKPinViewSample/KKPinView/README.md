@@ -748,22 +748,19 @@ Run the sample and use "Reset PIN → PIN Setup" to start a clean flow. All conf
 
 ## Screenshots
 
-Add your screenshots to the `screenshots/` folder. Suggested images:
-
 | Screenshot | Description |
 |------------|--------------|
-| [demo-menu.png](screenshots/demo-menu.png) | Demo menu with Setup PIN, Validate PIN, and Forgot PIN buttons |
-| [pin-setup.png](screenshots/pin-setup.png) | PIN Setup – Enter and Confirm PIN flow |
-| [pin-entry.png](screenshots/pin-entry.png) | PIN Entry – Authentication screen |
-| [invalid-pin.png](screenshots/invalid-Entrypin.png) | Invalid PIN – Red border feedback |
-[invalid-pin.png](screenshots/invalid-setuppin.png) | Invalid PIN – Red border feedback |
-| [lockout.png](screenshots/lockout.png) | Lockout screen – Too many failed attempts |
+| [demo-menu.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/demo-menu.png) | Demo menu with Setup PIN, Validate PIN, and Forgot PIN buttons |
+| [pin-setup.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-setup.png) | PIN Setup – Enter and Confirm PIN flow |
+| [pin-entry.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-entry.png) | PIN Entry – Authentication screen |
+| [invalid-Entrypin.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-Entrypin.png) | Invalid PIN – Red border feedback (entry) |
+| [invalid-setuppin.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-setuppin.png) | Invalid PIN – Red border feedback (setup) |
 
-Example:
-
-![Demo Menu](screenshots/demo-menu.png)
-![PIN Setup](screenshots/pin-setup.png)
-![PIN Entry](screenshots/pin-entry.png)
+![Demo Menu](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/demo-menu.png)
+![PIN Setup](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-setup.png)
+![PIN Entry](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-entry.png)
+![Invalid PIN - Setup](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-setuppin.png)
+![Invalid PIN - Entry](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-Entrypin.png)
 
 ## Requirements
 
