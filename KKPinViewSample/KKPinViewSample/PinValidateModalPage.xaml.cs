@@ -18,7 +18,8 @@ public partial class PinValidateModalPage : ContentPage
     private async void OnCloseClicked(object? sender, EventArgs e)
     {
         PinEntryContentView?.Dispose();
-        await Navigation.PopModalAsync();
+        if (Shell.Current != null)
+            await Shell.Current.Navigation.PopModalAsync();
     }
 
     private void OnPageLoaded(object? sender, EventArgs e)
@@ -34,7 +35,8 @@ public partial class PinValidateModalPage : ContentPage
             {
                 await Task.Delay(500);
                 PinEntryContentView?.Dispose();
-                await Navigation.PopModalAsync();
+                if (Shell.Current != null)
+                    await Shell.Current.Navigation.PopModalAsync();
             });
         };
 
