@@ -8,30 +8,17 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 ## Features
 
 - 🔒 **Secure Storage**: AES-256 encryption with device-specific keys
-- 🔐 **PIN Authentication**: Easy-to-use PIN entry views
-- 🛡️ **Lockout Protection**: Configurable attempt limits and lockout duration
-- 🎨 **Customizable UI**: Fully customizable colors, fonts, and dimensions
-- 📱 **Cross-Platform**: Supports Android and iOS
-- ✨ **Modern UI**: Beautiful, native-looking PIN entry interface
-- ⌨️ **Dual Input Methods**: Support for both numeric keypad and system keyboard
-- 🎯 **Visual Feedback**: Red border indicators for invalid PIN entries
-- 📏 **Dynamic Layout**: Auto-adjusting error message heights based on content
-- 🔄 **Dynamic View Switching**: Automatically shows setup or entry view based on PIN status
-
-## Screenshots
-
-![Demo Menu](KKPinViewSample/KKPinViewSample/screenshots/demo-menu.png)
-![PIN Setup](KKPinViewSample/KKPinViewSample/screenshots/pin-setup.png)
-![PIN Entry](KKPinViewSample/KKPinViewSample/screenshots/pin-entry.png)
-![Invalid PIN - Setup](KKPinViewSample/KKPinViewSample/screenshots/invalid-setuppin.png)
-![Invalid PIN - Entry](KKPinViewSample/KKPinViewSample/screenshots/invalid-Entrypin.png)
-
-### Visual Features
-
-- **Invalid PIN Indicator**: All PIN fields display red borders when an invalid PIN is entered
-- **Dynamic Error Messages**: Error message height automatically adjusts based on message length
-- **Smooth Animations**: Fade and scale animations for error/success messages
-- **Auto-focus Management**: Automatic focus movement between fields when using system keyboard
+- 🔐 **PIN Authentication**: Easy-to-use PIN entry views (setup + confirm, then entry)
+- 🛡️ **Lockout Protection**: Configurable max attempts and lockout duration; after too many failed tries, user is locked out with countdown message until retry
+- 🎨 **Customizable UI**: All colors, fonts, and dimensions via `KKPinviewConstant` (single source of truth)
+- 📱 **Cross-Platform**: Supports Android, iOS.
+- ✨ **Modern UI**: Native-looking PIN entry with system keyboard
+- ⌨️ **System Keyboard**: Numeric keyboard with auto-focus between fields, tap-to-continue (first empty field)
+- 🎯 **Visual Feedback**: Animated red border for invalid PIN; border animates when showing/hiding error state
+- 📏 **Dynamic Layout**: Auto-adjusting error/success message heights with fade and scale animations
+- 🔄 **PIN Mismatch Flow**: Error message animates in, holds, then fades out; all PIN fields reset and focus returns to first Enter field
+- 📍 **Focus Behavior**: After backspace or re-entry, focus goes to the first empty field so the next digit goes in the right box
+- 🔐 **Secure PIN Field**: PIN digits can be masked (dots) or visible; controlled via fluent API `PinFieldSecure()`
 
 ## Installation
 
@@ -47,11 +34,271 @@ Or via Package Manager:
 Install-Package KKPinView
 ```
 
-## Quick Start
+---
 
-### Simple Integration Example
+## Integration Guide
 
-The simplest way to integrate KKPinView is to check if a PIN exists and show the appropriate view:
+Follow these steps to integrate KKPinView into your .NET MAUI app.
+
+| Step | Action |
+|------|--------|
+| 1 | Register `UseKKPinView()` in `MauiProgram.cs` |
+| 2 | Configure `KKPinviewConstant.TotalPinTextFields` in `App` constructor |
+| 3 | Register Shell routes for `PinSetupView` and `PINView` |
+| 4 | Create PIN Setup page (XAML + code-behind) |
+| 5 | Create PIN Entry page (XAML + code-behind) |
+| 6 | Add navigation from your menu/home page |
+| 7 | (Optional) Handle Android back button if needed |
+| 8 | (Optional) Add app startup flow (PIN on first launch or resume) |
+
+### Step 1: Register handlers in MauiProgram.cs
+
+Call `UseKKPinView()` in your `MauiProgram.cs`. This configures the backspace-on-empty-field behavior on iOS and Android.
+
+```csharp
+using KKPinView;
+
+public static class MauiProgram
+{
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp.CreateBuilder();
+        builder
+            .UseMauiApp<App>()
+            .UseKKPinView()   // Required for backspace on empty field
+            .ConfigureFonts(fonts => { /* ... */ });
+
+        return builder.Build();
+    }
+}
+```
+
+### Step 2: Configure in App.xaml.cs
+
+Call `Configure()` in your `App` constructor before any PIN view is created. Use the fluent API for easy setup:
+
+```csharp
+using KKPinView.Constants;
+
+public partial class App : Application
+{
+    public App()
+    {
+        InitializeComponent();
+        // Minimal: 4 digits, default lockout (5 attempts, 5 min)
+        KKPinviewConstant.Configure(c => c.PinLength(4));
+
+        // Or customize more:
+        // KKPinviewConstant.Configure(c => c
+        //     .PinLength(6)
+        //     .Lockout(3, 10)
+        //     .LabelColors(errorColor: Colors.Red)
+        //     .PinField(fontSize: 20, shape: KKPinFieldShapeType.RoundedRectangle)
+        //     .PinFieldSecure(true));  // true = masked (dots), false = visible digits
+    }
+}
+```
+
+### Step 3: Register Shell routes
+
+Register routes for your PIN pages in `App.xaml.cs` or `AppShell.xaml.cs`:
+
+```csharp
+public App()
+{
+    InitializeComponent();
+    KKPinviewConstant.Configure(c => c.PinLength(4));
+    Routing.RegisterRoute("PinSetupView", typeof(PinSetupView));
+    Routing.RegisterRoute("PINView", typeof(PINView));  // or "PinEntryView"
+}
+```
+
+In `AppShell.xaml.cs`, also register your Shell items and routes (e.g. `DemoMenuPage`, `PinSetupView`, `PINView`) so `Shell.Current.GoToAsync()` can resolve them.
+
+### Step 4: Create PIN Setup page
+
+**PinSetupView.xaml** – ContentPage with `KKPINSetUPView`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:KKPinView.Views;assembly=KKPinView"
+    x:Class="YourApp.PinSetupView"
+    Title="PIN Setup"
+    BackgroundColor="White">
+
+    <views:KKPINSetUPView
+        x:Name="PinSetupContentView"
+        VerticalOptions="Fill"
+        HorizontalOptions="Fill" />
+</ContentPage>
+```
+
+**PinSetupView.xaml.cs** – Wire callbacks and show keyboard:
+
+```csharp
+using KKPinView.Storage;
+using KKPinView.Views;
+using Microsoft.Maui.ApplicationModel;
+
+public partial class PinSetupView : ContentPage
+{
+    public PinSetupView()
+    {
+        InitializeComponent();
+        PinSetupContentView.OnCreationCompleted = () => PinSetupContentView?.ShowKeyboard();
+        Loaded += OnPageLoaded;
+    }
+
+    private void OnPageLoaded(object? sender, EventArgs e)
+    {
+        if (PinSetupContentView == null) return;
+
+        PinSetupContentView.OnSetupSuccess = () =>
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                if (Shell.Current != null)
+                    await Shell.Current.GoToAsync("PINView");  // Navigate to PIN entry
+            });
+        };
+
+        PinSetupContentView.OnSetupFailed = (errorMessage) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"PIN setup failed: {errorMessage}");
+        };
+    }
+}
+```
+
+### Step 5: Create PIN Entry page
+
+**PINView.xaml** – ContentPage with `KKPinViews`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:KKPinView.Views;assembly=KKPinView"
+    x:Class="YourApp.PINView"
+    Title="Enter PIN"
+    BackgroundColor="White">
+
+    <views:KKPinViews
+        x:Name="PinEntryContentView"
+        VerticalOptions="Start"
+        HorizontalOptions="Fill"
+        Margin="0,24,0,0" />
+</ContentPage>
+```
+
+**PINView.xaml.cs** – Wire callbacks and show keyboard:
+
+```csharp
+using KKPinView.Storage;
+using KKPinView.Views;
+using Microsoft.Maui.ApplicationModel;
+
+public partial class PINView : ContentPage
+{
+    public PINView()
+    {
+        InitializeComponent();
+        PinEntryContentView.OnCreationCompleted = () => PinEntryContentView?.ShowKeyboard();
+        Loaded += OnPageLoaded;
+    }
+
+    private void OnPageLoaded(object? sender, EventArgs e)
+    {
+        if (PinEntryContentView == null) return;
+
+        PinEntryContentView.OnForgotPin = () =>
+        {
+            KKPinStorage.DeletePIN();
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                if (Shell.Current != null)
+                    await Shell.Current.GoToAsync("PinSetupView");
+            });
+        };
+
+        PinEntryContentView.OnSubmit = (isValid) =>
+        {
+            if (!isValid) return;
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                if (Shell.Current != null)
+                    await Shell.Current.GoToAsync("//MainPage");  // Navigate to home
+            });
+        };
+    }
+}
+```
+
+### Step 6: Add entry points and navigation
+
+From your home/menu page, navigate based on whether a PIN exists:
+
+```csharp
+using KKPinView.Storage;
+
+// "Create PIN" or "Setup PIN" button
+private async void OnSetupPinClicked(object? sender, EventArgs e)
+{
+    if (Shell.Current != null)
+        await Shell.Current.GoToAsync("PinSetupView");
+}
+
+// "Enter PIN" or "Authenticate" button (enable only if PIN exists)
+private async void OnEnterPinClicked(object? sender, EventArgs e)
+{
+    if (!KKPinStorage.HasStoredPIN())
+    {
+        await DisplayAlert("No PIN", "Create a PIN first.", "OK");
+        return;
+    }
+    if (Shell.Current != null)
+        await Shell.Current.GoToAsync("PINView");
+}
+
+// In OnAppearing, enable/disable buttons based on HasStoredPIN()
+protected override void OnAppearing()
+{
+    base.OnAppearing();
+    BtnEnterPin.IsEnabled = KKPinStorage.HasStoredPIN();
+}
+```
+
+### Step 7: (Optional) Android back button
+
+To allow users to go back from the PIN entry/setup pages on Android, no extra code is needed—Shell handles navigation. If you use a custom back callback, ensure it does not conflict with Shell navigation.
+
+### Step 8: App startup flow (optional)
+
+To require PIN on first launch or app resume, check `KKPinStorage.HasStoredPIN()` in `CreateWindow` or `OnResume` and navigate accordingly. Example in `CreateWindow`:
+
+```csharp
+protected override Window CreateWindow(IActivationState? activationState)
+{
+    var shell = new AppShell();
+    return new Window(shell);
+}
+```
+
+Then in your Shell or first page, redirect to `PinSetupView` or `PINView` based on `HasStoredPIN()`.
+
+---
+
+## Integration Patterns
+
+### Pattern A: Shell navigation (recommended)
+
+Use separate `ContentPage`s for Setup and Entry, and navigate with `Shell.Current.GoToAsync()`. This matches the step-by-step guide above and the KKPinViewSample app.
+
+### Pattern B: Single page with content swap
+
+Use one page and swap `Content` between `KKPINSetUPView` and `KKPinViews` based on `KKPinStorage.HasStoredPIN()`:
 
 ```csharp
 using KKPinView.Storage;
@@ -70,141 +317,72 @@ public partial class MainPage : ContentPage
 
     private void LoadPinView()
     {
-        // Check if PIN exists in storage
-        bool hasPin = KKPinStorage.HasStoredPIN();
-
-        if (hasPin)
-        {
-            // PIN exists - show PIN entry view
+        if (KKPinStorage.HasStoredPIN())
             ShowPinEntryView();
-        }
         else
-        {
-            // No PIN stored - show PIN setup view
             ShowPinSetupView();
-        }
     }
 
     private void ShowPinSetupView()
     {
-        // Clean up existing view
         PinContentView.Content = null;
         _pinView = null;
-
-        // Create and show PIN setup view
         _setupView = new KKPINSetUPView();
         PinContentView.Content = _setupView;
-
-        // Handle successful PIN setup - switch to PIN entry view
-        _setupView.OnSetupSuccess = () =>
-        {
-            ShowPinEntryView();
-        };
-
-        // Handle PIN setup failure
-        _setupView.OnSetupFailed = (errorMessage) =>
-        {
-            // Error is already displayed in the view
-            System.Diagnostics.Debug.WriteLine($"PIN setup failed: {errorMessage}");
-        };
+        _setupView.OnSetupSuccess = () => ShowPinEntryView();
+        _setupView.OnSetupFailed = (msg) => { };
     }
 
     private void ShowPinEntryView()
     {
-        // Clean up existing view
         PinContentView.Content = null;
         _setupView = null;
-
-        // Create and show PIN entry view
         _pinView = new KKPinViews();
         PinContentView.Content = _pinView;
-
-        // Handle "Forgot PIN" - delete PIN and show setup view
-        _pinView.OnForgotPin = () =>
-        {
-            KKPinStorage.DeletePIN();
-            ShowPinSetupView();
-        };
-
-        // Handle PIN validation result
-        _pinView.OnSubmit = (isValid) =>
-        {
-            if (isValid)
-            {
-                // PIN is valid - user is authenticated
-                // Navigate to your authenticated page or show main content here
-                System.Diagnostics.Debug.WriteLine("PIN validated successfully!");
-            }
-        };
+        _pinView.OnForgotPin = () => { KKPinStorage.DeletePIN(); ShowPinSetupView(); };
+        _pinView.OnSubmit = (isValid) => { if (isValid) { /* Navigate or show main content */ } };
     }
 }
 ```
 
-### 1. PIN Setup
+---
 
-Use `KKPINSetUPView` when the user needs to create a PIN:
+## Quick Reference
+
+### PIN Setup (`KKPINSetUPView`)
 
 ```csharp
-using KKPinView.Views;
-using KKPinView.Storage;
-
 var setupView = new KKPINSetUPView
 {
-    OnSetupSuccess = () =>
-    {
-        Console.WriteLine("PIN setup complete");
-        // Navigate to authenticated screen
-    },
-    OnSetupFailed = (errorMessage) =>
-    {
-        Console.WriteLine($"PIN setup failed: {errorMessage}");
-        // Error is already displayed in the view
-    }
+    OnSetupSuccess = () => { /* Navigate or swap view */ },
+    OnSetupFailed = (msg) => { /* Error already shown in view */ }
 };
-
-// Add to your ContentPage
-PinContentView.Content = setupView;
+// Add to ContentPage: Content = setupView;
+setupView.OnCreationCompleted = () => setupView.ShowKeyboard();
 ```
 
-### 2. PIN Entry (Authentication)
-
-Use `KKPinViews` when the user needs to enter their PIN:
+### PIN Entry (`KKPinViews`)
 
 ```csharp
-using KKPinView.Views;
-using KKPinView.Storage;
-
 var pinView = new KKPinViews
 {
-    OnForgotPin = () =>
-    {
-        Console.WriteLine("Forgot PIN tapped");
-        // Handle forgot PIN flow (e.g., delete PIN and show setup)
-        KKPinStorage.DeletePIN();
-    },
-    OnSubmit = (isValid) =>
-    {
-        if (isValid)
-        {
-            Console.WriteLine("PIN is valid - access granted");
-            // Navigate to authenticated screen
-        }
-        else
-        {
-            Console.WriteLine("PIN is invalid");
-            // Error is automatically displayed with red borders
-        }
-    },
+    OnForgotPin = () => { KKPinStorage.DeletePIN(); /* Navigate to setup */ },
+    OnSubmit = (isValid) => { if (isValid) { /* Navigate to authenticated screen */ } },
     ShowForgotPin = true
 };
-
-// Add to your ContentPage
-PinContentView.Content = pinView;
+// Add to ContentPage: Content = pinView;
+pinView.OnCreationCompleted = () => pinView.ShowKeyboard();
 ```
 
-## Input
+---
 
-KKPinView uses the **system numeric keyboard**. PIN fields are single-digit entries; focus moves automatically to the next field when a digit is entered. Tapping anywhere on the PIN area focuses the first empty field so digits always flow left to right. Backspace is handled per field with focus moving to the previous (or first empty) field as appropriate.
+## Input and keyboard
+
+KKPinView uses the **system numeric keyboard**. PIN fields are single-digit entries; focus moves automatically to the next field when a digit is entered. Tapping anywhere on the PIN area focuses the first empty field. Backspace moves focus to the previous (or first empty) field.
+
+**Tip:** Set `OnCreationCompleted = () => view.ShowKeyboard()` so the keyboard opens when the view is ready. The library does not auto-focus; the host app controls when to show the keyboard via this callback.
+
+---
 
 ## API Documentation
 
@@ -217,22 +395,19 @@ Main PIN entry view for authenticating users.
 - `OnForgotPin`: Optional callback when "Forgot PIN?" is tapped
 - `OnSubmit`: Callback with validation result (`true` if PIN is valid, `false` otherwise)
 - `ShowForgotPin`: Whether to show the "Forgot PIN?" button (default: `true`)
-- `BackgroundColor`: Background color of the view
-- `TextColor`: Text color
-- `ErrorTextColor`: Error message color
-- `SuccessTextColor`: Success message color
-- `TitleFontSize`: Title font size
-- `SubtitleFontSize`: Subtitle font size
-- `FieldSpacing`: Spacing between PIN fields
+- Display values (colors, fonts, spacing, labels) are read from `KKPinviewConstant`; set them on the constant class (e.g. in app startup) to customize.
+
+#### Methods
+
+- `OnCreationCompleted`: Callback invoked when the PIN view is fully created and ready. Use this to call `ShowKeyboard()` or perform other setup.
+- `ShowKeyboard()`: Focuses the first PIN field to bring up the system keyboard. Call from `OnCreationCompleted` or when you want to show the keyboard.
 
 #### Behavior
 
-- Automatically validates PIN when all digits are entered
-- Displays error messages for invalid PINs with dynamic height based on message length
-- Shows red borders on all PIN fields when PIN is invalid
-- Handles lockout automatically (disables input when locked out)
-- Clears PIN fields after validation
-- Supports both numeric keypad and system keyboard input methods
+- Validates PIN when all digits are entered (compares to securely stored PIN)
+- Error message and invalid-state borders animate in; border color animates when showing or clearing error
+- Handles lockout automatically (shows lockout message, disables input when locked out)
+- Tap anywhere focuses the first empty field; backspace focuses the previous or first empty field
 
 ---
 
@@ -242,23 +417,22 @@ PIN setup view for creating a new PIN with confirmation.
 
 #### Properties
 
-- `OnSetupSuccess`: Optional callback when PIN setup is completed successfully
-- `OnSetupFailed`: Optional callback when PIN setup fails (receives error message)
-- `BackgroundColor`: Background color of the view
-- `TextColor`: Text color
-- `ErrorTextColor`: Error message color
-- `SuccessTextColor`: Success message color
-- `TitleFontSize`: Title font size
-- `SubtitleFontSize`: Subtitle font size
-- `FieldSpacing`: Spacing between PIN fields
+- `OnCreationCompleted`: Callback invoked when the PIN setup view is fully created and ready. Use this to call `ShowKeyboard()` or perform other setup.
+- `OnSetupSuccess`: Callback when PIN setup completes successfully (PIN is already saved)
+- `OnSetupFailed`: Callback when setup fails (e.g. mismatch or save error); receives the error message string
+- `EnterPinLabelText`, `ConfirmPinLabelText`: Read-only; values come from `KKPinviewConstant.EnterPinMessage` and `ConfirmPinMessage`. Change labels by setting those constants.
+- Other display values (colors, fonts, spacing) are read from `KKPinviewConstant`; customize via the constant class only.
+
+#### Methods
+
+- `ShowKeyboard()`: Focuses the first PIN field to bring up the system keyboard. Call from `OnCreationCompleted` or when you want to show the keyboard.
 
 #### Behavior
 
 - Two-step flow: Enter PIN → Confirm PIN
-- Validates that both PINs match
-- Automatically saves PIN when both match
-- Clears previous PIN and lockout state before saving
-- Displays success/error messages with animations
+- On match: saves PIN, shows success animation, invokes `OnSetupSuccess`
+- On mismatch: shows error with animation, holds for `PinMismatchErrorDisplayDurationMs`, then fades out and resets all Enter/Confirm fields and focus to first Enter field; invokes `OnSetupFailed`
+- Tap anywhere focuses the first empty field in the current step (Enter or Confirm)
 
 ---
 
@@ -370,54 +544,93 @@ else
 
 ## Customization
 
-### Constants
+### Easy configuration: Configure()
 
-Most UI elements can be customized via `KKPinviewConstant`:
+Use `KKPinviewConstant.Configure()` for one-call setup. Call from your `App` constructor:
+
+```csharp
+using KKPinView.Constants;
+
+// Minimal - defaults (4 digits, 5 attempts, 5 min lockout)
+KKPinviewConstant.Configure();
+
+// Or customize with fluent API
+KKPinviewConstant.Configure(c => c
+    .PinLength(6)                                    // 6-digit PIN
+    .Lockout(3, 10)                                  // 3 attempts, 10 min lockout
+    .BackgroundColor(Colors.White)
+    .LabelColors(textColor: Colors.Black, errorColor: Colors.Red)
+    .LabelFont(fontSize: 18, attributes: FontAttributes.Bold)
+    .ErrorMessageFont(fontSize: 24)
+    .PinFieldColors(filled: Colors.Green, empty: Colors.Gray, invalid: Colors.Red)
+    .PinField(fontSize: 20, height: 50, width: 50, spacing: 15, shape: KKPinFieldShapeType.Round)
+    .PinFieldCornerRadius(10)                        // For RoundedRectangle
+    .PinFieldSecure(true)                            // true = masked (dots), false = visible digits
+    .Labels(enterPin: "Enter your PIN", confirmPin: "Confirm your PIN", forgotPin: "Forgot PIN?"));
+```
+
+### Constants (advanced)
+
+For fine-grained control, set properties directly on `KKPinviewConstant`, `LabelConstants`, and `PinFieldConstants`:
 
 ```csharp
 using KKPinView.Constants;
 
 // PIN Configuration
-KKPinviewConstant.TotalDigits = 6;  // Change PIN length (default: 4)
+KKPinviewConstant.TotalPinTextFields = 4;  // 4 or 6 (default: 4)
 
-// Lockout Configuration
-KKPinviewConstant.MaxPinAttempts = 5;  // Default: 5
-KKPinviewConstant.PinLockoutDurationMinutes = 5;  // Default: 5 minutes
+// Lockout
+KKPinviewConstant.MaxPinAttempts = 5;
+KKPinviewConstant.PinLockoutDurationMinutes = 5;
 
 // Colors
 KKPinviewConstant.BackgroundColor = Colors.White;
-KKPinviewConstant.TextColor = Colors.Black;
-KKPinviewConstant.ErrorTextColor = Colors.Red;
-KKPinviewConstant.SuccessTextColor = Colors.Green;
-KKPinviewConstant.DigitFieldBackgroundColor = Colors.LightGray;
-KKPinviewConstant.DigitFieldFilledColor = Colors.Blue;
-KKPinviewConstant.InvalidPinBorderColor = Colors.Red;  // Border color when PIN is invalid
 
-// Fonts
-KKPinviewConstant.TitleFontSize = 24;
-KKPinviewConstant.SubtitleFontSize = 16;
-KKPinviewConstant.DigitFontSize = 20;
-KKPinviewConstant.KeypadButtonFontSize = 24;
+// Label properties (titles, messages)
+LabelConstants.TextColor = Colors.Black;
+LabelConstants.ErrorTextColor = Colors.Red;
+LabelConstants.SuccessTextColor = Colors.Green;
+LabelConstants.FontSize = 16;
+LabelConstants.FontAttributes = FontAttributes.None;
+LabelConstants.FontFamily = string.Empty;
+LabelConstants.ErrorMessageFontSize = 24;
+LabelConstants.ErrorMessageFontAttributes = FontAttributes.None;
+LabelConstants.ErrorMessageFontFamily = string.Empty;
+LabelConstants.SuccessMessageLabelHeight = 24;
+LabelConstants.ErrorMessageLabelHeight = 24;
 
-// Dimensions
-KKPinviewConstant.FieldHeight = 60;
-KKPinviewConstant.FieldWidth = 60;
-KKPinviewConstant.FieldSpacing = 15;
-KKPinviewConstant.KeypadButtonSize = 70;
-KKPinviewConstant.KeypadSpacing = 10;
+// Pin field properties (digit boxes)
+PinFieldConstants.BackgroundColor = Colors.Transparent;
+PinFieldConstants.FilledBorderColor = Colors.Green;
+PinFieldConstants.EmptyBorderColor = Colors.Gray;
+PinFieldConstants.InvalidBorderColor = Colors.Red;
+PinFieldConstants.FontSize = 20;
+PinFieldConstants.FontAttributes = FontAttributes.None;
+PinFieldConstants.FontFamily = string.Empty;
+PinFieldConstants.Height = 50;
+PinFieldConstants.Width = 50;
+PinFieldConstants.Spacing = 15;
+PinFieldConstants.CornerRadius = 10;
 
-// Strings
+// Strings (labels and messages)
 KKPinviewConstant.TitleTextFormat = "Enter PIN";
 KKPinviewConstant.SubtitleText = "Enter your {0}-digit PIN";
 KKPinviewConstant.ForgotPinText = "Forgot PIN?";
 KKPinviewConstant.SetupTitleText = "Setup PIN";
 KKPinviewConstant.ConfirmPinTitleText = "Confirm PIN";
-KKPinviewConstant.InvalidPinError = "Invalid PIN";
+KKPinviewConstant.EnterPinMessage = "Enter your PIN";
+KKPinviewConstant.ConfirmPinMessage = "Confirm your PIN";
 KKPinviewConstant.PinMismatchError = "PINs do not match";
+KKPinviewConstant.InvalidPinError = "Invalid PIN";
 KKPinviewConstant.LockedOutError = "Too many failed attempts. Please try again in {0} minutes";
+KKPinviewConstant.SetupSuccessMessage = "PIN setup successful";
+KKPinviewConstant.SetupSaveFailedMessage = "Failed to save PIN. Please try again.";
 
-// Input Method
-KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;  // or PinInputMethod.SystemKeyboard
+// PIN mismatch: how long (ms) the error is shown before fade-out and field reset
+KKPinviewConstant.PinMismatchErrorDisplayDurationMs = 1500;
+
+// Shape
+PinFieldConstants.ShapeType = KKPinFieldShapeType.Round;  // or RoundedRectangle
 ```
 
 ## Security Features
@@ -453,30 +666,104 @@ KKPinviewConstant.InputMethod = PinInputMethod.NumericKeypad;  // or PinInputMet
 ```
 KKPinView/
 ├── Views/
-│   ├── KKPinViews.xaml/cs          # PIN entry view
-│   ├── KKPINSetUPView.xaml/cs      # PIN setup view
-│   ├── PinDigitField.xaml/cs       # Individual digit field
-│   └── NumericKeypad.xaml/cs       # Custom keypad
+│   ├── KKPinViews.xaml/cs          # PIN entry (authenticate)
+│   ├── KKPINSetUPView.xaml/cs      # PIN setup (enter + confirm)
+│   ├── PinDigitField.xaml/cs       # Single digit field (system keyboard)
+│   └── BackspaceAwareEntry.cs      # Entry with empty-backspace event
+├── Helpers/
+│   └── PinFieldHelpers.cs           # First-empty field index, etc.
+├── Handlers/
+│   └── BackspaceAwareEntryHandler  # Platform backspace handling
 ├── Storage/
-│   └── KKPinStorage.cs             # High-level storage API
+│   └── KKPinStorage.cs             # Save/Load/Verify/Delete PIN
 ├── Security/
-│   └── KKPinLockoutManager.cs      # Lockout management
+│   └── KKPinLockoutManager.cs      # Lockout and attempt tracking
+├── ViewModels/
+│   ├── BasePinViewModel.cs         # Shared bindings (read from constants)
+│   ├── KKPINSetUPViewModel.cs      # Setup view model
+│   └── KKPinViewsViewModel.cs     # Entry view model
 ├── Constants/
-│   ├── KKPinviewConstant.cs        # Configuration constants
-│   └── PinInputMethod.cs           # Input method enum
+│   └── KKPinviewConstant.cs        # All configuration (single source)
+├── MauiAppBuilderExtensions.cs    # UseKKPinView() - required for backspace on empty
 └── Platforms/
     ├── Android/
-    │   └── KKEncryptionHelper.cs   # Android encryption
+    │   ├── BackspaceAwareEditText  # Android backspace on empty
+    │   └── (encryption/storage)
     └── iOS/
-        └── KKEncryptionHelper.cs   # iOS encryption
+        └── (BackspaceAwareTextField, encryption/storage)
 ```
 
-## Repository Structure
+## API Design
 
-This repository contains:
+The library uses access specifiers and sealing to protect the implementation and prevent unintended overrides.
 
-- **KKPinView/**: The main library package (NuGet package source)
-- **KKPinViewSample/**: Sample application demonstrating library usage
+### Public API (consumer-facing)
+
+| Type | Purpose |
+|------|---------|
+| `KKPinViews` | Main PIN entry view |
+| `KKPINSetUPView` | PIN setup view |
+| `PinDigitField` | Single digit field (used in XAML) |
+| `BackspaceAwareEntry` | Entry with backspace-on-empty support |
+| `KKPinStorage` | Save/Load/Verify/Delete PIN |
+| `KKPinLockoutManager` | Lockout and attempt tracking |
+| `KKPinviewConstant`, `KKPinViewConfig`, `LabelConstants`, `PinFieldConstants`, `KKPinFieldShapeType` | Configuration |
+| `BasePinViewModel`, `KKPinViewsViewModel`, `KKPINSetUPViewModel` | ViewModels (exposed via `ViewModel` property) |
+| `MauiAppBuilderExtensions` | `UseKKPinView()` registration |
+
+### Internal (implementation details)
+
+| Type | Reason |
+|------|--------|
+| `PinFieldHelpers` | First-empty field logic; used only by views |
+| `IKKPinStorage`, `KKPinStorageFallback`, `KKPinStorageiOS`, `KKPinStorageAndroid` | Platform storage abstraction |
+| `SharedEncryptionHelper` | AES encryption for Preferences mode |
+| `KKEncryptionHelperiOS`, `KKEncryptionHelperAndroid` | Platform-specific encryption |
+| `BackspaceAwareTextField`, `BackspaceAwareEditText` | Platform-specific views |
+| `PlatformClass1` | Placeholder; not referenced |
+
+### Sealed classes (no inheritance)
+
+These types are `sealed` so consumers cannot subclass and override behavior:
+
+- `KKPinViews`, `KKPINSetUPView`, `PinDigitField`, `BackspaceAwareEntry`
+- `KKPinLockoutManager`
+- `KKPinViewsViewModel`, `KKPINSetUPViewModel`
+- `KKPinViewConfig`
+
+Customization is done via `KKPinviewConstant.Configure()`, bindable properties, and callbacks—not inheritance.
+
+### Test access
+
+The test project (`KKPinView.Tests`) uses `InternalsVisibleTo` to access `PinFieldHelpers` for unit tests.
+
+## Sample App
+
+The **KKPinViewSample** project demonstrates the full integration:
+
+- **Demo menu** – Home screen with buttons for Reset PIN, PIN Setup, PIN Entry, and Forgot PIN flow
+- **PinSetupView** – `ContentPage` hosting `KKPINSetUPView`
+- **PINView** – `ContentPage` hosting `KKPinViews`
+- **AppShell** – Shell with routes for `MainPage`, `DemoMenuPage`, `PinSetupView`, `PINView`
+- **DEMO_VIDEO_SCRIPT.md** – Step-by-step script for recording a demo
+
+Run the sample and use "Reset PIN → PIN Setup" to start a clean flow. All configuration is via `KKPinviewConstant` in the sample app.
+
+## Screenshots
+
+| Screenshot | Description |
+|------------|--------------|
+| [demo-menu.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/demo-menu.png) | Demo menu with Setup PIN, Validate PIN, and Forgot PIN buttons |
+| [pin-setup.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-setup.png) | PIN Setup – Enter and Confirm PIN flow |
+| [pin-entry.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-entry.png) | PIN Entry – Authentication screen |
+| [invalid-Entrypin.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-Entrypin.png) | Invalid PIN – Red border feedback (entry) |
+| [invalid-setuppin.png](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-setuppin.png) | Invalid PIN – Red border feedback (setup) |
+
+![Demo Menu](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/demo-menu.png)
+![PIN Setup](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-setup.png)
+![PIN Entry](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/pin-entry.png)
+![Invalid PIN - Setup](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-setuppin.png)
+![Invalid PIN - Entry](https://raw.githubusercontent.com/kamalkumar1/KKPinView_.NetMAUI/main/KKPinViewSample/KKPinViewSample/screenshots/invalid-Entrypin.png)
 
 ## Requirements
 
@@ -486,27 +773,21 @@ This repository contains:
 - iOS 15.0+
 - Windows 10.0.19041.0+ (optional)
 
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Support
 
-For issues, questions, or feature requests, please open an issue on [GitHub](https://github.com/kamalkumar1/KKPinView_.NetMAUI/issues).
+For issues, questions, or feature requests, please open an issue on GitHub.
 
 ## Author
 
-Created by [kamalkumar](https://github.com/kamalkumar1)
+Created by kamalkumar
 
 ---
 
