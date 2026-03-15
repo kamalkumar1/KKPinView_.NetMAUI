@@ -240,12 +240,12 @@ public sealed partial class KKPINSetUPView : ContentView, IDisposable
         {
             var field = new PinDigitField
             {
-                // Apply constants for field appearance
                 FieldShapeType = KKPinviewConstant.FieldShapeType,
                 FieldWidth = KKPinviewConstant.FieldWidth,
                 FieldHeight = KKPinviewConstant.FieldHeight,
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
-                TextColor = KKPinviewConstant.TextColor
+                TextColor = KKPinviewConstant.TextColor,
+                IsSecure = KKPinviewConstant.PinFieldIsSecure
             };
             if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
@@ -267,12 +267,12 @@ public sealed partial class KKPINSetUPView : ContentView, IDisposable
         {
             var field = new PinDigitField
             {
-                // Apply constants for field appearance
                 FieldShapeType = KKPinviewConstant.FieldShapeType,
                 FieldWidth = KKPinviewConstant.FieldWidth,
                 FieldHeight = KKPinviewConstant.FieldHeight,
                 BackgroundColor = KKPinviewConstant.DigitFieldBackgroundColor,
-                TextColor = KKPinviewConstant.TextColor
+                TextColor = KKPinviewConstant.TextColor,
+                IsSecure = KKPinviewConstant.PinFieldIsSecure
             };
             if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;

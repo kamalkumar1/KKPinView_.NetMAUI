@@ -53,6 +53,9 @@ public sealed partial class PinDigitField : ContentView
     public static readonly BindableProperty FieldShapeTypeProperty = BindableProperty.Create(
         nameof(FieldShapeType), typeof(KKPinFieldShapeType), typeof(PinDigitField), KKPinviewConstant.FieldShapeType, propertyChanged: OnShapeChanged);
 
+    public static readonly BindableProperty IsSecureProperty = BindableProperty.Create(
+        nameof(IsSecure), typeof(bool), typeof(PinDigitField), KKPinviewConstant.PinFieldIsSecure);
+
     // Numeric keypad logic fully removed
 
     public event EventHandler<string>? DigitChanged;
@@ -124,6 +127,13 @@ public sealed partial class PinDigitField : ContentView
     {
         get => (KKPinFieldShapeType)GetValue(FieldShapeTypeProperty);
         set => SetValue(FieldShapeTypeProperty, value);
+    }
+
+    /// <summary>When true, PIN digit is masked (shown as dot). When false, digit is visible. Controlled via fluent API PinFieldSecure().</summary>
+    public bool IsSecure
+    {
+        get => (bool)GetValue(IsSecureProperty);
+        set => SetValue(IsSecureProperty, value);
     }
 
     // Numeric keypad property fully removed

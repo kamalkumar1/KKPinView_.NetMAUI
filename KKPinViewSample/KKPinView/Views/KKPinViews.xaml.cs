@@ -115,7 +115,11 @@ public sealed partial class KKPinViews : ContentView, IDisposable
 
         for (int i = 0; i < KKPinviewConstant.TotalPinTextFields; i++)
         {
-            var field = new PinDigitField { FieldShapeType = KKPinviewConstant.FieldShapeType };
+            var field = new PinDigitField
+            {
+                FieldShapeType = KKPinviewConstant.FieldShapeType,
+                IsSecure = KKPinviewConstant.PinFieldIsSecure
+            };
             if (KKPinviewConstant.FieldShapeType == KKPinFieldShapeType.RoundedRectangle)
                 field.CornerRadius = KKPinviewConstant.FieldCornerRadius;
             field.TapCommand = _focusFirstEmptyCommand;

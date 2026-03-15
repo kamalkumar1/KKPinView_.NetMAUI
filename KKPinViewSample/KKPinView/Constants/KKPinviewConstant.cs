@@ -53,6 +53,9 @@ public static class PinFieldConstants
     public static double Spacing { get; set; } = 15;
     public static double CornerRadius { get; set; } = 10;
     public static KKPinFieldShapeType ShapeType { get; set; } = KKPinFieldShapeType.Round;
+
+    /// <summary>When true, PIN digits are masked (shown as dots). When false, digits are visible.</summary>
+    public static bool IsSecure { get; set; } = true;
 }
 
 /// <summary>
@@ -106,6 +109,8 @@ public static class KKPinviewConstant
     public static double FieldSpacing { get => PinFieldConstants.Spacing; set => PinFieldConstants.Spacing = value; }
     public static double FieldCornerRadius { get => PinFieldConstants.CornerRadius; set => PinFieldConstants.CornerRadius = value; }
     public static KKPinFieldShapeType FieldShapeType { get => PinFieldConstants.ShapeType; set => PinFieldConstants.ShapeType = value; }
+    /// <summary>When true, PIN digits are masked (shown as dots). When false, digits are visible.</summary>
+    public static bool PinFieldIsSecure { get => PinFieldConstants.IsSecure; set => PinFieldConstants.IsSecure = value; }
 
     public static int SuccessMessageLabelHeight { get => LabelConstants.SuccessMessageLabelHeight; set => LabelConstants.SuccessMessageLabelHeight = value; }
     public static int ErrorMessageLabelHeight { get => LabelConstants.ErrorMessageLabelHeight; set => LabelConstants.ErrorMessageLabelHeight = value; }

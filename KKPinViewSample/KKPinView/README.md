@@ -15,6 +15,7 @@ A secure PIN entry and management library for .NET MAUI applications. Provides P
 - 📏 **Dynamic Layout**: Auto-adjusting error/success message heights with fade and scale animations
 - 🔄 **PIN Mismatch Flow**: Error message animates in, holds, then fades out; all PIN fields reset and focus returns to first Enter field
 - 📍 **Focus Behavior**: After backspace or re-entry, focus goes to the first empty field so the next digit goes in the right box
+- 🔐 **Secure PIN Field**: PIN digits can be masked (dots) or visible; controlled via fluent API `PinFieldSecure()`
 
 ## Installation
 
@@ -89,7 +90,8 @@ public partial class App : Application
         //     .PinLength(6)
         //     .Lockout(3, 10)
         //     .LabelColors(errorColor: Colors.Red)
-        //     .PinField(fontSize: 20, shape: KKPinFieldShapeType.RoundedRectangle));
+        //     .PinField(fontSize: 20, shape: KKPinFieldShapeType.RoundedRectangle)
+        //     .PinFieldSecure(true));  // true = masked (dots), false = visible digits
     }
 }
 ```
@@ -560,6 +562,7 @@ KKPinviewConstant.Configure(c => c
     .PinFieldColors(filled: Colors.Green, empty: Colors.Gray, invalid: Colors.Red)
     .PinField(fontSize: 20, height: 50, width: 50, spacing: 15, shape: KKPinFieldShapeType.Round)
     .PinFieldCornerRadius(10)                        // For RoundedRectangle
+    .PinFieldSecure(true)                            // true = masked (dots), false = visible digits
     .Labels(enterPin: "Enter your PIN", confirmPin: "Confirm your PIN", forgotPin: "Forgot PIN?"));
 ```
 

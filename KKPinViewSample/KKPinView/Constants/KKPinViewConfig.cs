@@ -97,6 +97,13 @@ public sealed class KKPinViewConfig
         return this;
     }
 
+    /// <summary>When true (default), PIN digits are masked (shown as dots). When false, digits are visible.</summary>
+    public KKPinViewConfig PinFieldSecure(bool isSecure = true)
+    {
+        PinFieldConstants.IsSecure = isSecure;
+        return this;
+    }
+
     /// <summary>Sets custom label strings.</summary>
     public KKPinViewConfig Labels(string? enterPin = null, string? confirmPin = null, string? forgotPin = null)
     {

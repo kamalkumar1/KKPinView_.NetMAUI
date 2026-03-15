@@ -20,7 +20,7 @@
                 Text="{Binding Source={x:Reference Root}, Path=Digit}"
                 Keyboard="Numeric"
                 MaxLength="1"
-                IsPassword="False"
+                IsPassword="{Binding Source={x:Reference Root}, Path=IsSecure}"
                 FontSize="{Binding Source={x:Reference Root}, Path=FontSize}"
                 FontAttributes="{Binding Source={x:Reference Root}, Path=DigitFontAttributes}"
                 TextColor="{Binding Source={x:Reference Root}, Path=TextColor}"
