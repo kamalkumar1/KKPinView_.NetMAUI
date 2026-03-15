@@ -2,6 +2,9 @@
 
 A secure PIN entry and management library for .NET MAUI applications. Provides PIN setup, authentication, secure storage with AES-256 encryption, and lockout protection.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-10.0-blue.svg)](https://dotnet.microsoft.com/apps/maui)
+
 ## Features
 
 - 🔒 **Secure Storage**: AES-256 encryption with device-specific keys
